@@ -1,101 +1,86 @@
 <?xml version='1.0' encoding='utf-8'?>
-<mxfile>
-  <diagram name="Solution Architecture">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+<mxfile host="Confluence" modified="" agent="" version="1.0" type="device">
+  <diagram id="AWS_Architecture" name="AWS Architecture">
+    <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="lbl-edge" value="Edge" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="20" width="100" height="50" as="geometry" />
+        <mxCell id="c-internet-users" value="Internet Users&#10;(Public Clients)&#10;External users and partner systems" style="rounded=1;fillColor=#FF9900;strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="30" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-network" value="Network" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="100" width="100" height="50" as="geometry" />
+        <mxCell id="c-cloudfront-waf" value="CloudFront WAF&#10;(Amazon CloudFront plus AWS WAF)&#10;Global entry, TLS termination, WAF filtering" style="shape=image;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOCIgZmlsbD0iI0ZGOTkwMCIvPjwvc3ZnPg==;fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;" parent="1" vertex="1">
+          <mxGeometry x="180" y="30" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-platform" value="Platform" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="180" width="100" height="50" as="geometry" />
+        <mxCell id="c-api-gateway" value="API Gateway&#10;(Amazon API Gateway)&#10;API policy enforcement, throttling, routing" style="shape=image;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFQSTwvdGV4dD48L3N2Zz4=;fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="150" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-application" value="Application" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="260" width="100" height="50" as="geometry" />
+        <mxCell id="c-private-endpoints" value="Private Endpoints&#10;(AWS PrivateLink)&#10;Private service connectivity from VPC" style="rounded=1;fillColor=#146EB4;strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="180" y="150" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-data" value="Data" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="340" width="100" height="50" as="geometry" />
+        <mxCell id="c-identity-provider" value="Identity Provider&#10;(Amazon Cognito)&#10;OAuth2 OIDC token issuance and validation" style="shape=image;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iOCIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjI0IiByPSI4IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjE2IiB5PSIzNiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIgcng9IjIiLz48L3N2Zz4=;fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="270" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-internet-users" value="Internet Users&#10;(Public Clients)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="20" width="160" height="50" as="geometry" />
+        <mxCell id="c-event-backbone" value="Event Backbone&#10;(Amazon SQS plus SNS)&#10;Reliable asynchronous messaging" style="rounded=1;fillColor=#759C3E;strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="180" y="270" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-cloudfront-waf" value="CloudFront WAF&#10;(Amazon CloudFront plus AWS WAF)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="20" width="160" height="50" as="geometry" />
+        <mxCell id="c-secrets-vault" value="Secrets Vault&#10;(AWS Secrets Manager plus KMS)&#10;Secrets and encryption keys" style="rounded=1;fillColor=#759C3E;strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="320" y="270" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-api-gateway" value="API Gateway&#10;(Amazon API Gateway)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="100" width="160" height="50" as="geometry" />
+        <mxCell id="c-observability" value="Observability&#10;(Amazon CloudWatch plus X-Ray)&#10;Metrics logs traces" style="rounded=1;fillColor=#759C3E;strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="460" y="270" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-private-endpoints" value="Private Endpoints&#10;(AWS PrivateLink)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="100" width="160" height="50" as="geometry" />
+        <mxCell id="c-integration-orchestrator" value="Integration Orchestrator&#10;(AWS Step Functions)&#10;Workflow orchestration across services" style="rounded=1;fillColor=#4B9BFF;strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="390" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-identity-provider" value="Identity Provider&#10;(Amazon Cognito)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c-core-business-api" value="Core Business API&#10;(AWS Lambda)&#10;Stateless business processing endpoints" style="shape=image;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiw4IDE2LDMyIDMyLDMyIDIwLDY0IDQ4LDQ4IDM2LDQ4IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==;fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;" parent="1" vertex="1">
+          <mxGeometry x="180" y="390" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-event-backbone" value="Event Backbone&#10;(Amazon SQS plus SNS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c-notification-service" value="Notification Service&#10;(AWS Lambda)&#10;Event-driven outbound notifications" style="shape=image;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiw4IDE2LDMyIDMyLDMyIDIwLDY0IDQ4LDQ4IDM2LDQ4IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==;fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;" parent="1" vertex="1">
+          <mxGeometry x="320" y="390" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-secrets-vault" value="Secrets Vault&#10;(AWS Secrets Manager plus KMS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c-transaction-store" value="Transaction Store&#10;(Amazon Aurora PostgreSQL)&#10;ACID transactional storage" style="rounded=1;fillColor=#FF9900;strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="510" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-observability" value="Observability&#10;(Amazon CloudWatch plus X-Ray)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="760" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c-document-store" value="Document Store&#10;(Amazon DynamoDB)&#10;Flexible schema operational documents" style="shape=image;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHBhdGggZD0iTTggMzJDOCAyMCAxNiAxMiAzMiAxMkM0OCA4IDU2IDIwIDU2IDMyQzU2IDQ0IDQ4IDUyIDMyIDUyQzE2IDUyIDggNDQgOCAzMloiIGZpbGw9IndoaXRlIi8+PC9zdmc+;fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;" parent="1" vertex="1">
+          <mxGeometry x="180" y="510" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-integration-orchestrator" value="Integration Orchestrator&#10;(AWS Step Functions)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="260" width="160" height="50" as="geometry" />
+        <mxCell id="c-analytics-landing" value="Analytics Landing&#10;(Amazon S3)&#10;Raw and curated analytics datasets" style="shape=image;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMzI4MjM3Ii8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjI0IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iNDgiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz48cmVjdCB4PSI0MCIgeT0iOCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+PC9zdmc+;fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;" parent="1" vertex="1">
+          <mxGeometry x="320" y="510" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="c-core-business-api" value="Core Business API&#10;(AWS Lambda)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="260" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="c-notification-service" value="Notification Service&#10;(AWS Lambda)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="260" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="c-transaction-store" value="Transaction Store&#10;(Amazon Aurora PostgreSQL)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="340" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="c-document-store" value="Document Store&#10;(Amazon DynamoDB)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="340" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="c-analytics-landing" value="Analytics Landing&#10;(Amazon S3)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="340" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="e-0" value="Step 1 Inbound HTTPS 443" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-internet-users" target="c-cloudfront-waf" edge="1">
+        <mxCell id="e-0" value="Step 1 Inbound HTTPS 443" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-internet-users" target="c-cloudfront-waf" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-1" value="Step 2 WAF passed API routing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-cloudfront-waf" target="c-api-gateway" edge="1">
+        <mxCell id="e-1" value="Step 2 WAF passed API routing" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-cloudfront-waf" target="c-api-gateway" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-2" value="Step 3 OAuth2 token introspection" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-api-gateway" target="c-identity-provider" edge="1">
+        <mxCell id="e-2" value="Step 3 OAuth2 token introspection" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-api-gateway" target="c-identity-provider" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-3" value="Step 4 Policy validated API call" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-api-gateway" target="c-core-business-api" edge="1">
+        <mxCell id="e-3" value="Step 4 Policy validated API call" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-api-gateway" target="c-core-business-api" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-4" value="Step 5 Publish business event" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-event-backbone" edge="1">
+        <mxCell id="e-4" value="Step 5 Publish business event" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-core-business-api" target="c-event-backbone" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-5" value="Step 6 Queue trigger processing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-event-backbone" target="c-notification-service" edge="1">
+        <mxCell id="e-5" value="Step 6 Queue trigger processing" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-event-backbone" target="c-notification-service" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-6" value="Step 7 Read write SQL over TLS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-transaction-store" edge="1">
+        <mxCell id="e-6" value="Step 7 Read write SQL over TLS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-core-business-api" target="c-transaction-store" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-7" value="Step 8 Persist document item" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-document-store" edge="1">
+        <mxCell id="e-7" value="Step 8 Persist document item" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-core-business-api" target="c-document-store" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-8" value="Step 9 Write operational extracts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-analytics-landing" edge="1">
+        <mxCell id="e-8" value="Step 9 Write operational extracts" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-core-business-api" target="c-analytics-landing" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-9" value="Step 10 Orchestrated service call" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-integration-orchestrator" target="c-core-business-api" edge="1">
+        <mxCell id="e-9" value="Step 10 Orchestrated service call" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-integration-orchestrator" target="c-core-business-api" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-10" value="Step 11 Retrieve secrets IAM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-secrets-vault" edge="1">
+        <mxCell id="e-10" value="Step 11 Retrieve secrets IAM" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-core-business-api" target="c-secrets-vault" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-11" value="Step 12 Emit logs metrics traces" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-observability" edge="1">
+        <mxCell id="e-11" value="Step 12 Emit logs metrics traces" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;" parent="1" source="c-core-business-api" target="c-observability" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

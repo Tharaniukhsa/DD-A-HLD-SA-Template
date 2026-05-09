@@ -36,16 +36,17 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests_negotiate_sspi import HttpNegotiateAuth
 
-# Import enhanced diagram generators
+# Import AWS architecture diagram generator with real icons
 try:
-    from enhanced_diagram_generator import (
-        generate_aws_architecture_with_icons,
+    from aws_architecture_diagram_generator import (
+        generate_aws_architecture_with_real_icons,
+        generate_detailed_network_diagram,
         generate_authentication_flow_diagram,
         generate_network_segregation_diagram,
     )
-    ENHANCED_DIAGRAMS_AVAILABLE = True
+    AWS_DIAGRAMS_AVAILABLE = True
 except ImportError:
-    ENHANCED_DIAGRAMS_AVAILABLE = False
+    AWS_DIAGRAMS_AVAILABLE = False
 
 load_dotenv()
 
@@ -850,14 +851,15 @@ def main() -> None:
 
     updated_html = target_body_html
 
-    # ── Solution Architecture diagram (with AWS icons if enhanced generator available)
+    # ── Solution Architecture diagram (with AWS icons if available)
     if components:
         print("\nGenerating Solution Architecture diagram...")
-        if ENHANCED_DIAGRAMS_AVAILABLE:
-            arch_xml = generate_aws_architecture_with_icons(components, connections)
-            print("  Using AWS-enhanced architecture diagram with service icons")
+        if AWS_DIAGRAMS_AVAILABLE:
+            arch_xml = generate_aws_architecture_with_real_icons(components, connections)
+            print("  ✓ Using AWS-enhanced architecture diagram with service icons")
         else:
             arch_xml = generate_architecture_drawio(components, connections)
+            print("  ⚠ Enhanced diagrams not available, using basic diagram")
         save_local_drawio("solution-architecture.drawio", arch_xml)
         upload_attachment(session, base_url, target_page_id,
                           "solution-architecture.drawio", arch_xml)
@@ -977,7 +979,7 @@ def main() -> None:
             )
 
     # ── ENHANCED DIAGRAMS: Authentication Flow, Network Segregation, AWS Architecture Details
-    if ENHANCED_DIAGRAMS_AVAILABLE:
+    if AWS_DIAGRAMS_AVAILABLE:
         print("\n" + "="*70)
         print("ENHANCED DIAGRAMS: Authentication Flows & Network Architecture")
         print("="*70)
