@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="Context View">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="solution-core" value="Solution Architecture" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="450" y="250" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-healthcare-professional-0" value="Healthcare Professional\n(User)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="740" y="260" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-0" value="Portal Access, Record Management" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ctx-healthcare-professional-0" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-patient-1" value="Patient\n(Person)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="610" y="485" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-1" value="Records Stored, Notifications Received" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ctx-patient-1" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-nhs-systems-2" value="NHS Systems\n(External System)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="350" y="485" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-2" value="Data Exchange, Clinical Integration" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ctx-nhs-systems-2" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-compliance-auditor-3" value="Compliance Auditor\n(User)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="220" y="260" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-3" value="Audit Trail Review, Compliance Reports" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ctx-compliance-auditor-3" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-data-analyst-4" value="Data Analyst\n(User)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="349" y="34" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-4" value="Analytics Dashboard Access" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ctx-data-analyst-4" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-system-administrator-5" value="System Administrator\n(User)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="610" y="34" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-5" value="System Configuration, User Management" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ctx-system-administrator-5" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

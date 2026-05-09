@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="LLD Detailed Architecture">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="layer-edge" value="Edge" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
+          <mxGeometry x="20" y="30" width="120" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-internet-user" value="Internet / User&#10;(Client)&#10;[Public]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="180" y="30" width="190" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="layer-network" value="Network" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
+          <mxGeometry x="20" y="125" width="120" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-api-gateway" value="API Gateway&#10;(Gateway / WAF)&#10;[DMZ]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="180" y="125" width="190" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="layer-application" value="Application" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
+          <mxGeometry x="20" y="220" width="120" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-application-service" value="Application Service&#10;(App Runtime)&#10;[Private Subnet]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="180" y="220" width="190" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="layer-data" value="Data" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
+          <mxGeometry x="20" y="315" width="120" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-primary-data-store" value="Primary Data Store&#10;(Managed Database)&#10;[Private Data Subnet]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="180" y="315" width="190" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-0" value="HTTPS | 443 | Public Internet" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="cmp-internet-user" target="cmp-api-gateway" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-1" value="HTTPS | 443 | Private Link / VNet" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="cmp-api-gateway" target="cmp-application-service" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-2" value="TCP | 1433 | Private Subnet" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="cmp-application-service" target="cmp-primary-data-store" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

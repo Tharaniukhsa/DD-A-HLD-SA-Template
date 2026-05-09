@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="LLD Security Access">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="act-platform-operator-0" value="Platform Operator" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="80" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-api-gateway-0" value="API Gateway" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="80" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-0" value="Control Plane | Entra ID + MFA | RBAC | Key Vault | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-platform-operator-0" target="tgt-api-gateway-0" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-application-service-1" value="Application Service" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="180" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-primary-data-store-1" value="Primary Data Store" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="180" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-1" value="Data Plane | Managed Identity | Least Privilege Role | Key Vault | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-application-service-1" target="tgt-primary-data-store-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

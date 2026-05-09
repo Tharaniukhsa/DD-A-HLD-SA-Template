@@ -1,0 +1,16 @@
+{
+  "generated_at_utc": "2026-05-08T16:46:58.687661+00:00",
+  "source_page": {
+    "id": "520783944",
+    "title": "Solution Architecture"
+  },
+  "counts": {
+    "components": 0,
+    "datasets": 0
+  },
+  "outputs": {
+    "aws_terraform": "output\\terraform\\aws\\main.tf",
+    "azure_terraform": "output\\terraform\\azure\\main.tf"
+  },
+  "note": "This is a starter Terraform scaffold generated from architecture inputs and must be reviewed by implementation engineers."
+}

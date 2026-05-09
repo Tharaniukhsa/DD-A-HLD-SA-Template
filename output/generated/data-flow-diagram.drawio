@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="Data Flow Diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="n-healthcare-professional-0" value="Healthcare Professional" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="40" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n-healthcare-portal-1" value="Healthcare Portal" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="240" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-0" value="Login Request&#10;[HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-healthcare-professional-0" target="n-healthcare-portal-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-identity-service-2" value="Identity Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="440" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-1" value="User Credentials&#10;[HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-healthcare-portal-1" target="n-identity-service-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-2" value="JWT Token&#10;[HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-identity-service-2" target="n-healthcare-portal-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-records-api-service-3" value="Records API Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="640" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-3" value="Patient Record Query&#10;[REST/JSON]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-healthcare-portal-1" target="n-records-api-service-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-patient-records-database-4" value="Patient Records Database" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="840" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-4" value="SQL Query&#10;[TLS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-records-api-service-3" target="n-patient-records-database-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-5" value="Patient Record Data&#10;[TLS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-patient-records-database-4" target="n-records-api-service-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-encryption-service-5" value="Encryption Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-6" value="Plaintext Data&#10;[HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-records-api-service-3" target="n-encryption-service-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-7" value="Encrypted Data&#10;[HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-encryption-service-5" target="n-records-api-service-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-audit-logging-service-6" value="Audit Logging Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1240" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-8" value="Audit Event&#10;[HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-records-api-service-3" target="n-audit-logging-service-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-search-service-7" value="Search Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-9" value="Search Query&#10;[REST/JSON]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-healthcare-portal-1" target="n-search-service-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-search-index-8" value="Search Index" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1640" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-10" value="Elasticsearch Query&#10;[HTTP]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-search-service-7" target="n-search-index-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-11" value="Search Results&#10;[HTTP]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-search-index-8" target="n-search-service-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-notification-service-9" value="Notification Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1840" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-12" value="Alert Message&#10;[SNS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-records-api-service-3" target="n-notification-service-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-13" value="Push Notification&#10;[WebSocket]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-notification-service-9" target="n-healthcare-portal-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-data-lake-10" value="Data Lake" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="2040" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n-analytics-tools-11" value="Analytics Tools" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="2240" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-14" value="Analytics Data&#10;[S3/Parquet]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-data-lake-10" target="n-analytics-tools-11" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
