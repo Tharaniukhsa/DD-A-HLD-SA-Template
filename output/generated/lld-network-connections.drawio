@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="LLD Network Connections">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="net-internet-user-0" value="Internet / User" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="40" y="120" width="180" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-api-gateway-1" value="API Gateway" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="300" y="120" width="180" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-0" value="HTTPS | 443 | Public Internet | OIDC + MFA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="net-internet-user-0" target="net-api-gateway-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-application-service-2" value="Application Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="120" width="180" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-1" value="HTTPS | 443 | Private Link / VNet | mTLS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="net-api-gateway-1" target="net-application-service-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-primary-data-store-3" value="Primary Data Store" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="820" y="120" width="180" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-2" value="TCP | 1433 | Private Subnet | Managed Identity" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="net-application-service-2" target="net-primary-data-store-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
