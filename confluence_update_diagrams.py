@@ -36,6 +36,17 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests_negotiate_sspi import HttpNegotiateAuth
 
+# Import enhanced diagram generators
+try:
+    from enhanced_diagram_generator import (
+        generate_aws_architecture_with_icons,
+        generate_authentication_flow_diagram,
+        generate_network_segregation_diagram,
+    )
+    ENHANCED_DIAGRAMS_AVAILABLE = True
+except ImportError:
+    ENHANCED_DIAGRAMS_AVAILABLE = False
+
 load_dotenv()
 
 
@@ -839,10 +850,14 @@ def main() -> None:
 
     updated_html = target_body_html
 
-    # ── Solution Architecture diagram
+    # ── Solution Architecture diagram (with AWS icons if enhanced generator available)
     if components:
         print("\nGenerating Solution Architecture diagram...")
-        arch_xml = generate_architecture_drawio(components, connections)
+        if ENHANCED_DIAGRAMS_AVAILABLE:
+            arch_xml = generate_aws_architecture_with_icons(components, connections)
+            print("  Using AWS-enhanced architecture diagram with service icons")
+        else:
+            arch_xml = generate_architecture_drawio(components, connections)
         save_local_drawio("solution-architecture.drawio", arch_xml)
         upload_attachment(session, base_url, target_page_id,
                           "solution-architecture.drawio", arch_xml)
@@ -960,6 +975,39 @@ def main() -> None:
                 "Logical View Diagram",
                 target_page_id,
             )
+
+    # ── ENHANCED DIAGRAMS: Authentication Flow, Network Segregation, AWS Architecture Details
+    if ENHANCED_DIAGRAMS_AVAILABLE:
+        print("\n" + "="*70)
+        print("ENHANCED DIAGRAMS: Authentication Flows & Network Architecture")
+        print("="*70)
+        
+        # Authentication Flow Diagram
+        print("\nGenerating Authentication Flow Diagram...")
+        print("  Showing: User → WebApp → API → Cognito → Service → Database")
+        print("  Steps: OAuth2 token exchange, validation, and secure data access")
+        auth_xml = generate_authentication_flow_diagram()
+        save_local_drawio("authentication-flow-diagram.drawio", auth_xml)
+        upload_attachment(session, base_url, target_page_id,
+                          "authentication-flow-diagram.drawio", auth_xml)
+        updated_html = replace_placeholder(
+            updated_html, "authentication-flow",
+            "authentication-flow-diagram.drawio", "Authentication Flow", target_page_id,
+        )
+        
+        # Network Segregation Diagram
+        print("\nGenerating Network Segregation Diagram...")
+        print("  Showing: VPC → Subnets → Security Groups → Service routing")
+        print("  Segments: Internet → IGW → Public/Private/Data subnets with SGs")
+        net_xml = generate_network_segregation_diagram()
+        save_local_drawio("network-segregation-diagram.drawio", net_xml)
+        upload_attachment(session, base_url, target_page_id,
+                          "network-segregation-diagram.drawio", net_xml)
+        updated_html = replace_placeholder(
+            updated_html, "network-segregation",
+            "network-segregation-diagram.drawio", "Network Segregation", target_page_id,
+        )
+        print("\nEnhanced diagrams generated successfully!")
 
     # ── Write the page back
     print("\nUpdating Confluence page with embedded diagrams...")

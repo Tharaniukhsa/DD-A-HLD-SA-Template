@@ -20,94 +20,82 @@
         <mxCell id="lbl-data" value="Data" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
           <mxGeometry x="10" y="340" width="100" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-healthcare-portal" value="Healthcare Portal&#10;(React.js, TypeScript)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-internet-users" value="Internet Users&#10;(Public Clients)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="160" y="20" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-mobile-health-app" value="Mobile Health App&#10;(React Native)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-cloudfront-waf" value="CloudFront WAF&#10;(Amazon CloudFront plus AWS WAF)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="360" y="20" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-aws-cloudfront-cdn" value="AWS CloudFront CDN&#10;(CloudFront)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="20" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="c-api-gateway" value="API Gateway&#10;(API Gateway)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-api-gateway" value="API Gateway&#10;(Amazon API Gateway)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="160" y="100" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-web-application-firewall" value="Web Application Firewall&#10;(AWS WAF)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-private-endpoints" value="Private Endpoints&#10;(AWS PrivateLink)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="360" y="100" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-network-load-balancer" value="Network Load Balancer&#10;(NLB)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="100" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="c-identity-service" value="Identity Service&#10;(Entra ID (Azure AD))" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-identity-provider" value="Identity Provider&#10;(Amazon Cognito)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="160" y="180" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-encryption-service" value="Encryption Service&#10;(AWS KMS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-event-backbone" value="Event Backbone&#10;(Amazon SQS plus SNS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="360" y="180" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-audit-logging-service" value="Audit Logging Service&#10;(CloudWatch Logs)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-secrets-vault" value="Secrets Vault&#10;(AWS Secrets Manager plus KMS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="560" y="180" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-records-api-service" value="Records API Service&#10;(Python FastAPI)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-observability" value="Observability&#10;(Amazon CloudWatch plus X-Ray)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="760" y="180" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c-integration-orchestrator" value="Integration Orchestrator&#10;(AWS Step Functions)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="160" y="260" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-search-service" value="Search Service&#10;(Elasticsearch)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-core-business-api" value="Core Business API&#10;(AWS Lambda)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="360" y="260" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-notification-service" value="Notification Service&#10;(SNS + Lambda)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-notification-service" value="Notification Service&#10;(AWS Lambda)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="560" y="260" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-patient-records-database" value="Patient Records Database&#10;(RDS Aurora (PostgreSQL))" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-transaction-store" value="Transaction Store&#10;(Amazon Aurora PostgreSQL)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="160" y="340" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-data-lake" value="Data Lake&#10;(S3 + Glue)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-document-store" value="Document Store&#10;(Amazon DynamoDB)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="360" y="340" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="c-search-index" value="Search Index&#10;(Elasticsearch Index)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="c-analytics-landing" value="Analytics Landing&#10;(Amazon S3)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="560" y="340" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="e-1" value="REST API Calls (HTTPS)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-healthcare-portal" target="c-api-gateway" edge="1">
+        <mxCell id="e-0" value="Step 1 Inbound HTTPS 443" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-internet-users" target="c-cloudfront-waf" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-2" value="REST API Calls (HTTPS)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-mobile-health-app" target="c-api-gateway" edge="1">
+        <mxCell id="e-1" value="Step 2 WAF passed API routing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-cloudfront-waf" target="c-api-gateway" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-3" value="Request Routing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-api-gateway" target="c-web-application-firewall" edge="1">
+        <mxCell id="e-2" value="Step 3 OAuth2 token introspection" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-api-gateway" target="c-identity-provider" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-4" value="Filtered Traffic" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-web-application-firewall" target="c-network-load-balancer" edge="1">
+        <mxCell id="e-3" value="Step 4 Policy validated API call" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-api-gateway" target="c-core-business-api" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-5" value="HTTP Internal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-network-load-balancer" target="c-records-api-service" edge="1">
+        <mxCell id="e-4" value="Step 5 Publish business event" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-event-backbone" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-6" value="HTTP Internal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-network-load-balancer" target="c-search-service" edge="1">
+        <mxCell id="e-5" value="Step 6 Queue trigger processing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-event-backbone" target="c-notification-service" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-7" value="User Authentication" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-identity-service" edge="1">
+        <mxCell id="e-6" value="Step 7 Read write SQL over TLS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-transaction-store" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-8" value="Encrypt/Decrypt Data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-encryption-service" edge="1">
+        <mxCell id="e-7" value="Step 8 Persist document item" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-document-store" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-9" value="Read/Write Records" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-patient-records-database" edge="1">
+        <mxCell id="e-8" value="Step 9 Write operational extracts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-analytics-landing" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-10" value="Log Operations" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-audit-logging-service" edge="1">
+        <mxCell id="e-9" value="Step 10 Orchestrated service call" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-integration-orchestrator" target="c-core-business-api" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-11" value="Trigger Alerts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-notification-service" edge="1">
+        <mxCell id="e-10" value="Step 11 Retrieve secrets IAM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-secrets-vault" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-12" value="Query Index Data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-search-service" target="c-search-index" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-13" value="Push Notifications" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-notification-service" target="c-healthcare-portal" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-14" value="Nightly ETL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-patient-records-database" target="c-data-lake" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-15" value="Analytics Feed" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-data-lake" target="c-search-index" edge="1">
+        <mxCell id="e-11" value="Step 12 Emit logs metrics traces" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-core-business-api" target="c-observability" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
