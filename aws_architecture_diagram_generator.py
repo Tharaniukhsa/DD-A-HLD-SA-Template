@@ -216,8 +216,52 @@ def generate_aws_architecture_with_real_icons(components: list[dict], connection
     """
     mxfile = ET.Element("mxfile", {"host": "Confluence", "modified": "", "agent": "", "version": "1.0", "type": "device"})
     diagram = ET.SubElement(mxfile, "diagram", {"id": "AWS_Architecture", "name": "AWS Architecture"})
-    
-    # Set up the model with proper dimensions
+
+    layer_order = ["Edge", "Network", "Platform", "Application", "Data"]
+    layer_colors = {
+        "Edge": "#FFE8CC",
+        "Network": "#DDEBFF",
+        "Platform": "#E7F5E7",
+        "Application": "#E8F1FF",
+        "Data": "#FFF4D6",
+    }
+
+    # Group components by layer and normalize unknown values to Application.
+    layer_map = {layer: [] for layer in layer_order}
+    for comp in components:
+        raw_layer = (comp.get("layer") or "Application").strip().lower()
+        resolved = "Application"
+        for known in layer_order:
+            if known.lower() in raw_layer or raw_layer in known.lower():
+                resolved = known
+                break
+        layer_map[resolved].append(comp)
+
+    lane_left = 30
+    lane_top = 30
+    lane_label_w = 140
+    lane_gap = 24
+    card_w = 220
+    card_h = 170
+    icon_w = 96
+    icon_h = 96
+    card_gap_x = 34
+    card_gap_y = 20
+    inner_left_pad = 22
+    max_cols = 4
+    lane_inner_start = lane_left + lane_label_w + 20
+
+    occupied_layers = [l for l in layer_order if layer_map[l]]
+    layer_heights = {}
+    for layer in occupied_layers:
+        count = len(layer_map[layer])
+        rows = (count + max_cols - 1) // max_cols
+        layer_heights[layer] = max(210, 22 + rows * card_h + (rows - 1) * card_gap_y + 22)
+
+    page_w = max(1980, lane_inner_start + inner_left_pad + (max_cols * card_w) + ((max_cols - 1) * card_gap_x) + 360)
+    total_lane_h = sum(layer_heights.values()) + max(0, len(occupied_layers) - 1) * lane_gap
+    page_h = max(1300, lane_top + total_lane_h + 100)
+
     model = ET.SubElement(diagram, "mxGraphModel", {
         "dx": "2000",
         "dy": "1200",
@@ -230,120 +274,213 @@ def generate_aws_architecture_with_real_icons(components: list[dict], connection
         "fold": "1",
         "page": "0",
         "pageScale": "1",
-        "pageWidth": "1600",
-        "pageHeight": "1000",
+        "pageWidth": str(page_w),
+        "pageHeight": str(page_h),
         "math": "0",
         "shadow": "0"
     })
-    
+
     root = ET.SubElement(model, "root")
     ET.SubElement(root, "mxCell", {"id": "0"})
     ET.SubElement(root, "mxCell", {"id": "1", "parent": "0"})
 
-    # Layer definitions
-    LAYER_ORDER = ["Edge", "Network", "Platform", "Application", "Data"]
-    LAYER_COLORS = {
-        "Edge": "#FF9900",
-        "Network": "#146EB4",
-        "Platform": "#759C3E",
-        "Application": "#4B9BFF",
-        "Data": "#FF9900",
-    }
-    
-    LAYER_Y_POSITIONS = {
-        "Edge": 30,
-        "Network": 150,
-        "Platform": 270,
-        "Application": 390,
-        "Data": 510,
-    }
-
-    # Group components by layer
-    layer_map = {layer: [] for layer in LAYER_ORDER}
-    for comp in components:
-        layer = comp.get("layer", "Application").strip()
-        for known in LAYER_ORDER:
-            if known.lower() in layer.lower() or layer.lower() in known.lower():
-                layer_map[known].append(comp)
-                break
-        else:
-            layer_map["Application"].append(comp)
-
-    # Create cell mapping and place components with icons
     comp_cell = {}
-    x_offset = 40
-
-    for layer in LAYER_ORDER:
-        if not layer_map[layer]:
+    lane_y_cursor = lane_top
+    for layer in layer_order:
+        comps = layer_map[layer]
+        if not comps:
             continue
-            
-        y = LAYER_Y_POSITIONS[layer]
-        x = x_offset
 
-        for comp in layer_map[layer]:
-            comp_name = comp["name"]
-            tech = comp.get("technology", "")
-            desc = comp.get("description", "")
-            
-            cell_id = f"c-{comp_name.lower().replace(' ', '-')}"
-            comp_cell[comp_name.lower()] = cell_id
+        lane_h = layer_heights[layer]
+        lane_y = lane_y_cursor
+        lane_bg = ET.SubElement(root, "mxCell", {
+            "id": f"lane-{layer.lower()}",
+            "value": "",
+            "style": f"rounded=1;fillColor={layer_colors[layer]};strokeColor=#B9C2CF;strokeWidth=1;",
+            "parent": "1",
+            "vertex": "1"
+        })
+        ET.SubElement(lane_bg, "mxGeometry", {
+            "x": str(lane_left),
+            "y": str(lane_y),
+            "width": str(page_w - 60),
+            "height": str(lane_h),
+            "as": "geometry"
+        })
 
-            # Get icon
-            icon_url = get_icon_url(tech)
-            
-            # Create component cell with icon
-            if icon_url:
-                # Style with image icon
-                style = f"shape=image;image={icon_url};fontSize=11;rounded=1;fillColor=none;strokeColor=#000;strokeWidth=1;spacing=5;spacingTop=10;"
-            else:
-                # Fallback to colored box
-                color = LAYER_COLORS.get(layer, "#f5f5f5")
-                style = f"rounded=1;fillColor={color};strokeColor=#000;strokeWidth=1;fontSize=11;fontStyle=1;"
+        lane_title = ET.SubElement(root, "mxCell", {
+            "id": f"lane-title-{layer.lower()}",
+            "value": layer,
+            "style": "rounded=1;fillColor=#FFFFFF;strokeColor=#9AA5B1;strokeWidth=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;",
+            "parent": "1",
+            "vertex": "1"
+        })
+        ET.SubElement(lane_title, "mxGeometry", {
+            "x": str(lane_left + 10),
+            "y": str(lane_y + 18),
+            "width": str(lane_label_w - 20),
+            "height": "42",
+            "as": "geometry"
+        })
 
-            # Create cell label
-            label_text = f"{comp_name}\n({tech})"
-            if desc:
-                label_text += f"\n{desc}"
+        for i, comp in enumerate(comps):
+            comp_name = (comp.get("name") or "Unnamed Component").strip()
+            tech = (comp.get("technology") or "").strip()
+            desc = (comp.get("description") or "").strip()
+            slug = re.sub(r"[^a-z0-9]+", "-", comp_name.lower()).strip("-") or f"component-{i}"
 
-            cell = ET.SubElement(root, "mxCell", {
-                "id": cell_id,
-                "value": label_text,
-                "style": style,
+            col = i % max_cols
+            row = i // max_cols
+            card_x = lane_inner_start + inner_left_pad + col * (card_w + card_gap_x)
+            card_y = lane_y + 20 + row * (card_h + card_gap_y)
+            card_id = f"c-{slug}"
+            icon_id = f"{card_id}-icon"
+            text_id = f"{card_id}-text"
+            comp_cell[comp_name.lower()] = card_id
+
+            card = ET.SubElement(root, "mxCell", {
+                "id": card_id,
+                "value": "",
+                "style": "rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;",
                 "parent": "1",
                 "vertex": "1"
             })
-            
-            ET.SubElement(cell, "mxGeometry", {
-                "x": str(x),
-                "y": str(y),
-                "width": "100",
-                "height": "100",
+            ET.SubElement(card, "mxGeometry", {
+                "x": str(card_x),
+                "y": str(card_y),
+                "width": str(card_w),
+                "height": str(card_h),
                 "as": "geometry"
             })
 
-            x += 140
+            icon_url = get_icon_url(tech)
+            icon_style = "shape=mxgraph.basic.image;"
+            if icon_url:
+                icon_style = f"shape=image;image={icon_url};"
+            icon = ET.SubElement(root, "mxCell", {
+                "id": icon_id,
+                "value": "",
+                "style": icon_style + "strokeColor=none;fillColor=none;",
+                "parent": "1",
+                "vertex": "1"
+            })
+            ET.SubElement(icon, "mxGeometry", {
+                "x": str(card_x + (card_w - icon_w) // 2),
+                "y": str(card_y + 8),
+                "width": str(icon_w),
+                "height": str(icon_h),
+                "as": "geometry"
+            })
 
-    # Add connections
+            label_parts = [comp_name]
+            if tech:
+                label_parts.append(f"({tech})")
+            if desc:
+                short_desc = desc[:75] + ("..." if len(desc) > 75 else "")
+                label_parts.append(short_desc)
+            label_text = "\n".join(label_parts)
+
+            text = ET.SubElement(root, "mxCell", {
+                "id": text_id,
+                "value": label_text,
+                "style": "text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;",
+                "parent": "1",
+                "vertex": "1"
+            })
+            ET.SubElement(text, "mxGeometry", {
+                "x": str(card_x + 8),
+                "y": str(card_y + 108),
+                "width": str(card_w - 16),
+                "height": str(card_h - 112),
+                "as": "geometry"
+            })
+
+        lane_y_cursor += lane_h + lane_gap
+
+    # Add connections with numbered labels
+    legend_items = []
+    valid_edge_count = 0
+    
     for i, conn in enumerate(connections):
         src = comp_cell.get(conn["from"].lower())
         tgt = comp_cell.get(conn["to"].lower())
         
         if not src or not tgt:
-            print(f"  ⚠ Skipping connection: {conn['from']} → {conn['to']} (not found)")
+            print(f"  Warning: Skipping connection: {conn['from']} -> {conn['to']} (not found)")
             continue
 
-        label = conn.get("label", "")
+        valid_edge_count += 1
+        full_label = conn.get("label", "")
+        edge_num = str(valid_edge_count)
         
         edge = ET.SubElement(root, "mxCell", {
             "id": f"e-{i}",
-            "value": label,
-            "style": "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;",
+            "value": edge_num,
+            "style": "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;",
             "parent": "1",
             "source": src,
             "target": tgt,
             "edge": "1"
         })
         ET.SubElement(edge, "mxGeometry", {"relative": "1", "as": "geometry"})
+        
+        if full_label:
+            legend_items.append((edge_num, full_label))
+
+    # Add legend box on the right side
+    if legend_items:
+        legend_x = int(page_w - 320)
+        legend_y = lane_top + 40
+        legend_w = 300
+        
+        legend_bg = ET.SubElement(root, "mxCell", {
+            "id": "legend-bg",
+            "value": "",
+            "style": "rounded=1;fillColor=#FFFEF0;strokeColor=#9AA5B1;strokeWidth=2;",
+            "parent": "1",
+            "vertex": "1"
+        })
+        ET.SubElement(legend_bg, "mxGeometry", {
+            "x": str(legend_x),
+            "y": str(legend_y),
+            "width": str(legend_w),
+            "height": str(max(60, 30 + len(legend_items) * 24)),
+            "as": "geometry"
+        })
+        
+        legend_title = ET.SubElement(root, "mxCell", {
+            "id": "legend-title",
+            "value": "Data Flow Steps",
+            "style": "text;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;spacingLeft=10;",
+            "parent": "1",
+            "vertex": "1"
+        })
+        ET.SubElement(legend_title, "mxGeometry", {
+            "x": str(legend_x + 10),
+            "y": str(legend_y + 6),
+            "width": str(legend_w - 20),
+            "height": "20",
+            "as": "geometry"
+        })
+        
+        for idx, (num, desc) in enumerate(legend_items):
+            item_y = legend_y + 28 + idx * 22
+            item_text = f"{num}. {desc}"
+            
+            legend_item = ET.SubElement(root, "mxCell", {
+                "id": f"legend-item-{num}",
+                "value": item_text,
+                "style": "text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;",
+                "parent": "1",
+                "vertex": "1"
+            })
+            ET.SubElement(legend_item, "mxGeometry", {
+                "x": str(legend_x + 10),
+                "y": str(item_y),
+                "width": str(legend_w - 20),
+                "height": "20",
+                "as": "geometry"
+            })
 
     # Format XML
     ET.indent(mxfile, space="  ")
