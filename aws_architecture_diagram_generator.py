@@ -12,31 +12,191 @@ import re
 
 
 # AWS Service Icon Data (Base64 encoded minimal SVGs)
-# These are simplified AWS service icons that render in draw.io
+# Comprehensive AWS service icons for complete LLD diagrams
 AWS_SERVICE_ICONS = {
-    "API Gateway": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFQSTwvdGV4dD48L3N2Zz4=",
+    # Compute Services
+    "API Gateway": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjIwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFQSTwvdGV4dD48L3N2Zz4=",
     "Lambda": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiw4IDE2LDMyIDMyLDMyIDIwLDY0IDQ4LDQ4IDM2LDQ4IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    "EC2": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIgcng9IjMiLz48L3N2Zz4=",
+    "ECS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGcgZmlsbD0id2hpdGUiPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0Ii8+PHJlY3QgeD0iMjgiIHk9IjEwIiB3aWR0aD0iMTQiIGhlaWdodD0iMTQiLz48cmVjdCB4PSI0NiIgeT0iMTAiIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIvPjxyZWN0IHg9IjEwIiB5PSIyOCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0Ii8+PHJlY3QgeD0iMjgiIHk9IjI4IiB3aWR0aD0iMTQiIGhlaWdodD0iMTQiLz48cmVjdCB4PSI0NiIgeT0iMjgiIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIvPjwvZz48L3N2Zz4=",
+    "EKS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiwxMiAyMCwyOCAyNCw0OCA0MCw0OCA0NCwyOCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
+    "Fargate": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iOCIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjQwIiByPSI4IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    "AppRunner": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjE2IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKGkDwvdGV4dD48L3N2Zz4=",
+    
+    # Database Services
     "RDS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iOCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIvPjxyZWN0IHg9IjEyIiB5PSIyOCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiBmaWxsPSJ3aGl0ZSIgcng9IjIiLz48L3N2Zz4=",
     "DynamoDB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHBhdGggZD0iTTggMzJDOCAyMCAxNiAxMiAzMiAxMkM0OCA4IDU2IDIwIDU2IDMyQzU2IDQ0IDQ4IDUyIDMyIDUyQzE2IDUyIDggNDQgOCAzMloiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    "Aurora": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHBhdGggZD0iTTMyIDAgTDU2IDIwIEw2NCA0OCBMMzIgNjQgTDAgNDggTDggMjAgWiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
+    "ElastiCache": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMjQiLz48L3N2Zz4=",
+    "Neptune": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHBvbHlnb24gcG9pbnRzPSIzMiwwIDA6MzIgMzIsNjQgNjQsMzIiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    "DocumentDB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iNDQiIGhlaWdodD0iNDQiIGZpbGw9IndoaXRlIiByeD0iMyIvPjwvc3ZnPg==",
+    "Redshift": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKEogwvdGV4dD48L3N2Zz4=",
+    
+    # Storage Services
     "S3": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMzI4MjM3Ii8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjI0IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iNDgiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz48cmVjdCB4PSI0MCIgeT0iOCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+PC9zdmc+",
+    "EBS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMzI4MjM3Ii8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOCIgZmlsbD0iIzMyODIzNyIvPjwvc3ZnPg==",
+    "EFS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMzI4MjM3Ii8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKOswwvdGV4dD48L3N2Zz4=",
+    "Glacier": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMzI4MjM3Ii8+PHBvbHlnb24gcG9pbnRzPSIzMiw4IDE2LDMyIDMyLDMyIDI4LDU2IDM2LDU2IDMyLDMyIDQ4LDMyIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    "FSx": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMzI4MjM3Ii8+PHBhdGggZD0iTTAgMzIgTDE2IDAgTDMyIDMyIEwxNiA2NCBaIE0zMiAzMiBMMzIgMzIgTDQ4IDAgTDY0IDMyIEw0OCA2NCBaMzIgMzIiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    
+    # Networking Services
     "CloudFront": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOCIgZmlsbD0iI0ZGOTkwMCIvPjwvc3ZnPg==",
-    "EKS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiwxMiAyMCwyOCAyNCw0OCA0MCw0OCA0NCwyOCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
-    "Cognito": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iOCIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjI0IiByPSI4IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjE2IiB5PSIzNiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIgcng9IjIiLz48L3N2Zz4=",
     "VPC": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHJ4PSI0Ii8+PC9zdmc+",
     "ALB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHJlY3QgeD0iMTIiIHk9IjEyIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IndoaXRlIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMjI2MkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+QjwvdGV4dD48L3N2Zz4=",
+    "NLB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHBvbHlnb24gcG9pbnRzPSIzMiwxMiAxMiwyMCAyMCw0OCA0NCw0OCA1MiwyMCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
+    "Route53": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOCIgZmlsbD0id2hpdGUiLz48cmVjdCB4PSIyNiIgeT0iOCIgd2lkdGg9IjEyIiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC41Ii8+PHJlY3QgeD0iOCIgeT0iMjYiIHdpZHRoPSI0OCIgaGVpZ2h0PSIxMiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNSIvPjwvc3ZnPg==",
+    "DirectConnect": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHBhdGggZD0iTTggOCBMMzIgMzIgTDU2IDggTTggNTYgTDMyIDMyIEw1NiA1NiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBmaWxsPSJub25lIi8+PC9zdmc+",
+    "VPN": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHJlY3QgeD0iMTYiIHk9IjEwIiB3aWR0aD0iMzIiIGhlaWdodD0iMjQiIGZpbGw9IndoaXRlIiByeD0iMyIvPjxwb2x5Z29uIHBvaW50cz0iMzIsNDAgMTYsMzAgNDgsMzAiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    "NAT Gateway": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKEoDwvdGV4dD48L3N2Zz4=",
+    "Elastic IP": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMjI2MkZGIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTgiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    
+    # Integration Services
+    "SQS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIgcng9IjMiLz48L3N2Zz4=",
+    "SNS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIyMCIgcj0iOCIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMjAgNDAgTDIwIDU2IEw0NCA1NiBMNDQgNDAiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    "EventBridge": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiwxMiA2LDI0IDEwLDQ4IDU0LDQ4IDU4LDI0IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    "Kinesis": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBhdGggZD0iTTggMzIgUTMyIDAgNTYgMzIgUSAzMiA2NCA4IDMyIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    "AppSync": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBhdGggZD0iTTE2IDMyIEwyNCAxNiBMMzIgMzIgTDI0IDQ4IFoxNiAzMiBMMjQgMjQgTDMyIDE2IE0zMiAzMiBMNDAgMjQgTDQ4IDE2IE00MCAzMiBMMzIgNDAgTDI0IDQ4IiBmaWxsPSJ3aGl0ZSIgZmlsbC1ydWxlPSJldmVub2RkIi8+PC9zdmc+",
+    "Cognito": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iOCIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjI0IiByPSI4IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjE2IiB5PSIzNiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIgcng9IjIiLz48L3N2Zz4=",
+    
+    # Security & Monitoring
+    "CloudWatch": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48cG9seWxpbmUgcG9pbnRzPSI4LDMyIDE2LDI0IDI0LDMyIDMyLDI0IDQwLDMyIDQ4LDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+    "X-Ray": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBhdGggZD0iTTMyIDggTDUwIDI2IEw1MCA0MiBMMzIgNjAgTDE0IDQyIEwxNCAyNiBaMzIgMTYgTDQyIDI2IEw0MiA0MCBMMzIgNDggTDIyIDQwIEwyMiAyNiBaMzIgMjQgTDM4IDMwIEwzOCAzOCBMMzIgNDQgTDI2IDM4IEwyNiAzMCBaMzIgMzIgTDM2IDM2IEwzNiAzOCBMMzIgNDIgTDI4IDM4IEwyOCAzNiBaMzIgMzIiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    "CloudTrail": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKEoDwvdGV4dD48L3N2Zz4=",
+    "KMS": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHJlY3QgeD0iMTYiIHk9IjI0IiB3aWR0aD0iMzIiIGhlaWdodD0iMjQiIGZpbGw9IndoaXRlIiByeD0iMyIvPjxjaXJjbGUgY3g9IjMyIiBjeT0iMzYiIHI9IjQiIGZpbGw9IiNGRjk5MDAiLz48L3N2Zz4=",
+    "SecretsManager": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBhdGggZD0iTTIwIDI0IEMyMCAyMCAyNCAyMCAyOCAyMCBMMzYgMjAgQzQwIDIwIDQ0IDI0IDQ0IDI4IEw0NCAzNiBDNDQgNDAgNDAgNDQgMzYgNDQgTDI4IDQ0IEMyNCA0NCAyMCA0MCAyMCAzNiBaMzIgMzIgQzMwIDMyIDI4IDM0IDI4IDM2IEMyOCAzOCAzMCA0MCAzMiA0MCBDMzQgNDAgMzYgMzggMzYgMzYgQzM2IDM0IDM0IDMyIDMyIDMyIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    "IAM": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIyMCIgcj0iNiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMjAgMzAgTDQ0IDMwIEw0NCA1MCBDNDQgNTIgNDIgNTQgNDAgNTQgTDI0IDU0IEMyMiA1NCAyMCA1MiAyMCA1MCBMMjAgMzAiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+    "WAF": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBhdGggZD0iTTMyIDEwIEw0OCAyMCBMNDggNDQgTDMyIDU0IEwxNiA0NCBMMTYgMjAgWiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMzIgMjAgTDQyIDI2IEw0MiA0MCBMMzIgNDYgTDIyIDQwIEwyMiAyNiBaMzIgMjggTDM4IDMyIEwzOCAzNCBMMzIgMzggTDI2IDM0IEwyNiAzMiBaMzIgMzIiIGZpbGw9IiNGRjk5MDAiLz48L3N2Zz4=",
+    
+    # Analytics & BI
+    "Athena": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKOswwvdGV4dD48L3N2Zz4=",
+    "QuickSight": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSI4LDMyIDE2LDE2IDI0LDI4IDMyLDAgNDAsNDAgNTIsOCA2MCw0OCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
+    "Glue": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iNiIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI0NCIgY3k9IjQ0IiByPSI2IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjE4IiB5PSIyNiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjEyIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    "EMR": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iNDgiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iNDgiIHk9IjgiIHdpZHRoPSIxNiIgaGVpZ2h0PSI0OCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
+    
+    # ML Services
+    "SageMaker": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiw4IDE2LDMyIDMyLDU2IDQ4LDMyIiBmaWxsPSJ3aGl0ZSIgZmlsbC1ydWxlPSJldmVub2RkIi8+PC9zdmc+",
+    
+    # Container Services
+    "ECR": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iNDQiIGhlaWdodD0iNDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgcng9IjMiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI2IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
+    
+    # Developer Tools
+    "CodeBuild": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIyMiwxMCAzNCwxMCAzNCwxNiAyOCwyOCAyMiwyOCAyMiwxNiIgZmlsbD0id2hpdGUiLz48cmVjdCB4PSIxNiIgeT0iMzAiIHdpZHRoPSI2IiBoZWlnaHQ9IjIwIiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjI4IiB5PSIzMCIgd2lkdGg9IjYiIGhlaWdodD0iMjAiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iNDAiIHk9IjMwIiB3aWR0aD0iNiIgaGVpZ2h0PSIyMCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
+    "CodePipeline": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIxMiwzMiA4LDI0IDE2LDI0IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjE4IiB5PSIyOCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjgiIGZpbGw9IndoaXRlIi8+PHBvbHlnb24gcG9pbnRzPSI1MiwzMiA0OCwyNCA1NiwyNCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
 }
 
 SERVICE_TO_ICON = {
+    # Compute
     "api gateway": "API Gateway",
+    "api": "API Gateway",
     "lambda": "Lambda",
-    "rds": "RDS",
-    "dynamodb": "DynamoDB",
-    "s3": "S3",
-    "cloudfront": "CloudFront",
+    "ec2": "EC2",
+    "ecs": "ECS",
+    "container": "ECS",
     "eks": "EKS",
-    "cognito": "Cognito",
+    "kubernetes": "EKS",
+    "fargate": "Fargate",
+    "apprunner": "AppRunner",
+    "app runner": "AppRunner",
+    
+    # Database
+    "rds": "RDS",
+    "aurora": "Aurora",
+    "dynamodb": "DynamoDB",
+    "nosql": "DynamoDB",
+    "elasticache": "ElastiCache",
+    "redis": "ElastiCache",
+    "cache": "ElastiCache",
+    "neptune": "Neptune",
+    "documentdb": "DocumentDB",
+    "document": "DocumentDB",
+    "redshift": "Redshift",
+    "warehouse": "Redshift",
+    
+    # Storage
+    "s3": "S3",
+    "storage": "S3",
+    "bucket": "S3",
+    "ebs": "EBS",
+    "volume": "EBS",
+    "efs": "EFS",
+    "filesystem": "EFS",
+    "glacier": "Glacier",
+    "archive": "Glacier",
+    "fsx": "FSx",
+    "file": "FSx",
+    
+    # Networking
+    "cloudfront": "CloudFront",
+    "cdn": "CloudFront",
     "vpc": "VPC",
     "alb": "ALB",
+    "nlb": "NLB",
+    "load balancer": "ALB",
+    "route53": "Route53",
+    "dns": "Route53",
+    "directconnect": "DirectConnect",
+    "vpn": "VPN",
+    "nat": "NAT Gateway",
+    "nat gateway": "NAT Gateway",
+    "elastic ip": "Elastic IP",
+    "eip": "Elastic IP",
+    
+    # Integration
+    "sqs": "SQS",
+    "queue": "SQS",
+    "sns": "SNS",
+    "notification": "SNS",
+    "eventbridge": "EventBridge",
+    "events": "EventBridge",
+    "kinesis": "Kinesis",
+    "stream": "Kinesis",
+    "appsync": "AppSync",
+    "graphql": "AppSync",
+    "cognito": "Cognito",
+    "auth": "Cognito",
+    "authentication": "Cognito",
+    
+    # Security & Monitoring
+    "cloudwatch": "CloudWatch",
+    "monitoring": "CloudWatch",
+    "x-ray": "X-Ray",
+    "xray": "X-Ray",
+    "tracing": "X-Ray",
+    "cloudtrail": "CloudTrail",
+    "audit": "CloudTrail",
+    "kms": "KMS",
+    "encryption": "KMS",
+    "secretsmanager": "SecretsManager",
+    "secrets": "SecretsManager",
+    "iam": "IAM",
+    "identity": "IAM",
+    "waf": "WAF",
+    "firewall": "WAF",
+    
+    # Analytics
+    "athena": "Athena",
+    "query": "Athena",
+    "quicksight": "QuickSight",
+    "bi": "QuickSight",
+    "glue": "Glue",
+    "etl": "Glue",
+    "emr": "EMR",
+    "hadoop": "EMR",
+    
+    # ML
+    "sagemaker": "SageMaker",
+    "ml": "SageMaker",
+    
+    # Containers
+    "ecr": "ECR",
+    "registry": "ECR",
+    
+    # Developer Tools
+    "codebuild": "CodeBuild",
+    "build": "CodeBuild",
+    "codepipeline": "CodePipeline",
+    "ci/cd": "CodePipeline",
+    "pipeline": "CodePipeline",
 }
 
 
