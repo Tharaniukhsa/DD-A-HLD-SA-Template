@@ -5,14 +5,14 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="ds-users-0" value="users\ntable | PK: N/A" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="ds-raw-surveillance-files-0" value="Raw Surveillance Files\nSemi-structured | PK: On-Prem Business App" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="30" y="30" width="220" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="ds-sessions-1" value="sessions\ntable | PK: N/A" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="ds-validation-error-log-1" value="Validation Error Log\nStructured | PK: Validation Processor" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="290" y="30" width="220" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="ds-edge-0" value="One-to-Many\n[user_id = user_id]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ds-users-0" target="ds-sessions-1" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="ds-curated-surveillance-records-2" value="Curated Surveillance Records\nStructured | PK: Validation Processor" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="550" y="30" width="220" height="70" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

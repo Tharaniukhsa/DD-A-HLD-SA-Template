@@ -9,11 +9,16 @@ This version produces diagrams matching AWS official architecture documentation 
 
 import xml.etree.ElementTree as ET
 import re
+import base64
+from urllib.parse import quote
 
 
 # AWS Service Icon Data (Base64 encoded minimal SVGs)
 # Comprehensive AWS service icons for complete LLD diagrams
 AWS_SERVICE_ICONS = {
+    # Generic fallback icon for non-mapped technologies
+    "Generic": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjNjc3RTlFIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjkiLz48dGV4dCB4PSIzMiIgeT0iMzMiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM2NzdFOUUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj4/PC90ZXh0Pjwvc3ZnPg==",
+
     # Compute Services
     "API Gateway": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHRleHQgeD0iMzIiIHk9IjMyIiBmb250LXNpemU9IjIwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFQSTwvdGV4dD48L3N2Zz4=",
     "Lambda": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkY5OTAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMiw4IDE2LDMyIDMyLDMyIDIwLDY0IDQ4LDQ4IDM2LDQ4IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==",
@@ -85,6 +90,14 @@ AWS_SERVICE_ICONS = {
 }
 
 SERVICE_TO_ICON = {
+    # Common generic/non-AWS descriptors
+    "on-prem": "Generic",
+    "on prem": "Generic",
+    "onprem": "Generic",
+    "server": "EC2",
+    "sftp": "FSx",
+    "database": "RDS",
+
     # Compute
     "api gateway": "API Gateway",
     "api": "API Gateway",
@@ -206,7 +219,24 @@ def get_icon_url(service_name: str) -> str | None:
     for key, icon_name in SERVICE_TO_ICON.items():
         if key in name_lower:
             return AWS_SERVICE_ICONS.get(icon_name)
-    return None
+    return AWS_SERVICE_ICONS.get("Generic")
+
+
+def _escape_style_value(value: str) -> str:
+    """Escape style-delimiter characters for draw.io style values."""
+    # draw.io style uses ';' as a key/value delimiter, so data URIs must escape it.
+    return value.replace(";", "%3B")
+
+
+def _to_drawio_image_uri(icon_uri: str) -> str:
+    """Return a draw.io-safe image URI that avoids style delimiter issues."""
+    prefix = "data:image/svg+xml;base64,"
+    if icon_uri.startswith(prefix):
+        encoded_svg = icon_uri[len(prefix):]
+        svg_text = base64.b64decode(encoded_svg).decode("utf-8")
+        # Use URL-encoded SVG payload to avoid ';base64' in style strings.
+        return f"data:image/svg+xml,{quote(svg_text, safe='')}"
+    return icon_uri
 
 
 def generate_aws_architecture_with_real_icons(components: list[dict], connections: list[dict]) -> str:
@@ -356,7 +386,8 @@ def generate_aws_architecture_with_real_icons(components: list[dict], connection
             icon_url = get_icon_url(tech)
             icon_style = "shape=mxgraph.basic.image;"
             if icon_url:
-                icon_style = f"shape=image;image={icon_url};"
+                drawio_icon_uri = _to_drawio_image_uri(icon_url)
+                icon_style = f"shape=image;image={drawio_icon_uri};imageAspect=0;aspect=fixed;"
             icon = ET.SubElement(root, "mxCell", {
                 "id": icon_id,
                 "value": "",

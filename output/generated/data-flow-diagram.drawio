@@ -5,25 +5,37 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="n-web-portal-0" value="Web Portal" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="n-on-prem-business-app-0" value="On-Prem Business App" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="40" y="120" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="n-api-gateway-1" value="API Gateway" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="n-on-prem-sftp-server-1" value="On-Prem SFTP Server" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="240" y="120" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="df-e-0" value="JSON&#10;[HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-web-portal-0" target="n-api-gateway-1" edge="1">
+        <mxCell id="df-e-0" value="Daily surveillance extract&#10;[CSV]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-on-prem-business-app-0" target="n-on-prem-sftp-server-1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="n-auth-service-2" value="Auth Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="n-aws-transfer-endpoint-2" value="AWS Transfer Endpoint" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="440" y="120" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="df-e-1" value="JSON&#10;[gRPC]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-api-gateway-1" target="n-auth-service-2" edge="1">
+        <mxCell id="df-e-1" value="Uploaded extract file&#10;[CSV]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-on-prem-sftp-server-1" target="n-aws-transfer-endpoint-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="n-user-db-3" value="User DB" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="n-raw-landing-bucket-3" value="Raw Landing Bucket" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="640" y="120" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="df-e-2" value="SQL Query&#10;[TCP/IP]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-auth-service-2" target="n-user-db-3" edge="1">
+        <mxCell id="df-e-2" value="Raw intake object&#10;[CSV]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-aws-transfer-endpoint-2" target="n-raw-landing-bucket-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-validation-processor-4" value="Validation Processor" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="840" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-3" value="Validation event with file path&#10;[JSON event]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-raw-landing-bucket-3" target="n-validation-processor-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-curated-database-5" value="Curated Database" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="120" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="df-e-4" value="Validated records&#10;[Tabular rows]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-validation-processor-4" target="n-curated-database-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
