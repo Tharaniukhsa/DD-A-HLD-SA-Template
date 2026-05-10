@@ -5,47 +5,14 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="ds-patient-demographics-0" value="Patient Demographics\nRelational | PK: patient_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="ds-raw-surveillance-files-0" value="Raw Surveillance Files\nSemi-structured | PK: On-Prem Business App" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="30" y="30" width="220" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="ds-medical-history-1" value="Medical History\nRelational | PK: record_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="ds-validation-error-log-1" value="Validation Error Log\nStructured | PK: Validation Processor" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="290" y="30" width="220" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="ds-prescriptions-2" value="Prescriptions\nRelational | PK: prescription_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="ds-curated-surveillance-records-2" value="Curated Surveillance Records\nStructured | PK: Validation Processor" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="550" y="30" width="220" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-lab-results-3" value="Lab Results\nRelational | PK: result_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="30" y="140" width="220" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-appointments-4" value="Appointments\nRelational | PK: appointment_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="290" y="140" width="220" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-audit-trail-5" value="Audit Trail\nRelational | PK: audit_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="550" y="140" width="220" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-user-activity-logs-6" value="User Activity Logs\nUnstructured | PK: log_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="30" y="250" width="220" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-historical-analytics-7" value="Historical Analytics\nParquet | PK: record_id" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="290" y="250" width="220" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-edge-0" value="1:N\n[patient_id -&gt; patient_id]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ds-patient-demographics-0" target="ds-medical-history-1" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-edge-1" value="1:N\n[patient_id -&gt; patient_id]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ds-patient-demographics-0" target="ds-prescriptions-2" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-edge-2" value="1:N\n[patient_id -&gt; patient_id]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ds-patient-demographics-0" target="ds-appointments-4" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-edge-3" value="1:N\n[record_id -&gt; related_record_id]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ds-medical-history-1" target="ds-lab-results-3" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-edge-4" value="N:M\n[prescription_id &lt;-&gt; lab_test_id]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ds-prescriptions-2" target="ds-lab-results-3" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ds-edge-5" value="1:N\n[patient_id -&gt; patient_id]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="ds-patient-demographics-0" target="ds-historical-analytics-7" edge="1">
-          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

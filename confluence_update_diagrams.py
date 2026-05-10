@@ -36,6 +36,18 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests_negotiate_sspi import HttpNegotiateAuth
 
+# Import AWS architecture diagram generator with real icons
+try:
+    from aws_architecture_diagram_generator import (
+        generate_aws_architecture_with_real_icons,
+        generate_detailed_network_diagram,
+        generate_authentication_flow_diagram,
+        generate_network_segregation_diagram,
+    )
+    AWS_DIAGRAMS_AVAILABLE = True
+except ImportError:
+    AWS_DIAGRAMS_AVAILABLE = False
+
 load_dotenv()
 
 
@@ -221,6 +233,94 @@ def load_local_drawio(filename: str) -> str | None:
         return None
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
+
+
+def _diagrams_synced_path() -> str:
+    """Path to the synced Architecture Diagrams page template."""
+    return "architecture_diagrams_page.synced.html"
+
+
+def save_diagrams_synced_template(body_html: str) -> None:
+    """Save the current Architecture Diagrams page body for future reuse.
+    
+    This preserves manual edits from Confluence by caching the page structure,
+    so we can update only the diagram macros without overwriting user changes.
+    """
+    synced_path = _diagrams_synced_path()
+    with open(synced_path, "w", encoding="utf-8") as f:
+        f.write(body_html)
+    print(f"  Synced template saved: {synced_path}")
+
+
+def load_diagrams_synced_template() -> str | None:
+    """Load the synced Architecture Diagrams page template if available.
+    
+    Returns cached page structure from previous run to preserve manual edits.
+    """
+    synced_path = _diagrams_synced_path()
+    if not os.path.exists(synced_path):
+        return None
+    with open(synced_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def build_default_diagrams_template() -> str:
+    """Return a clean, canonical Architecture Diagrams page template."""
+    return """<h1>Architecture Diagrams</h1>
+
+<p><em>Auto-generated diagrams from the Solution Architecture design tables. All diagrams are editable in draw.io.</em></p>
+
+<hr/>
+
+<h2>How to Generate Diagrams</h2>
+<ol>
+<li>Complete the architecture tables in the main <strong>Solution Architecture</strong> page (Sections 10-13)</li>
+<li>Run the diagram generation script: <code>./.venv/Scripts/python.exe ./confluence_update_diagrams.py</code></li>
+<li>All diagrams will be auto-generated and embedded below</li>
+</ol>
+
+<hr/>
+
+<h2>1. Context View Diagram</h2>
+<p><strong>[[DIAGRAM:context-view]]</strong></p>
+
+<h2>2. Logical View Diagram</h2>
+<p><strong>[[DIAGRAM:logical-view]]</strong></p>
+
+<h2>3. Solution Architecture Diagram</h2>
+<p><strong>[[DIAGRAM:solution-architecture]]</strong></p>
+
+<h2>4. Data Flow Diagram (DFD)</h2>
+<p><strong>[[DIAGRAM:data-flow]]</strong></p>
+
+<h2>5. Dataset Relationship Diagram (ERD)</h2>
+<p><strong>[[DIAGRAM:data-relationship]]</strong></p>
+
+<h2>6. Authentication Flow Diagram</h2>
+<p><strong>[[DIAGRAM:authentication-flow]]</strong></p>
+
+<h2>7. Network Segregation Diagram</h2>
+<p><strong>[[DIAGRAM:network-segregation]]</strong></p>
+
+<hr/>
+
+<h2>Local Diagram Files</h2>
+<p><strong>Location:</strong> <code>output/generated/</code></p>
+"""
+
+
+def is_valid_diagrams_template(html: str) -> bool:
+    """Validate that required diagram placeholders still exist in the template."""
+    required_tokens = [
+        "[[DIAGRAM:context-view]]",
+        "[[DIAGRAM:logical-view]]",
+        "[[DIAGRAM:solution-architecture]]",
+        "[[DIAGRAM:data-flow]]",
+        "[[DIAGRAM:data-relationship]]",
+        "[[DIAGRAM:authentication-flow]]",
+        "[[DIAGRAM:network-segregation]]",
+    ]
+    return all(token in html for token in required_tokens)
 
 
 def update_page_body(session: requests.Session, base_url: str, page_id: str,
@@ -753,6 +853,9 @@ _DRAWIO_MACRO = (
     '<ac:parameter ac:name="border">true</ac:parameter>'
     '<ac:parameter ac:name="viewerToolbar">true</ac:parameter>'
     '<ac:parameter ac:name="simpleViewer">false</ac:parameter>'
+    '<ac:parameter ac:name="width">100%</ac:parameter>'
+    '<ac:parameter ac:name="height">1280</ac:parameter>'
+    '<ac:parameter ac:name="zoom">125</ac:parameter>'
     '<ac:parameter ac:name="editable">true</ac:parameter>'
     '<ac:parameter ac:name="diagramDisplayName">{display_name}</ac:parameter>'
     '<ac:parameter ac:name="diagramName">{filename}</ac:parameter>'
@@ -766,17 +869,70 @@ def replace_placeholder(html: str, diagram_key: str,
     macro = _DRAWIO_MACRO.format(
         display_name=display_name, filename=filename, page_id=page_id
     )
-    # Match <p ...><strong ...>[[DIAGRAM:key]]</strong></p> in any whitespace variant
-    pattern = re.compile(
-        r"<p[^>]*>\s*<strong[^>]*>\[\[DIAGRAM:"
-        + re.escape(diagram_key)
-        + r"\]\]</strong>\s*</p>",
+
+    # Tolerant placeholder token matcher:
+    # [[DIAGRAM:context-view]], [[ DIAGRAM : context-view ]], mixed case, etc.
+    token_pattern = re.compile(
+        r"\[\[\s*diagram\s*:\s*" + re.escape(diagram_key) + r"\s*\]\]",
         re.IGNORECASE,
     )
-    new_html, count = pattern.subn(macro, html)
-    if count == 0:
-        # Fallback: plain text replacement
-        new_html = html.replace(f"[[DIAGRAM:{diagram_key}]]", macro)
+
+    # First, replace wrapped paragraph variants if present.
+    wrapped_pattern = re.compile(
+        r"<p[^>]*>\s*(?:<strong[^>]*>\s*)?"
+        + token_pattern.pattern
+        + r"(?:\s*</strong>)?\s*</p>",
+        re.IGNORECASE,
+    )
+    new_html, wrapped_count = wrapped_pattern.subn(macro, html)
+
+    # Then, replace any remaining plain token occurrences anywhere in storage HTML.
+    new_html, token_count = token_pattern.subn(macro, new_html)
+
+    if wrapped_count > 0 or token_count > 0:
+        return new_html
+
+    # Fallback 1: update an existing draw.io macro that already points to this filename.
+    existing_macro_pattern = re.compile(
+        r'<ac:structured-macro[^>]*ac:name="drawio"[^>]*>.*?'
+        r'<ac:parameter\s+ac:name="diagramName">\s*'
+        + re.escape(filename)
+        + r'\s*</ac:parameter>.*?</ac:structured-macro>',
+        re.IGNORECASE | re.DOTALL,
+    )
+    new_html, existing_count = existing_macro_pattern.subn(macro, new_html, count=1)
+    if existing_count > 0:
+        return new_html
+
+    # Fallback 2: insert macro under matching section heading (flexible heading matching).
+    # Try exact display name match first
+    heading_pattern = re.compile(
+        r'(<h[23][^>]*>[^<]*' + re.escape(display_name) + r'[^<]*</h[23]>)',
+        re.IGNORECASE,
+    )
+    if heading_pattern.search(new_html):
+        new_html = heading_pattern.sub(r'\1\n<p>' + macro + r'</p>', new_html, count=1)
+        return new_html
+
+    # Fallback 3: Try fuzzy heading match (match diagram name keywords in heading)
+    diagram_words = diagram_key.replace('-', ' ').split()
+    if diagram_words:
+        first_word = diagram_words[0]
+        fuzzy_pattern = re.compile(
+            r'(<h[23][^>]*>[^<]*' + re.escape(first_word.title()) + r'[^<]*</h[23]>)',
+            re.IGNORECASE,
+        )
+        if fuzzy_pattern.search(new_html):
+            new_html = fuzzy_pattern.sub(r'\1\n<p>' + macro + r'</p>', new_html, count=1)
+            return new_html
+
+    # Fallback 4: If no heading found, add macro before "Local Diagram Files" or at the end
+    insert_before_pattern = re.compile(r'(<h2[^>]*>Local Diagram Files</h2>)', re.IGNORECASE)
+    if insert_before_pattern.search(new_html):
+        new_html = insert_before_pattern.sub(r'<p>' + macro + r'</p>\n\1', new_html, count=1)
+        return new_html
+
+    print(f"  Warning: could not place diagram macro for '{diagram_key}' - will attempt to update on next run.")
     return new_html
 
 
@@ -814,6 +970,15 @@ def main() -> None:
     target_page_title = target_page["title"]
     target_body_html = target_page["body"]["storage"]["value"]
 
+    # ── Load synced template to preserve manual edits (if available)
+    synced_html = load_diagrams_synced_template()
+    if synced_html and is_valid_diagrams_template(synced_html):
+        print("\n  Using synced Architecture Diagrams template (preserves your manual edits)")
+        target_body_html = synced_html
+    else:
+        print("\n  Synced template missing or malformed; rebuilding a clean diagrams layout")
+        target_body_html = build_default_diagrams_template()
+
     print(f"\nSource: '{source_page['title']}'  (ID: {source_page_id})")
     print(f"Target: '{target_page_title}'  (ID: {target_page_id}, version: {version_number})")
 
@@ -839,10 +1004,15 @@ def main() -> None:
 
     updated_html = target_body_html
 
-    # ── Solution Architecture diagram
+    # ── Solution Architecture diagram (with AWS icons if available)
     if components:
         print("\nGenerating Solution Architecture diagram...")
-        arch_xml = generate_architecture_drawio(components, connections)
+        if AWS_DIAGRAMS_AVAILABLE:
+            arch_xml = generate_aws_architecture_with_real_icons(components, connections)
+            print("  ✓ Using AWS-enhanced architecture diagram with service icons")
+        else:
+            arch_xml = generate_architecture_drawio(components, connections)
+            print("  ⚠ Enhanced diagrams not available, using basic diagram")
         save_local_drawio("solution-architecture.drawio", arch_xml)
         upload_attachment(session, base_url, target_page_id,
                           "solution-architecture.drawio", arch_xml)
@@ -961,9 +1131,46 @@ def main() -> None:
                 target_page_id,
             )
 
+    # ── ENHANCED DIAGRAMS: Authentication Flow, Network Segregation, AWS Architecture Details
+    if AWS_DIAGRAMS_AVAILABLE:
+        print("\n" + "="*70)
+        print("ENHANCED DIAGRAMS: Authentication Flows & Network Architecture")
+        print("="*70)
+        
+        # Authentication Flow Diagram
+        print("\nGenerating Authentication Flow Diagram...")
+        print("  Showing: User → WebApp → API → Cognito → Service → Database")
+        print("  Steps: OAuth2 token exchange, validation, and secure data access")
+        auth_xml = generate_authentication_flow_diagram()
+        save_local_drawio("authentication-flow-diagram.drawio", auth_xml)
+        upload_attachment(session, base_url, target_page_id,
+                          "authentication-flow-diagram.drawio", auth_xml)
+        updated_html = replace_placeholder(
+            updated_html, "authentication-flow",
+            "authentication-flow-diagram.drawio", "Authentication Flow", target_page_id,
+        )
+        
+        # Network Segregation Diagram
+        print("\nGenerating Network Segregation Diagram...")
+        print("  Showing: VPC → Subnets → Security Groups → Service routing")
+        print("  Segments: Internet → IGW → Public/Private/Data subnets with SGs")
+        net_xml = generate_network_segregation_diagram()
+        save_local_drawio("network-segregation-diagram.drawio", net_xml)
+        upload_attachment(session, base_url, target_page_id,
+                          "network-segregation-diagram.drawio", net_xml)
+        updated_html = replace_placeholder(
+            updated_html, "network-segregation",
+            "network-segregation-diagram.drawio", "Network Segregation", target_page_id,
+        )
+        print("\nEnhanced diagrams generated successfully!")
+
     # ── Write the page back
     print("\nUpdating Confluence page with embedded diagrams...")
     update_page_body(session, base_url, target_page_id, version_number, target_page_title, updated_html)
+    
+    # ── Save synced template to preserve manual edits on future runs
+    save_diagrams_synced_template(updated_html)
+    
     print("\nDone! Diagrams are embedded on the target page and remain editable via draw.io on Confluence and from local .drawio files in output/generated.")
 
 

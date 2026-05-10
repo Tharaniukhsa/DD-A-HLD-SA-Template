@@ -1,114 +1,174 @@
 <?xml version='1.0' encoding='utf-8'?>
-<mxfile>
-  <diagram name="Solution Architecture">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+<mxfile host="Confluence" modified="" agent="" version="1.0" type="device">
+  <diagram id="AWS_Architecture" name="AWS Architecture">
+    <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1980" pageHeight="1300" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="lbl-edge" value="Edge" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="20" width="100" height="50" as="geometry" />
+        <mxCell id="lane-edge" value="" style="rounded=1;fillColor=#FFE8CC;strokeColor=#B9C2CF;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="30" y="30" width="1920" height="214" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-network" value="Network" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="100" width="100" height="50" as="geometry" />
+        <mxCell id="lane-title-edge" value="Edge" style="rounded=1;fillColor=#FFFFFF;strokeColor=#9AA5B1;strokeWidth=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="48" width="120" height="42" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-platform" value="Platform" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="180" width="100" height="50" as="geometry" />
+        <mxCell id="c-on-prem-business-app" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="212" y="50" width="220" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-application" value="Application" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="260" width="100" height="50" as="geometry" />
+        <mxCell id="c-on-prem-business-app-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23677E9E%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220%22%20fill%3D%22white%22%20opacity%3D%220.9%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2233%22%20font-size%3D%2220%22%20fill%3D%22%23677E9E%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3E%3F%3C%2Ftext%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="274" y="58" width="96" height="96" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-data" value="Data" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="340" width="100" height="50" as="geometry" />
+        <mxCell id="c-on-prem-business-app-text" value="On-Prem Business App&#10;(On-Prem Server)&#10;On prem" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="220" y="158" width="204" height="58" as="geometry" />
         </mxCell>
-        <mxCell id="c-healthcare-portal" value="Healthcare Portal&#10;(React.js, TypeScript)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="20" width="160" height="50" as="geometry" />
+        <mxCell id="c-on-prem-sftp-server" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="466" y="50" width="220" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="c-mobile-health-app" value="Mobile Health App&#10;(React Native)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="20" width="160" height="50" as="geometry" />
+        <mxCell id="c-on-prem-sftp-server-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23328237%22%2F%3E%3Cpath%20d%3D%22M0%2032%20L16%200%20L32%2032%20L16%2064%20Z%20M32%2032%20L32%2032%20L48%200%20L64%2032%20L48%2064%20Z32%2032%22%20fill%3D%22white%22%2F%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="528" y="58" width="96" height="96" as="geometry" />
         </mxCell>
-        <mxCell id="c-aws-cloudfront-cdn" value="AWS CloudFront CDN&#10;(CloudFront)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="20" width="160" height="50" as="geometry" />
+        <mxCell id="c-on-prem-sftp-server-text" value="On-Prem SFTP Server&#10;(SFTP)&#10;On prem" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="474" y="158" width="204" height="58" as="geometry" />
         </mxCell>
-        <mxCell id="c-api-gateway" value="API Gateway&#10;(API Gateway)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="100" width="160" height="50" as="geometry" />
+        <mxCell id="lane-network" value="" style="rounded=1;fillColor=#DDEBFF;strokeColor=#B9C2CF;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="30" y="268" width="1920" height="214" as="geometry" />
         </mxCell>
-        <mxCell id="c-web-application-firewall" value="Web Application Firewall&#10;(AWS WAF)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="100" width="160" height="50" as="geometry" />
+        <mxCell id="lane-title-network" value="Network" style="rounded=1;fillColor=#FFFFFF;strokeColor=#9AA5B1;strokeWidth=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="286" width="120" height="42" as="geometry" />
         </mxCell>
-        <mxCell id="c-network-load-balancer" value="Network Load Balancer&#10;(NLB)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="100" width="160" height="50" as="geometry" />
+        <mxCell id="c-private-connectivity" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="212" y="288" width="220" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="c-identity-service" value="Identity Service&#10;(Entra ID (Azure AD))" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c-private-connectivity-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%232262FF%22%2F%3E%3Crect%20x%3D%2216%22%20y%3D%2210%22%20width%3D%2232%22%20height%3D%2224%22%20fill%3D%22white%22%20rx%3D%223%22%2F%3E%3Cpolygon%20points%3D%2232%2C40%2016%2C30%2048%2C30%22%20fill%3D%22white%22%2F%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="274" y="296" width="96" height="96" as="geometry" />
         </mxCell>
-        <mxCell id="c-encryption-service" value="Encryption Service&#10;(AWS KMS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c-private-connectivity-text" value="Private Connectivity&#10;(VPN)&#10;Both" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="220" y="396" width="204" height="58" as="geometry" />
         </mxCell>
-        <mxCell id="c-audit-logging-service" value="Audit Logging Service&#10;(CloudWatch Logs)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c-aws-transfer-endpoint" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="466" y="288" width="220" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="c-records-api-service" value="Records API Service&#10;(Python FastAPI)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="260" width="160" height="50" as="geometry" />
+        <mxCell id="c-aws-transfer-endpoint-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23677E9E%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220%22%20fill%3D%22white%22%20opacity%3D%220.9%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2233%22%20font-size%3D%2220%22%20fill%3D%22%23677E9E%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3E%3F%3C%2Ftext%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="528" y="296" width="96" height="96" as="geometry" />
         </mxCell>
-        <mxCell id="c-search-service" value="Search Service&#10;(Elasticsearch)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="260" width="160" height="50" as="geometry" />
+        <mxCell id="c-aws-transfer-endpoint-text" value="AWS Transfer Endpoint&#10;(Transfer Family)&#10;AWS" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="474" y="396" width="204" height="58" as="geometry" />
         </mxCell>
-        <mxCell id="c-notification-service" value="Notification Service&#10;(SNS + Lambda)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="260" width="160" height="50" as="geometry" />
+        <mxCell id="lane-platform" value="" style="rounded=1;fillColor=#E7F5E7;strokeColor=#B9C2CF;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="30" y="506" width="1920" height="214" as="geometry" />
         </mxCell>
-        <mxCell id="c-patient-records-database" value="Patient Records Database&#10;(RDS Aurora (PostgreSQL))" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="340" width="160" height="50" as="geometry" />
+        <mxCell id="lane-title-platform" value="Platform" style="rounded=1;fillColor=#FFFFFF;strokeColor=#9AA5B1;strokeWidth=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="524" width="120" height="42" as="geometry" />
         </mxCell>
-        <mxCell id="c-data-lake" value="Data Lake&#10;(S3 + Glue)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="340" width="160" height="50" as="geometry" />
+        <mxCell id="c-processing-queue" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="212" y="526" width="220" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="c-search-index" value="Search Index&#10;(Elasticsearch Index)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="340" width="160" height="50" as="geometry" />
+        <mxCell id="c-processing-queue-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23FF9900%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%2248%22%20height%3D%2248%22%20fill%3D%22white%22%20rx%3D%223%22%2F%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="274" y="534" width="96" height="96" as="geometry" />
         </mxCell>
-        <mxCell id="e-1" value="REST API Calls (HTTPS)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-healthcare-portal" target="c-api-gateway" edge="1">
+        <mxCell id="c-processing-queue-text" value="Processing Queue&#10;(SQS)&#10;AWS" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="220" y="634" width="204" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="c-monitoring-and-alerts" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="466" y="526" width="220" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c-monitoring-and-alerts-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23FF9900%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%2248%22%20height%3D%2248%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%2F%3E%3Cpolyline%20points%3D%228%2C32%2016%2C24%2024%2C32%2032%2C24%2040%2C32%2048%2C24%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="528" y="534" width="96" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="c-monitoring-and-alerts-text" value="Monitoring and Alerts&#10;(CloudWatch)&#10;AWS" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="474" y="634" width="204" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-application" value="" style="rounded=1;fillColor=#E8F1FF;strokeColor=#B9C2CF;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="30" y="744" width="1920" height="214" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-title-application" value="Application" style="rounded=1;fillColor=#FFFFFF;strokeColor=#9AA5B1;strokeWidth=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="762" width="120" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="c-validation-processor" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="212" y="764" width="220" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c-validation-processor-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23FF9900%22%2F%3E%3Cpolygon%20points%3D%2232%2C8%2016%2C32%2032%2C32%2020%2C64%2048%2C48%2036%2C48%22%20fill%3D%22white%22%2F%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="274" y="772" width="96" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="c-validation-processor-text" value="Validation Processor&#10;(Lambda)&#10;AWS" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="220" y="872" width="204" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-data" value="" style="rounded=1;fillColor=#FFF4D6;strokeColor=#B9C2CF;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="30" y="982" width="1920" height="214" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-title-data" value="Data" style="rounded=1;fillColor=#FFFFFF;strokeColor=#9AA5B1;strokeWidth=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1000" width="120" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="c-raw-landing-bucket" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="212" y="1002" width="220" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c-raw-landing-bucket-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23328237%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%2216%22%20height%3D%2248%22%20fill%3D%22white%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%228%22%20width%3D%2216%22%20height%3D%2248%22%20fill%3D%22white%22%20opacity%3D%220.8%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%228%22%20width%3D%2216%22%20height%3D%2248%22%20fill%3D%22white%22%20opacity%3D%220.6%22%2F%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="274" y="1010" width="96" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="c-raw-landing-bucket-text" value="Raw Landing Bucket&#10;(S3)&#10;AWS" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="220" y="1110" width="204" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="c-curated-database" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7B8794;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="466" y="1002" width="220" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c-curated-database-icon" value="" style="shape=image;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%232262FF%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2220%22%20r%3D%228%22%20fill%3D%22white%22%20opacity%3D%220.7%22%2F%3E%3Crect%20x%3D%2212%22%20y%3D%2228%22%20width%3D%2240%22%20height%3D%2224%22%20fill%3D%22white%22%20rx%3D%222%22%2F%3E%3C%2Fsvg%3E;imageAspect=0;aspect=fixed;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="528" y="1010" width="96" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="c-curated-database-text" value="Curated Database&#10;(RDS)&#10;AWS" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=11;spacingTop=2;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="474" y="1110" width="204" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="e-0" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-on-prem-business-app" target="c-on-prem-sftp-server" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-2" value="REST API Calls (HTTPS)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-mobile-health-app" target="c-api-gateway" edge="1">
+        <mxCell id="e-1" value="2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-on-prem-sftp-server" target="c-aws-transfer-endpoint" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-3" value="Request Routing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-api-gateway" target="c-web-application-firewall" edge="1">
+        <mxCell id="e-2" value="3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-aws-transfer-endpoint" target="c-raw-landing-bucket" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-4" value="Filtered Traffic" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-web-application-firewall" target="c-network-load-balancer" edge="1">
+        <mxCell id="e-3" value="4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-raw-landing-bucket" target="c-validation-processor" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-5" value="HTTP Internal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-network-load-balancer" target="c-records-api-service" edge="1">
+        <mxCell id="e-4" value="5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-validation-processor" target="c-processing-queue" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-6" value="HTTP Internal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-network-load-balancer" target="c-search-service" edge="1">
+        <mxCell id="e-5" value="6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-validation-processor" target="c-curated-database" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-7" value="User Authentication" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-identity-service" edge="1">
+        <mxCell id="e-6" value="7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-monitoring-and-alerts" target="c-validation-processor" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-8" value="Encrypt/Decrypt Data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-encryption-service" edge="1">
+        <mxCell id="e-7" value="8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=11;fontStyle=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="c-monitoring-and-alerts" target="c-processing-queue" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-9" value="Read/Write Records" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-patient-records-database" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="legend-bg" value="" style="rounded=1;fillColor=#FFFEF0;strokeColor=#9AA5B1;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1660" y="70" width="300" height="222" as="geometry" />
         </mxCell>
-        <mxCell id="e-10" value="Log Operations" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-audit-logging-service" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="legend-title" value="Data Flow Steps" style="text;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="76" width="280" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="e-11" value="Trigger Alerts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-records-api-service" target="c-notification-service" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="legend-item-1" value="1. Daily file export" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="98" width="280" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="e-12" value="Query Index Data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-search-service" target="c-search-index" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="legend-item-2" value="2. Secure file transfer" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="120" width="280" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="e-13" value="Push Notifications" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-notification-service" target="c-healthcare-portal" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="legend-item-3" value="3. Store uploaded file" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="142" width="280" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="e-14" value="Nightly ETL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-patient-records-database" target="c-data-lake" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="legend-item-4" value="4. Object-created trigger" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="164" width="280" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="e-15" value="Analytics Feed" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-data-lake" target="c-search-index" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="legend-item-5" value="5. Publish process event" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="186" width="280" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-item-6" value="6. Insert validated records" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="208" width="280" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-item-7" value="7. Error and duration metrics" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="230" width="280" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-item-8" value="8. Queue depth monitoring" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=10;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="252" width="280" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

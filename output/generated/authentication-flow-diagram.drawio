@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="Confluence" type="device" version="1.0">
+  <diagram name="Authentication Flow">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="user" value="User&#10;(Customer)" style="rounded=1;fillColor=#FF9900;strokeColor=#000;strokeWidth=2;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="350" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="webapp" value="Web App&#10;(Frontend)" style="rounded=1;fillColor=#4B9BFF;strokeColor=#000;strokeWidth=2;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="200" y="350" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="API Gateway&#10;(Backend API)" style="rounded=1;fillColor=#FF9900;strokeColor=#000;strokeWidth=2;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="350" y="350" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cognito" value="AWS Cognito&#10;(Authentication)" style="rounded=1;fillColor=#FF9900;strokeColor=#000;strokeWidth=2;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="500" y="350" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="service" value="Service&#10;(Application)" style="rounded=1;fillColor=#4B9BFF;strokeColor=#000;strokeWidth=2;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="650" y="350" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="Database&#10;(Data Store)" style="rounded=1;fillColor=#2262FF;strokeColor=#000;strokeWidth=2;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="800" y="350" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-0" value="1. Login Request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="user" target="webapp" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-1" value="2. Forward to API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="webapp" target="api" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-2" value="3. OAuth2 Request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="api" target="cognito" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-3" value="4. Token Issued" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="cognito" target="api" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-4" value="5. Token Returned" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="api" target="webapp" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-5" value="6. Session Started" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="webapp" target="user" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-6" value="7. API Call + Token" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="webapp" target="service" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-7" value="8. Query with Auth" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;fontStyle=1;" parent="1" source="service" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

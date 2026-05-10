@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="Confluence" type="device" version="1.0">
+  <diagram name="Network Architecture">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="vpc" value="AWS VPC (10.0.0.0/16)" style="rounded=0;fillColor=#E8F4F8;strokeColor=#146EB4;strokeWidth=3;dashed=1;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="20" y="50" width="1560" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="pub-subnet" value="Public Subnet (10.0.1.0/24)" style="rounded=0;fillColor=#D4E8F7;strokeColor=#0A4C8C;strokeWidth=2;dashed=1;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="50" y="80" width="450" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="priv-subnet" value="Private Subnet (10.0.2.0/24)" style="rounded=0;fillColor=#D4E8F7;strokeColor=#0A4C8C;strokeWidth=2;dashed=1;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="600" y="80" width="450" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="data-subnet" value="Data Subnet (10.0.3.0/24)" style="rounded=0;fillColor=#D4E8F7;strokeColor=#0A4C8C;strokeWidth=2;dashed=1;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1150" y="80" width="400" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="igw" value="Internet&#10;Gateway" style="rounded=1;fillColor=#FF9900;strokeColor=#000;strokeWidth=2;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="325" y="20" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-pub" value="SG: HTTP(80), HTTPS(443)" style="rounded=0;fillColor=none;strokeColor=#FF6600;strokeWidth=2;dashed=1;fontSize=9;" parent="1" vertex="1">
+          <mxGeometry x="60" y="100" width="430" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-priv" value="SG: Internal Only" style="rounded=0;fillColor=none;strokeColor=#FF6600;strokeWidth=2;dashed=1;fontSize=9;" parent="1" vertex="1">
+          <mxGeometry x="610" y="100" width="430" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-data" value="SG: DB Ports (3306, 5432, 6379)" style="rounded=0;fillColor=none;strokeColor=#FF6600;strokeWidth=2;dashed=1;fontSize=9;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="100" width="380" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="alb" value="ALB" style="rounded=1;fillColor=#FF9900;strokeColor=#000;strokeWidth=2;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="100" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="app" value="EKS" style="rounded=1;fillColor=#4B9BFF;strokeColor=#000;strokeWidth=2;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="650" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db-rds" value="RDS Aurora" style="rounded=1;fillColor=#2262FF;strokeColor=#000;strokeWidth=2;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-0" value="Route to ALB" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;" parent="1" source="igw" target="alb" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-1" value="Forward to EKS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;" parent="1" source="alb" target="app" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-2" value="Query DB" style="edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=9;" parent="1" source="app" target="db-rds" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="Legend:&#10;🟠 Orange = AWS Service&#10;🔵 Blue = Compute/Storage&#10;📊 Dashed = Security Boundary&#10;─ Solid = Data Flow" style="fontSize=10;fillColor=none;strokeColor=none;align=left;" parent="1" vertex="1">
+          <mxGeometry x="50" y="350" width="400" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

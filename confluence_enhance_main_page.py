@@ -2,6 +2,7 @@ import html
 import json
 import os
 import sys
+import re
 from io import BytesIO
 
 import certifi
@@ -135,7 +136,8 @@ def upload_attachment(session: requests.Session, base_url: str, page_id: str, fi
 
     # Prepare file upload
     file_bytes = content if isinstance(content, bytes) else content.encode("utf-8")
-      def _make_files_payload():
+
+    def _make_files_payload():
         return {"file": (filename, BytesIO(file_bytes), "application/octet-stream")}
 
     # Use direct session for file uploads (auth fallback handled via headers)
@@ -151,9 +153,9 @@ def upload_attachment(session: requests.Session, base_url: str, page_id: str, fi
         try:
             if existing:
                 att_id = existing[0]["id"]
-            resp = temp_session.post(f"{url}/{att_id}/data", files=_make_files_payload(), verify=verify, timeout=30)
+                resp = temp_session.post(f"{url}/{att_id}/data", files=_make_files_payload(), verify=verify, timeout=30)
             else:
-            resp = temp_session.post(url, files=_make_files_payload(), verify=verify, timeout=30)
+                resp = temp_session.post(url, files=_make_files_payload(), verify=verify, timeout=30)
             if resp.status_code != 403:
                 if resp.status_code not in (200, 201):
                     raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
@@ -168,17 +170,14 @@ def upload_attachment(session: requests.Session, base_url: str, page_id: str, fi
         temp_session.headers.update({"X-Atlassian-Token": "no-check"})
         if existing:
             att_id = existing[0]["id"]
-          resp = temp_session.post(f"{url}/{att_id}/data", files=_make_files_payload(), verify=verify, timeout=30)
+            resp = temp_session.post(f"{url}/{att_id}/data", files=_make_files_payload(), verify=verify, timeout=30)
         else:
-          resp = temp_session.post(url, files=_make_files_payload(), verify=verify, timeout=30)
+            resp = temp_session.post(url, files=_make_files_payload(), verify=verify, timeout=30)
         if resp.status_code not in (200, 201):
             raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
         return resp.json()
     
     raise RuntimeError(f"Failed to upload attachment '{filename}': No valid authentication")
-    result = data["results"][0] if "results" in data else data
-    print(f"  Uploaded attachment: {filename}")
-    return result
 
 
 def attachment_link(base_url: str, attachment: dict) -> str:
@@ -227,449 +226,10 @@ def upsert_child_page(session: requests.Session, base_url: str, space_key: str, 
 
 
 # PATTERNS PAGE FUNCTIONALITY REMOVED - No longer publishing patterns as separate page
-
-  def _panel(macro: str, title: str, body: str) -> str:
-    return (
-      f'<ac:structured-macro ac:name="{macro}">'
-      f'<ac:parameter ac:name="title">{title}</ac:parameter>'
-      f"<ac:rich-text-body>{body}</ac:rich-text-body>"
-      "</ac:structured-macro>"
-    )
-
-  def _pattern_card(tag: str, name: str, plain_english: str, use_when: str,
-                    services: list[str], security_note: str, example: str) -> str:
-    svc_pills = "".join(f"<code>{s}</code>&nbsp; " for s in services)
-    return (
-      f"<h3>{tag}: {name}</h3>"
-      f'<ac:structured-macro ac:name="info">'
-      f'<ac:parameter ac:name="title">What is this?</ac:parameter>'
-      f"<ac:rich-text-body><p>{plain_english}</p></ac:rich-text-body>"
-      "</ac:structured-macro>"
-      "<table><colgroup>"
-      '<col style="width:20%;" /><col style="width:80%;" />'
-      "</colgroup><tbody>"
-      f"<tr><th>Use when</th><td>{use_when}</td></tr>"
-      f"<tr><th>AWS services</th><td>{svc_pills}</td></tr>"
-      f"<tr><th>Security note</th><td>{security_note}</td></tr>"
-      f"<tr><th>Real-world example</th><td><em>{example}</em></td></tr>"
-      "</tbody></table><p><br /></p>"
-    )
-
-  # ── intro ──────────────────────────────────────────────────────────────────
-  intro = (
-    "<h1>UKHSA Cloud Strategy & Approved Patterns</h1>"
-    "<p>This page describes the building blocks your solution can be made from. "
-    "Each <strong>pattern</strong> is a proven, approved way of solving a common "
-    "data problem at UKHSA. Think of them like LEGO bricks — you pick the right "
-    "bricks for your project and snap them together.</p>"
-    + _panel("warning", "Who is this page for?",
-             "<p>This page is written for <strong>everyone</strong> — not just technical staff. "
-             "You do not need to understand AWS to read it. "
-             "Use it when you are choosing patterns in Section&nbsp;8 of the Solution Architecture page.</p>")
-  )
-
-  # ── layer 1: ingestion ─────────────────────────────────────────────────────
-  s1 = (
-    "<h2>Layer 1 — Getting Data In (Ingestion)</h2>"
-    "<p>Before anything else can happen, data must arrive in the system. "
-    "These patterns describe the four approved ways data can be brought in.</p>"
-    + _pattern_card(
-      "1A", "Direct API Ingestion",
-      "Think of this like a tap that is always on. External systems send data directly "
-      "to UKHSA in real time — the moment something happens, the data flows in. "
-      "AWS API Gateway acts as the front door; SQS is a queue that holds messages "
-      "while they wait to be processed, so nothing is lost even if processing is slow.",
-      "You need data <strong>immediately</strong> as it is created — e.g. live case notifications, real-time feeds.",
-      ["API Gateway", "SQS", "EventBridge", "Lambda"],
-      "All connections are authenticated (OAuth 2.0 / mTLS). Access is locked down to approved IP addresses.",
-      "NHS hospital systems sending daily admission updates",
-    )
-    + _pattern_card(
-      "1B", "Batch File Upload",
-      "Think of this like a filing cabinet delivery. Someone sends a big file "
-      "(e.g. a monthly spreadsheet or CSV) and it lands in a secure S3 'inbox'. "
-      "AWS Glue then catalogues it — recording what the file contains — so it can "
-      "be found and processed later.",
-      "Data arrives in <strong>bulk at scheduled times</strong> — e.g. monthly reports, historical exports.",
-      ["S3", "AWS Glue", "DataSync", "Transfer Family (SFTP)"],
-      "Files are encrypted the moment they land. Bucket policies prevent unauthorised access. Versioning keeps a history of every file.",
-      "Monthly epidemiological reports from regional health authorities",
-    )
-    + _pattern_card(
-      "1C", "Database Replication",
-      "Think of this like a live carbon copy. A database somewhere else (e.g. a legacy "
-      "UKHSA operational system) continuously mirrors its changes into the AWS environment. "
-      "AWS DMS (Database Migration Service) handles the mirroring automatically.",
-      "You need to keep an <strong>existing database in sync</strong> — e.g. legacy operational system read replicas.",
-      ["DMS", "RDS", "Aurora", "S3"],
-      "Connections run over private, encrypted network paths. Every change is logged for audit.",
-      "Real-time sync from UKHSA operational databases",
-    )
-    + _pattern_card(
-      "1D", "Streaming Ingestion",
-      "Think of this like a live news ticker. Data arrives in a continuous, "
-      "high-speed stream — thousands of tiny messages per second. "
-      "Amazon Kinesis is a motorway for data; MSK (Kafka) is used when "
-      "the routing rules become complex.",
-      "You have <strong>very high frequency, continuous data</strong> — e.g. sensor readings, live surveillance.",
-      ["Kinesis Data Streams", "MSK (Kafka)", "Lambda", "Timestream"],
-      "Each consumer application has its own IAM role (identity), so one system cannot read another's data.",
-      "Real-time disease surveillance data from testing labs",
-    )
-  )
-
-  # ── layer 2: processing ────────────────────────────────────────────────────
-  s2 = (
-    "<h2>Layer 2 — Cleaning &amp; Transforming Data (Processing)</h2>"
-    "<p>Raw data is rarely ready to use. These patterns describe approved ways "
-    "to clean, enrich, and reshape data before it is stored or analysed.</p>"
-    + _pattern_card(
-      "2A", "Batch ETL",
-      "ETL stands for Extract, Transform, Load. Think of it like a night-shift "
-      "factory: a big job runs on a schedule (daily, weekly), picks up all the "
-      "raw data, cleans and reshapes it, then loads it into the destination. "
-      "AWS Glue is the factory; Step Functions is the foreman that keeps everything in order.",
-      "You have <strong>large volumes to process on a schedule</strong> — e.g. nightly data normalisation.",
-      ["AWS Glue", "Step Functions", "DataBrew", "Glue DataCatalog"],
-      "Each Glue job runs under its own identity (IAM role) with only the permissions it needs.",
-      "Daily deduplication, validation, and normalisation of lab results",
-    )
-    + _pattern_card(
-      "2B", "Real-time Stream Processing",
-      "Think of this like a live analyst watching a dashboard and flagging anomalies "
-      "instantly. Data is processed the moment it arrives — no waiting for a batch job. "
-      "Kinesis Data Analytics can run SQL queries on a live stream; Lambda handles "
-      "simple one-step transformations.",
-      "You need <strong>instant decisions or alerts</strong> based on incoming data.",
-      ["Kinesis Data Analytics", "Lambda", "EMR"],
-      "Runs in an isolated VPC. All traffic is encrypted. Alerts fire to monitored channels.",
-      "Real-time epidemiological alert when a threshold is breached",
-    )
-    + _pattern_card(
-      "2C", "Scheduled Spark / ML Jobs",
-      "Think of this like a data science lab that opens once a week. Complex statistical "
-      "or machine-learning jobs run on a schedule using EMR (a managed Spark cluster) "
-      "or SageMaker. When the job finishes the cluster shuts itself down — no wasted cost.",
-      "You need <strong>heavy-duty analytics, ML models, or statistical analysis</strong> on large datasets.",
-      ["EMR", "SageMaker", "Step Functions", "S3"],
-      "Clusters auto-terminate after use. Data is encrypted with KMS keys. Spark security enabled.",
-      "Monthly predictive disease modelling",
-    )
-    + _pattern_card(
-      "2D", "Federated Query",
-      "Think of this like asking a question that simultaneously searches several filing "
-      "cabinets without moving anything. Athena lets you query data sitting in S3, "
-      "RDS, and DynamoDB all at once — without copying it first.",
-      "You need to <strong>query across multiple data stores</strong> without consolidating the data.",
-      ["Athena", "Redshift Spectrum", "Glue Catalog"],
-      "Column-level encryption. Query results are encrypted. Runs via VPC endpoints.",
-      "Cross-dataset epidemiological query without data movement",
-    )
-  )
-
-  # ── layer 3: storage ───────────────────────────────────────────────────────
-  s3 = (
-    "<h2>Layer 3 — Storing Data (Storage)</h2>"
-    "<p>Different problems need different storage types — like choosing between "
-    "a notebook, a filing cabinet, and a warehouse. Here are the five approved options.</p>"
-    + _pattern_card(
-      "3A", "Transactional Database (OLTP)",
-      "This is your operational day-to-day database — like the till system in a shop. "
-      "It handles lots of small read/write operations simultaneously and guarantees "
-      "accuracy (ACID compliance). Aurora PostgreSQL is the preferred choice.",
-      "You need a database for <strong>live, operational data</strong> with many simultaneous users.",
-      ["Aurora PostgreSQL", "RDS PostgreSQL", "DynamoDB"],
-      "Encrypted at rest (KMS) and in transit (SSL). IAM authentication. Daily automated backups, 35-day retention.",
-      "Patient records, lab results, real-time case dashboards",
-    )
-    + _pattern_card(
-      "3B", "Data Warehouse (OLAP)",
-      "Think of this like a very large spreadsheet optimised for complex questions "
-      "across years of history. Redshift can hold petabytes of data and answer "
-      "questions like 'What was the infection trend over the last 5 years?' very fast.",
-      "You need <strong>historical reporting and business intelligence</strong> at scale.",
-      ["Redshift", "Redshift Spectrum", "QuickSight"],
-      "Column-level security. Encrypted with KMS. SAML authentication (Entra ID). Query monitoring.",
-      "Annual disease surveillance reports, multi-year trend analysis",
-    )
-    + _pattern_card(
-      "3C", "Data Lake (S3 Bronze / Silver / Gold)",
-      "Think of this like a three-floor archive. Raw, untouched data lands on the "
-      "ground floor (Bronze). It gets cleaned and moves to the first floor (Silver). "
-      "Fully validated, business-ready data lives on the top floor (Gold). "
-      "You only promote data upwards when it meets quality standards.",
-      "You have <strong>mixed / unstructured data</strong> or need a flexible exploratory store.",
-      ["S3", "Glue Catalog", "Lake Formation", "Athena"],
-      "Bucket policies. Object-level encryption. Tag-based access control. Lifecycle policies.",
-      "Genomic data, unstructured epidemiological documents",
-    )
-    + _pattern_card(
-      "3D", "Time-Series Database",
-      "Think of this like a graph that records a reading every second. "
-      "Timestream is purpose-built for metrics that change over time — "
-      "it stores and queries time-stamped data far more efficiently than a normal database.",
-      "You have <strong>sensor readings, metrics, or surveillance data</strong> captured over time.",
-      ["Timestream", "DynamoDB with TTL"],
-      "Encryption, VPC endpoints, IAM. Configurable archival to S3 after a set period.",
-      "Real-time infection rate monitoring, lab capacity tracking",
-    )
-    + _pattern_card(
-      "3E", "Document Store",
-      "Think of this like a folder of JSON documents rather than a structured spreadsheet. "
-      "DynamoDB is serverless and scales automatically; DocumentDB is used when the "
-      "queries are complex. OpenSearch adds full-text search on top.",
-      "You have <strong>nested, variable-structure data</strong> — e.g. incident reports, investigation records.",
-      ["DynamoDB", "DocumentDB", "OpenSearch"],
-      "Encryption. Point-in-time recovery. IAM fine-grained access control.",
-      "Epidemiological investigation records, incident reports",
-    )
-  )
-
-  # ── layer 4: integration ───────────────────────────────────────────────────
-  s4 = (
-    "<h2>Layer 4 — Moving Data Between Systems (Integration)</h2>"
-    "<p>Getting data from one place to another reliably — these patterns keep systems "
-    "loosely coupled so one failure does not bring everything down.</p>"
-    + _pattern_card(
-      "4A", "Event-Driven Pipelines",
-      "Think of this like an office announcement board. When something happens "
-      "(e.g. a new file arrives), EventBridge shouts about it. Any downstream "
-      "system that cares can listen and react — without the sender needing to "
-      "know who is listening. Systems stay independent of each other.",
-      "You want systems to react to events <strong>without tight coupling</strong> between them.",
-      ["EventBridge", "SQS", "SNS", "Lambda"],
-      "IAM policies per consumer. Encryption in transit.",
-      "Trigger downstream processing when new surveillance data arrives",
-    )
-    + _pattern_card(
-      "4B", "ETL Orchestration (Step Functions / Airflow)",
-      "Think of this like a workflow manager with a checklist. Step Functions "
-      "coordinates multi-step data pipelines — it knows which job to run next, "
-      "handles retries if something fails, and keeps a visual audit trail.",
-      "You have a <strong>complex multi-step pipeline</strong> with dependencies between jobs.",
-      ["Step Functions", "MWAA (Airflow)", "EventBridge"],
-      "IAM role per workflow. Cross-account execution policies.",
-      "Daily pipeline: ingest → transform → validate → publish",
-    )
-    + _pattern_card(
-      "4C", "Data Replication &amp; Sync",
-      "Think of this like keeping two whiteboards identical in two rooms. "
-      "S3 Cross-Region Replication, RDS Read Replicas, and DataSync ensure "
-      "a copy of data exists in a second location for resilience or compliance.",
-      "You need <strong>high availability or data residency compliance</strong> across regions.",
-      ["S3 replication", "RDS Read Replicas", "DataSync"],
-      "Encryption in transit. Cross-account roles. Audit logging.",
-      "Replicate processed data to secondary region for resilience",
-    )
-  )
-
-  # ── layer 5: governance ────────────────────────────────────────────────────
-  s5 = (
-    "<h2>Layer 5 — Knowing What You Have (Governance &amp; Cataloguing)</h2>"
-    "<p>These patterns answer the question: <em>What data do we hold, where is it, "
-    "who owns it, and is it good quality?</em></p>"
-    + _pattern_card(
-      "5A", "Centralised Data Catalogue",
-      "Think of this like a library catalogue for all UKHSA datasets. "
-      "AWS Glue Catalog records the name, owner, schema, sensitivity level, and "
-      "lineage of every dataset. Lake Formation sits on top to enforce who can "
-      "see what — down to individual columns.",
-      "You need to <strong>discover, document, and govern</strong> datasets across the organisation.",
-      ["Glue Catalog", "Lake Formation"],
-      "Tag-based access control. Sensitivity levels enforced at query time.",
-      "Centralised register of all epidemiological datasets",
-    )
-    + _pattern_card(
-      "5B", "Data Quality &amp; Validation",
-      "Think of this like a quality-control inspector on a production line. "
-      "Before data moves to the next stage it must pass checks: "
-      "Are there nulls? Are values in the expected range? Are there duplicates? "
-      "Glue DataBrew provides a visual rule builder — no coding required.",
-      "You need to <strong>prevent bad data from spreading</strong> downstream.",
-      ["Glue DataBrew", "Glue quality checks", "EventBridge (failure alerts)"],
-      "Validation failures trigger alerts. Rules are versioned and auditable.",
-      "Validate lab results are within expected clinical ranges before storing",
-    )
-    + _pattern_card(
-      "5C", "Data Lineage &amp; Audit Trail",
-      "Think of this like a passport stamp for every piece of data — you can "
-      "trace exactly where it came from, every transformation it went through, "
-      "and who accessed it. This is essential for GDPR compliance and incident investigation.",
-      "You need to <strong>prove data provenance</strong> or meet compliance audit requirements.",
-      ["Lake Formation lineage", "Glue Catalog", "CloudTrail", "S3 access logs"],
-      "Immutable audit logs in CloudTrail. Access logs retained per policy.",
-      "Audit trail for sensitive epidemiological data — who accessed it and when",
-    )
-  )
-
-  # ── layer 6: security ──────────────────────────────────────────────────────
-  s6 = (
-    "<h2>Layer 6 — Keeping Data Safe (Security &amp; Compliance)</h2>"
-    "<p>These patterns are <strong>mandatory for all solutions</strong>. They are not optional extras.</p>"
-    + _pattern_card(
-      "6A", "Access Control (IAM + Entra ID)",
-      "Think of this like a building with key-card access. Every person and every "
-      "system gets only the keys they need — nothing more. UKHSA uses Entra ID (Azure AD) "
-      "as the identity provider, linked to AWS IAM. Temporary credentials (STS) "
-      "mean keys expire automatically — no permanent passwords.",
-      "<strong>Always required.</strong> Governs who can access which data.",
-      ["IAM", "Entra ID / Azure AD", "Lake Formation (column security)", "S3 Object Lock"],
-      "Role-based access. MFA enforced. Attribute-based control (department, sensitivity level). Temporary credentials only.",
-      "Data analysts can query public datasets but cannot see sensitive patient-level data",
-    )
-    + _pattern_card(
-      "6B", "Encryption &amp; Key Management",
-      "Think of this like a combination lock that only you know. "
-      "All UKHSA data must be encrypted at rest (when stored) and in transit (when moving). "
-      "AWS KMS manages the encryption keys — UKHSA holds customer-managed keys, "
-      "meaning AWS cannot read the data without UKHSA's permission.",
-      "<strong>Always required.</strong> Mandatory for sensitive and restricted data.",
-      ["KMS (customer-managed keys)", "Secrets Manager", "ACM (certificates)"],
-      "AES-256 at rest. TLS 1.2+ in transit. Keys are backed up cross-region.",
-      "All S3 buckets encrypted with UKHSA-owned KMS keys",
-    )
-    + _pattern_card(
-      "6C", "Network Security &amp; Isolation",
-      "Think of this like putting the data centre in a locked room inside a locked building. "
-      "All data processing runs inside a private VPC (Virtual Private Cloud) with no "
-      "direct internet access. Traffic to AWS services goes through private endpoints "
-      "so it never touches the public internet.",
-      "<strong>Always required.</strong> No processing in public subnets.",
-      ["VPC", "Security Groups", "VPC Endpoints", "PrivateLink", "WAF"],
-      "Private subnets only. No internet access (NAT gateway for outbound only). Logs to isolated CloudWatch.",
-      "Data processing pipeline running in fully isolated VPC",
-    )
-    + _pattern_card(
-      "6D", "Data Masking &amp; Anonymisation",
-      "Think of this like redacting a document before sharing it. "
-      "Before data is shared with researchers or external teams, "
-      "personal identifiers are removed, generalised (e.g. age bands instead of DOB), "
-      "or replaced with tokens. This satisfies GDPR and DPIA requirements.",
-      "Required whenever <strong>PII or sensitive data</strong> is shared outside the originating system.",
-      ["Glue DataBrew", "Lambda (custom masking)", "RDS dynamic masking", "Redshift row-level security"],
-      "Pseudonymisation, generalisation, aggregation, or redaction applied before data leaves secure boundary.",
-      "Remove patient names and NHS numbers before sharing data with research teams",
-    )
-  )
-
-  # ── layer 7: monitoring ────────────────────────────────────────────────────
-  s7 = (
-    "<h2>Layer 7 — Watching What Happens (Monitoring &amp; Observability)</h2>"
-    "<p>You cannot fix what you cannot see. These patterns ensure the system is "
-    "observable and problems are caught early.</p>"
-    + _pattern_card(
-      "7A", "Centralised Logging",
-      "Think of this like a CCTV recording of everything the system does. "
-      "CloudWatch Logs collects logs from every component in one place. "
-      "CloudTrail records every API call — who did what, when, from where. "
-      "This is the foundation for debugging, compliance auditing, and incident response.",
-      "<strong>Always required.</strong> Needed for debugging and compliance.",
-      ["CloudWatch Logs", "CloudTrail", "VPC Flow Logs", "S3 access logs"],
-      "Logs are immutable. Retention periods set per policy. Access to logs is restricted.",
-      "Track each data load: rows in, rows out, duration, error count",
-    )
-    + _pattern_card(
-      "7B", "Data Quality Monitoring",
-      "Think of this like a smoke detector for your data. "
-      "Automated checks run continuously — if data stops arriving on time, "
-      "or the number of records drops unexpectedly, an alert fires to the team. "
-      "CloudWatch custom metrics track freshness, completeness, and accuracy.",
-      "Required whenever <strong>data freshness or quality SLAs</strong> must be met.",
-      ["CloudWatch (custom metrics)", "EventBridge", "SNS", "Lambda"],
-      "Alert thresholds defined and documented. On-call routing configured.",
-      "Alert if daily lab data has not arrived by 10:00 AM",
-    )
-    + _pattern_card(
-      "7C", "Performance &amp; Cost Monitoring",
-      "Think of this like a fuel gauge on your car. "
-      "Cost Explorer tracks how much each part of the solution is spending. "
-      "Compute Optimizer recommends cheaper instance sizes. "
-      "CloudWatch tracks query times and resource utilisation.",
-      "Required for <strong>cost governance and performance optimisation</strong>.",
-      ["CloudWatch", "Cost Explorer", "Compute Optimizer", "Trusted Advisor"],
-      "Cost budgets set with alerts. Unused resources flagged weekly.",
-      "Track cost per epidemiological query; identify and optimise expensive jobs",
-    )
-  )
-
-  # ── layer 8: resilience ────────────────────────────────────────────────────
-  s8 = (
-    "<h2>Layer 8 — Surviving Failure (Resilience &amp; Disaster Recovery)</h2>"
-    "<p>Things go wrong. These patterns ensure data is not lost and services recover quickly.</p>"
-    + _panel("info", "RPO and RTO — what do these mean?",
-             "<p><strong>RPO (Recovery Point Objective)</strong> — How much data can we afford to lose? "
-             "An RPO of 1 hour means in the worst case you lose 1 hour of data.</p>"
-             "<p><strong>RTO (Recovery Time Objective)</strong> — How quickly must the service be back up? "
-             "An RTO of 4 hours means the service must be restored within 4 hours of a failure.</p>")
-    + _pattern_card(
-      "8A", "Backup Strategy",
-      "Think of this like taking a daily photograph of your data. "
-      "AWS Backup coordinates automated daily backups of RDS databases, S3 buckets, "
-      "and EC2 volumes — all in one place. Backups are copied to a second region "
-      "so a regional outage does not cause data loss.",
-      "Required for <strong>all production data</strong>. Criticality level determines retention.",
-      ["RDS automated backups", "S3 Cross-Region Replication", "AWS Backup", "Snapshots"],
-      "Backup jobs monitored. Restore tested quarterly. Cross-region copies encrypted.",
-      "Daily backup of epidemiological database, replicated to Ireland (eu-west-1)",
-    )
-    + _pattern_card(
-      "8B", "Multi-AZ / Multi-Region Deployment",
-      "Think of this like having two offices — if one floods, the other keeps running. "
-      "Multi-AZ means the database has a hot standby in a different data centre within "
-      "the same region. Multi-Region means a full copy in a second UK-approved region.",
-      "Required for <strong>critical services</strong> where downtime is unacceptable.",
-      ["Multi-AZ RDS", "S3 Cross-Region Replication", "Route 53 failover", "Global Accelerator"],
-      "Primary: eu-west-2 (London). Secondary: eu-west-1 (Ireland). Data residency maintained within UK/EEA.",
-      "Main database in London with automatic failover to Ireland read replica",
-    )
-  )
-
-  # ── ADRs ───────────────────────────────────────────────────────────────────
-  adrs = (
-    "<h2>Architecture Decision Records (ADRs)</h2>"
-    "<p>These are firm decisions that apply to <strong>all</strong> UKHSA data solutions. "
-    "You do not need to re-justify these — they are already decided.</p>"
-    "<table><thead><tr><th>ADR</th><th>Decision</th><th>Why</th></tr></thead><tbody>"
-    "<tr><td>ADR-001</td><td>Use PostgreSQL (not MySQL) for new OLTP systems</td><td>Better JSON support, window functions, standards compliance</td></tr>"
-    "<tr><td>ADR-002</td><td>Use S3 + Glue instead of HDFS for data lakes</td><td>Serverless — no cluster to manage, lower cost, simpler</td></tr>"
-    "<tr><td>ADR-003</td><td>Prefer Redshift Spectrum over Athena for queries on datasets &gt;100 GB</td><td>Significantly better performance at large scale</td></tr>"
-    "<tr><td>ADR-004</td><td>Use EventBridge over SNS/SQS for event orchestration</td><td>Built-in schema validation, event routing without code, better observability</td></tr>"
-    "<tr><td>ADR-005</td><td>All data in transit must use TLS 1.2 or higher</td><td>Mandatory per UKHSA security standards</td></tr>"
-    "<tr><td>ADR-006</td><td>Customer-managed KMS keys required for sensitive data</td><td>GDPR and Data Protection Act compliance — UKHSA must hold its own keys</td></tr>"
-    "<tr><td>ADR-007</td><td>All data lakes must use the Bronze / Silver / Gold three-zone model</td><td>Enforces data quality gates, traceability, and governance</td></tr>"
-    "</tbody></table>"
-  )
-
-  # ── quick-pick cheat sheet ─────────────────────────────────────────────────
-  cheat = (
-    "<h2>Quick-Pick Cheat Sheet</h2>"
-    "<p>Not sure which pattern to pick? Use this table as a starting point.</p>"
-    "<table><thead><tr>"
-    "<th>If you need to…</th><th>Start with this pattern</th>"
-    "</tr></thead><tbody>"
-    "<tr><td>Receive data from an external API in real time</td><td>1A — Direct API Ingestion</td></tr>"
-    "<tr><td>Accept a large file upload from a partner</td><td>1B — Batch File Upload</td></tr>"
-    "<tr><td>Mirror a legacy database into AWS</td><td>1C — Database Replication</td></tr>"
-    "<tr><td>Ingest thousands of sensor readings per second</td><td>1D — Streaming Ingestion</td></tr>"
-    "<tr><td>Run nightly data cleaning and transformation</td><td>2A — Batch ETL</td></tr>"
-    "<tr><td>Detect anomalies the moment data arrives</td><td>2B — Real-time Stream Processing</td></tr>"
-    "<tr><td>Train a machine learning model</td><td>2C — Scheduled Spark / ML Jobs</td></tr>"
-    "<tr><td>Query several databases without moving data</td><td>2D — Federated Query</td></tr>"
-    "<tr><td>Store operational, live-query data</td><td>3A — Transactional Database</td></tr>"
-    "<tr><td>Run complex reports across years of history</td><td>3B — Data Warehouse</td></tr>"
-    "<tr><td>Store raw and mixed-format data flexibly</td><td>3C — Data Lake (Bronze/Silver/Gold)</td></tr>"
-    "<tr><td>Store time-stamped metrics or sensor data</td><td>3D — Time-Series Database</td></tr>"
-    "<tr><td>Store JSON documents or event logs</td><td>3E — Document Store</td></tr>"
-    "<tr><td>Trigger downstream systems when data arrives</td><td>4A — Event-Driven Pipelines</td></tr>"
-    "<tr><td>Coordinate a multi-step data pipeline</td><td>4B — ETL Orchestration</td></tr>"
-    "<tr><td>Keep two regions in sync for resilience</td><td>4C — Data Replication &amp; Sync</td></tr>"
-    "</tbody></table>"
-  )
-
-  return (
-    intro + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + adrs + cheat
-    + f'<p><br /><em>Source file: <a href="{source_download_link}">UKHSA Cloud Strategy & Approved patterns.md</a></em></p>'
-  )
+def build_patterns_reference_html(source_download_link: str) -> str:
+    """Retained for compatibility; patterns content is no longer published from this script."""
+    _ = source_download_link
+    return ""
 
 
 def build_main_html(plan_link: str) -> str:  # noqa: C901
@@ -701,37 +261,10 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 </ac:structured-macro>
 
 <!-- TABLE OF CONTENTS / INDEX -->
-<div style="background-color: #f0f4f8; border: 2px solid #003366; border-radius: 8px; padding: 20px; margin: 20px 0;">
-  <h2 style="color: #003366; margin-top: 0;">📑 Table of Contents</h2>
-  <div style="column-count: 2; column-gap: 30px;">
-    <strong style="color: #0052CC;">Discovery Phase:</strong>
-    <ul style="margin-top: 5px;">
-      <li><a href="#section1">1. Solution Overview</a></li>
-      <li><a href="#section2">2. Introduction</a></li>
-      <li><a href="#section3">3. Background</a></li>
-      <li><a href="#section4">4. Pain Points / Problem Statement</a></li>
-      <li><a href="#section5">5. Functional Requirements</a></li>
-      <li><a href="#section6">6. Non-Functional Requirements</a></li>
-    </ul>
-    <strong style="color: #0052CC;">Design Phase:</strong>
-    <ul style="margin-top: 5px;">
-      <li><a href="#section7">7. Architecture Decision – HLD Options</a></li>
-      <li><a href="#section8">8. Pattern Selection</a></li>
-      <li><a href="#section9">9. Context Entities</a></li>
-      <li><a href="#section10">10. Architecture Components</a></li>
-      <li><a href="#section11">11. Architecture Connections</a></li>
-      <li><a href="#section12">12. Data Flow Entries</a></li>
-      <li><a href="#section13">13. Dataset Inventory</a></li>
-    </ul>
-    <strong style="color: #0052CC;">Delivery Phase:</strong>
-    <ul style="margin-top: 5px;">
-      <li><a href="#section14">14. Auto-Generated Diagrams</a></li>
-      <li><a href="#section15">15. Low-Level Design (LLD) Summary</a></li>
-      <li><a href="#section16">16. Solution Option Cost Comparison</a></li>
-      <li><a href="#section17">17. Implementation Handover</a></li>
-    </ul>
-  </div>
-</div>
+<h2>📑 Table of Contents</h2>
+<ac:structured-macro ac:name="toc">
+  <ac:parameter ac:name="style">none</ac:parameter>
+</ac:structured-macro>
 
 <!-- SECTION 1: SOLUTION OVERVIEW -->
 <div style="background-color: #e8f0f7; border-left: 5px solid #0052CC; padding: 15px; margin: 20px 0; border-radius: 4px;">
@@ -1069,22 +602,22 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <!-- SECTION 14: AUTO-GENERATED DIAGRAMS -->
 <div style="background-color: #e8f8f0; border-left: 5px solid #059669; padding: 15px; margin: 20px 0; border-radius: 4px;">
   <h2 id="section14" style="color: #059669; margin-top: 0;">14. Auto-Generated Diagrams</h2>
-<p><em>Run <code>confluence_update_diagrams.py</code> after completing the tables above. All diagrams are editable in draw.io.</em></p>
+<p><em>All architectural diagrams are auto-generated from the tables above (Sections 10-13) and maintained on a separate page for clarity and editability.</em></p>
 
-<h3>14.1 Context View</h3>
-<p><strong>[[DIAGRAM:context-view]]</strong></p>
+<p><strong>To generate or update diagrams:</strong> Run <code>confluence_update_diagrams.py</code> after completing the architecture tables.</p>
 
-<h3>14.2 Logical View</h3>
-<p><strong>[[DIAGRAM:logical-view]]</strong></p>
+<p style="margin-top: 15px; font-size: 16px;"><strong><ac:link><ri:page ri:space-key="CDA" ri:content-title="Architecture Diagrams" /></ac:link></strong></p>
 
-<h3>14.3 Solution Architecture</h3>
-<p><strong>[[DIAGRAM:solution-architecture]]</strong></p>
-
-<h3>14.4 Data Flow Diagram</h3>
-<p><strong>[[DIAGRAM:data-flow]]</strong></p>
-
-<h3>14.5 Dataset Relationship Diagram</h3>
-<p><strong>[[DIAGRAM:data-relationship]]</strong></p>
+<h3>Diagram Types Generated</h3>
+<ul>
+  <li><strong>Context View</strong> – System boundary and external entities</li>
+  <li><strong>Logical View</strong> – Services by responsibility and interaction</li>
+  <li><strong>Solution Architecture</strong> – Layer-based component view (Edge, Network, Platform, Application, Data)</li>
+  <li><strong>Data Flow Diagram (DFD)</strong> – All data movements between components</li>
+  <li><strong>Dataset Relationship Diagram (ERD)</strong> – Datasets and their relationships</li>
+  <li><strong>Authentication Flow</strong> – OAuth2/Cognito authentication sequence</li>
+  <li><strong>Network Segregation</strong> – VPC, subnets, and security group configuration</li>
+</ul>
 
 </div>
 <!-- SECTION 15: LLD SUMMARY -->
@@ -1161,16 +694,70 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 """
 
 
+def _template_path() -> str:
+  """Path where synced page template is stored."""
+  return os.path.join(os.path.dirname(__file__), "main_page_template.synced.html")
+
+
+def save_synced_template(body_html: str) -> None:
+  """Persist current Confluence page body as the local source template."""
+  path = _template_path()
+  with open(path, "w", encoding="utf-8") as f:
+    f.write(body_html)
+
+
+def load_synced_template() -> str | None:
+  """Load previously synced template if available."""
+  path = _template_path()
+  if not os.path.exists(path):
+    return None
+  with open(path, "r", encoding="utf-8") as f:
+    return f.read()
+
+
+def _update_questionnaire_plan_link(body_html: str, plan_link: str) -> str:
+  """Refresh the questionnaire plan hyperlink while preserving manual page content."""
+  pattern = (
+    r'(<a\s+href=")([^"]*)("[^>]*>\s*QUESTIONNAIRE_PLAN\.md\s*</a>)'
+  )
+  if re.search(pattern, body_html, flags=re.IGNORECASE):
+    return re.sub(pattern, rf"\g<1>{plan_link}\g<3>", body_html, flags=re.IGNORECASE)
+  return body_html
+
+
 def main() -> None:
     base_url = os.getenv("CONFLUENCE_BASE_URL", "https://ukhsa.atlassian.net/wiki").rstrip("/")
     space_key = os.getenv("CONFLUENCE_SPACE_KEY", "CDA")
-    title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "Solution Architecture")
+    configured_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "").strip()
+    # Try the configured/default title first, then known page titles used by this template.
+    title_candidates = [
+        configured_title or "Solution Architecture",
+        "High-level Design (HLD) Solution Architecture Template",
+        "Architecture Diagrams",
+    ]
 
     session = requests.Session()
     session.headers.update({"Accept": "application/json", "Content-Type": "application/json"})
 
-    print(f"Finding main page '{title}'...")
-    page = find_page_by_title(session, base_url, space_key, title)
+    page = None
+    last_error = None
+    for title in title_candidates:
+        try:
+            print(f"Finding main page '{title}'...")
+            page = find_page_by_title(session, base_url, space_key, title)
+            break
+        except ValueError as exc:
+            last_error = exc
+
+    if not page:
+        raise ValueError(
+            f"Main page not found in space '{space_key}'. Tried titles: {', '.join(title_candidates)}"
+        ) from last_error
+
+    current_body = page.get("body", {}).get("storage", {}).get("value", "")
+    if current_body:
+      save_synced_template(current_body)
+
     page_id = page["id"]
 
     workspace = os.path.dirname(__file__)
@@ -1186,8 +773,18 @@ def main() -> None:
     plan_link = attachment_link(base_url, plan_attachment)
 
     print("Updating main page with unified requirements and design template...")
-    body_html = build_main_html(plan_link)
+    synced_template = load_synced_template()
+    if synced_template:
+      body_html = _update_questionnaire_plan_link(synced_template, plan_link)
+    else:
+      body_html = build_main_html(plan_link)
+
     result = update_page_body(session, base_url, page_id, page["version"]["number"], page["title"], body_html)
+
+    # Re-sync after update to keep local template aligned with latest live page.
+    updated_body = result.get("body", {}).get("storage", {}).get("value")
+    if updated_body:
+      save_synced_template(updated_body)
 
     links = result.get("_links", {})
     page_url = f"{links.get('base', base_url)}{links.get('webui', '')}"
