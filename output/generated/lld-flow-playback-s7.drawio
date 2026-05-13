@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="Step S7">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="playback-title-1" value="Flow Playback - Step S7: Monitoring and Alerts -&gt; Validation Processor" style="text;fontSize=15;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="24" y="20" width="1180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-helper-1" value="Use draw.io page tabs to move S1, S2, S3 ... like an animation." style="text;fontSize=10;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;fontColor=#475569;" parent="1" vertex="1">
+          <mxGeometry x="24" y="48" width="760" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-internet-1" value="" style="rounded=1;fillColor=#EEF2FF;strokeColor=#5B6CD9;strokeWidth=1.2;" parent="1" vertex="1">
+          <mxGeometry x="40" y="90" width="220" height="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-title-internet-1" value="External/On-Prem" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="48" y="98" width="204" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-public-1" value="" style="rounded=1;fillColor=#FFF7E6;strokeColor=#E59E0C;strokeWidth=1.2;" parent="1" vertex="1">
+          <mxGeometry x="300" y="90" width="220" height="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-title-public-1" value="Public Subnet" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="308" y="98" width="204" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-private-1" value="" style="rounded=1;fillColor=#ECFDF3;strokeColor=#39A059;strokeWidth=1.2;" parent="1" vertex="1">
+          <mxGeometry x="560" y="90" width="280" height="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-title-private-1" value="Private Subnet" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="568" y="98" width="264" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-data-1" value="" style="rounded=1;fillColor=#EEF2FF;strokeColor=#5B6CD9;strokeWidth=1.2;" parent="1" vertex="1">
+          <mxGeometry x="860" y="90" width="220" height="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="playback-zone-title-data-1" value="Data Subnet" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="868" y="98" width="204" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-on-prem-business-app-1" value="&lt;b&gt;On-Prem Business App&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="55" y="140" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-on-prem-sftp-server-1" value="&lt;b&gt;On-Prem SFTP Server&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="55" y="265" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-private-connectivity-1" value="&lt;b&gt;Private Connectivity&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="575" y="140" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-aws-transfer-endpoint-1" value="&lt;b&gt;AWS Transfer Endpoint&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="315" y="140" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-raw-landing-bucket-1" value="&lt;b&gt;Raw Landing Bucket&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="875" y="140" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-validation-processor-1" value="&lt;b&gt;Validation Processor&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="575" y="265" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-processing-queue-1" value="&lt;b&gt;Processing Queue&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="575" y="390" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-curated-database-1" value="&lt;b&gt;Curated Database&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="875" y="265" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-node-monitoring-and-alerts-1" value="&lt;b&gt;Monitoring and Alerts&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="575" y="515" width="190" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-1" value="S1 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#94A3B8;strokeWidth=1.2;dashed=1;dashPattern=3 3;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#F8FAFC;" parent="1" source="play-node-on-prem-business-app-1" target="play-node-on-prem-sftp-server-1" edge="1">
+          <mxGeometry relative="1" x="0" y="-16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-2" value="S2 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#94A3B8;strokeWidth=1.2;dashed=1;dashPattern=3 3;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#F8FAFC;" parent="1" source="play-node-on-prem-sftp-server-1" target="play-node-aws-transfer-endpoint-1" edge="1">
+          <mxGeometry relative="1" x="0" y="16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-3" value="S3 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#94A3B8;strokeWidth=1.2;dashed=1;dashPattern=3 3;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#F8FAFC;" parent="1" source="play-node-aws-transfer-endpoint-1" target="play-node-raw-landing-bucket-1" edge="1">
+          <mxGeometry relative="1" x="0" y="-16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-4" value="S4 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#94A3B8;strokeWidth=1.2;dashed=1;dashPattern=3 3;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#F8FAFC;" parent="1" source="play-node-raw-landing-bucket-1" target="play-node-validation-processor-1" edge="1">
+          <mxGeometry relative="1" x="0" y="16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-5" value="S5 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#94A3B8;strokeWidth=1.2;dashed=1;dashPattern=3 3;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#F8FAFC;" parent="1" source="play-node-validation-processor-1" target="play-node-processing-queue-1" edge="1">
+          <mxGeometry relative="1" x="0" y="-16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-6" value="S6 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#94A3B8;strokeWidth=1.2;dashed=1;dashPattern=3 3;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#F8FAFC;" parent="1" source="play-node-validation-processor-1" target="play-node-curated-database-1" edge="1">
+          <mxGeometry relative="1" x="0" y="16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-7" value="S7 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#EA580C;strokeWidth=3;dashed=0;endArrow=block;endFill=1;fontSize=12;fontStyle=1;labelBackgroundColor=#FFEDD5;labelBorderColor=#FB923C;" parent="1" source="play-node-monitoring-and-alerts-1" target="play-node-validation-processor-1" edge="1">
+          <mxGeometry relative="1" x="0" y="-16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-edge-1-8" value="S8 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;strokeColor=#94A3B8;strokeWidth=1.2;dashed=1;dashPattern=3 3;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#F8FAFC;" parent="1" source="play-node-monitoring-and-alerts-1" target="play-node-processing-queue-1" edge="1">
+          <mxGeometry relative="1" x="0" y="16" as="geometry" />
+        </mxCell>
+        <mxCell id="play-index-bg-1" value="" style="rounded=1;fillColor=#FFF7ED;strokeColor=#FB923C;strokeWidth=1.4;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="90" width="360" height="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="play-index-title-1" value="Playback Step Index (Current: S7)" style="text;fontSize=11;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1192" y="100" width="336" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="play-index-text-1" value="&lt;b&gt;S1&lt;/b&gt; On-Prem Business App -&gt; On-Prem SFTP Server&lt;br/&gt;&lt;br/&gt;&lt;b&gt;S2&lt;/b&gt; On-Prem SFTP Server -&gt; AWS Transfer Endpoint&lt;br/&gt;&lt;br/&gt;&lt;b&gt;S3&lt;/b&gt; AWS Transfer Endpoint -&gt; Raw Landing Bucket&lt;br/&gt;&lt;br/&gt;&lt;b&gt;S4&lt;/b&gt; Raw Landing Bucket -&gt; Validation Processor&lt;br/&gt;&lt;br/&gt;&lt;b&gt;S5&lt;/b&gt; Validation Processor -&gt; Processing Queue&lt;br/&gt;&lt;br/&gt;&lt;b&gt;S6&lt;/b&gt; Validation Processor -&gt; Curated Database&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#EA580C;'&gt;&lt;b&gt;[ACTIVE]&lt;/b&gt;&lt;/span&gt; &lt;b&gt;S7&lt;/b&gt; Monitoring and Alerts -&gt; Validation Processor&lt;br/&gt;&lt;br/&gt;&lt;b&gt;S8&lt;/b&gt; Monitoring and Alerts -&gt; Processing Queue" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=10;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1192" y="126" width="336" height="970" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

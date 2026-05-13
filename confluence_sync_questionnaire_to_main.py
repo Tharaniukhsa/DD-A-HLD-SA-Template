@@ -160,6 +160,152 @@ def update_main_field_table(table_tag, updates: dict) -> int:
     return changed
 
 
+# ── Pattern ID extraction map: text in parentheses → canonical ID ─────────────
+_PATTERN_ID_RE = re.compile(r"\((?:Pattern\s+)?([A-Za-z0-9][A-Za-z0-9\-]+)\)", re.IGNORECASE)
+_SELECTED_POSITIVE = re.compile(r"^(?:yes|\u2611|\u2713|\u2714|x|selected)", re.IGNORECASE)
+
+
+def _is_selected(cell_text: str) -> bool:
+    """Return True if the 'Selected?' cell has been positively filled by the user."""
+    t = cell_text.strip()
+    # Unselected placeholder contains ☐ (U+2610 BALLOT BOX)
+    if t.startswith("\u2610"):
+        return False
+    return bool(_SELECTED_POSITIVE.match(t))
+
+
+def extract_selected_patterns(q_soup: BeautifulSoup) -> list[str]:
+    """
+    Scan every pattern-selection table in the questionnaire (Sections 2–11).
+    A row is selected when the 3rd column (index 2) has been positively filled.
+    Returns a deduped list of canonical pattern IDs e.g. ['1A', '3C', 'UKHSA-INF-01'].
+    """
+    selected: list[str] = []
+    seen: set[str] = set()
+
+    for table in q_soup.find_all("table"):
+        rows = table.find_all("tr")
+        # Pattern selection tables have ≥ 3 columns; skip key-value (2-col) tables
+        header_cells = rows[0].find_all(["th", "td"]) if rows else []
+        if len(header_cells) < 3:
+            continue
+        for tr in rows[1:]:
+            cells = tr.find_all(["td", "th"])
+            if len(cells) < 3:
+                continue
+            # 3rd column is the Selected? column
+            selected_text = cells[2].get_text(" ", strip=True)
+            if not _is_selected(selected_text):
+                continue
+            # Extract pattern ID from 1st column parenthetical
+            first_cell_text = cells[0].get_text(" ", strip=True)
+            m = _PATTERN_ID_RE.search(first_cell_text)
+            if m:
+                pid = m.group(1).upper()
+                if pid not in seen:
+                    selected.append(pid)
+                    seen.add(pid)
+    return selected
+
+
+def extract_data_sources(q_soup: BeautifulSoup) -> list[dict]:
+    """
+    Read Section 2.2 Data Sources table → return as component dicts.
+    Columns: No | Source Name | Ingestion Pattern | Data Type | Frequency | Expected Volume
+    """
+    table = table_after_heading(q_soup, "2.2 Data Sources")
+    if not table:
+        # fallback: try broader heading
+        table = table_after_heading(q_soup, "Data Sources")
+    sources: list[dict] = []
+    if not table:
+        return sources
+    for tr in table.find_all("tr")[1:]:
+        cells = [td.get_text(" ", strip=True) for td in tr.find_all(["td", "th"])]
+        if len(cells) < 2:
+            continue
+        name = cells[1] if len(cells) > 1 else ""
+        pattern = cells[2] if len(cells) > 2 else ""
+        data_type = cells[3] if len(cells) > 3 else ""
+        if not name or name.lower().startswith("source name"):
+            continue
+        sources.append({
+            "name": name,
+            "layer": "internet",
+            "technology": f"{data_type} via {pattern}".strip(" via"),
+            "description": f"Ingestion: {pattern} | Data: {data_type}",
+        })
+    return sources
+
+
+def extract_transform_components(q_soup: BeautifulSoup) -> list[dict]:
+    """
+    Read Section 3.2 Transformation Components table → return as component dicts.
+    Columns: No | Component Name | Pattern | Input Data | Output Data | Business Logic
+    """
+    table = table_after_heading(q_soup, "3.2 Transformation Components")
+    if not table:
+        table = table_after_heading(q_soup, "Transformation Components")
+    components: list[dict] = []
+    if not table:
+        return components
+    for tr in table.find_all("tr")[1:]:
+        cells = [td.get_text(" ", strip=True) for td in tr.find_all(["td", "th"])]
+        if len(cells) < 2:
+            continue
+        name = cells[1] if len(cells) > 1 else ""
+        pattern = cells[2] if len(cells) > 2 else ""
+        logic = cells[5] if len(cells) > 5 else ""
+        if not name or name.lower().startswith("component"):
+            continue
+        components.append({
+            "name": name,
+            "layer": "Private",
+            "technology": pattern,
+            "description": logic,
+        })
+    return components
+
+
+def write_components_to_main(main_soup: BeautifulSoup, new_components: list[dict]) -> int:
+    """
+    Merge new_components into the main SA page's Components table (Section 9 or 10).
+    Deduplicates by component name. Only adds rows not already present.
+    """
+    table = table_after_heading(main_soup, "9. Architecture Components")
+    if not table:
+        table = table_after_heading(main_soup, "Components")
+    if not table:
+        return 0
+
+    body = table.find("tbody") or table
+    existing_names = set()
+    for tr in body.find_all("tr")[1:]:
+        cells = tr.find_all(["td", "th"])
+        if cells:
+            existing_names.add(cells[0].get_text(" ", strip=True).lower())
+
+    added = 0
+    for comp in new_components:
+        if comp["name"].lower() in existing_names:
+            continue
+        tr = main_soup.new_tag("tr")
+        for val in [
+            comp.get("name", ""),
+            comp.get("layer", ""),
+            comp.get("technology", ""),
+            comp.get("description", ""),
+            "", "",
+        ]:
+            td = main_soup.new_tag("td")
+            td.string = val
+            tr.append(td)
+        body.append(tr)
+        existing_names.add(comp["name"].lower())
+        added += 1
+    return added
+
+
 def extract_dataflows(questionnaire_soup: BeautifulSoup) -> list[dict]:
     q_table = table_after_heading(questionnaire_soup, "9. Data Flows Summary")
     rows_out = []
@@ -225,10 +371,18 @@ def write_dataflows_to_main(main_soup: BeautifulSoup, flows: list[dict]) -> int:
     return len(flows)
 
 
-def sync_questionnaire_to_main(main_html: str, questionnaire_html: str) -> tuple[str, dict]:
+def sync_questionnaire_to_main(
+    main_html: str,
+    questionnaire_html: str,
+) -> tuple[str, dict, list[str]]:
+    """
+    Merge questionnaire answers into the main SA page HTML.
+    Returns (updated_html, summary_dict, selected_pattern_ids).
+    """
     main_soup = BeautifulSoup(main_html, "html.parser")
     q_soup = BeautifulSoup(questionnaire_html, "html.parser")
 
+    # ── Section 1: Business Context → Overview + Intro tables
     q_business_table = table_after_heading(q_soup, "1. Business Context")
     business_data = extract_key_value_table(q_business_table)
 
@@ -238,7 +392,6 @@ def sync_questionnaire_to_main(main_html: str, questionnaire_html: str) -> tuple
         "primary stakeholders": business_data.get("primary stakeholders", ""),
         "data sensitivity classification": business_data.get("data sensitivity level", ""),
     }
-
     intro_updates = {
         "business capability supported": business_data.get("business capability name", ""),
         "expected business outcomes": business_data.get("business outcome / goal", ""),
@@ -251,31 +404,63 @@ def sync_questionnaire_to_main(main_html: str, questionnaire_html: str) -> tuple
     overview_count = update_main_field_table(overview_table, overview_updates)
     intro_count = update_main_field_table(intro_table, intro_updates)
 
+    # ── Sections 2–11: Extract selected pattern IDs
+    selected_patterns = extract_selected_patterns(q_soup)
+
+    # ── Section 2.2: Data Sources → Components table
+    data_sources = extract_data_sources(q_soup)
+    transform_comps = extract_transform_components(q_soup)
+    all_new_components = data_sources + transform_comps
+    components_added = write_components_to_main(main_soup, all_new_components)
+
+    # ── Section 9: Data Flows → Data Flow Entries table
     flows = extract_dataflows(q_soup)
     flows_count = write_dataflows_to_main(main_soup, flows)
 
     summary = {
         "overview_fields_updated": overview_count,
         "introduction_fields_updated": intro_count,
+        "components_added": components_added,
         "dataflows_updated": flows_count,
+        "patterns_selected": selected_patterns,
     }
 
-    return str(main_soup), summary
+    return str(main_soup), summary, selected_patterns
 
 
-def run_diagram_generation(workspace: str, main_page_id: str | None = None) -> None:
+def run_diagram_generation(
+    workspace: str,
+    main_page_id: str | None = None,
+    ukhsa_pattern_ids: list[str] | None = None,
+    edap_pattern_ids: list[str] | None = None,
+) -> None:
     script = os.path.join(workspace, "confluence_update_diagrams.py")
     cmd = [sys.executable, script]
     env = os.environ.copy()
     if main_page_id:
         env["CONFLUENCE_ARCHITECTURE_PAGE_ID"] = str(main_page_id)
+    if ukhsa_pattern_ids:
+        env["UKHSA_PATTERN_IDS"] = ",".join(ukhsa_pattern_ids)
+        print(f"  Passing UKHSA_PATTERN_IDS={env['UKHSA_PATTERN_IDS']}")
+    if edap_pattern_ids:
+        env["EDAP_PATTERN_IDS"] = ",".join(edap_pattern_ids)
+        print(f"  Passing EDAP_PATTERN_IDS={env['EDAP_PATTERN_IDS']}")
     subprocess.run(cmd, check=True, cwd=workspace, env=env)
 
 
-def run_lld_sync_and_diagrams(workspace: str) -> None:
+def run_lld_sync_and_diagrams(
+    workspace: str,
+    ukhsa_pattern_ids: list[str] | None = None,
+    edap_pattern_ids: list[str] | None = None,
+) -> None:
     script = os.path.join(workspace, "confluence_update_lld_diagrams.py")
     cmd = [sys.executable, script]
-    subprocess.run(cmd, check=True, cwd=workspace)
+    env = os.environ.copy()
+    if ukhsa_pattern_ids:
+        env["UKHSA_PATTERN_IDS"] = ",".join(ukhsa_pattern_ids)
+    if edap_pattern_ids:
+        env["EDAP_PATTERN_IDS"] = ",".join(edap_pattern_ids)
+    subprocess.run(cmd, check=True, cwd=workspace, env=env)
 
 
 def main() -> None:
@@ -299,28 +484,46 @@ def main() -> None:
     print(f"Finding questionnaire page '{questionnaire_title}'...")
     questionnaire_page = find_page_by_title(session, base_url, space_key, questionnaire_title)
 
-    updated_html, sync_summary = sync_questionnaire_to_main(
+    updated_html, sync_summary, selected_patterns = sync_questionnaire_to_main(
         main_page["body"]["storage"]["value"],
         questionnaire_page["body"]["storage"]["value"],
     )
 
     print("Sync summary:")
-    print(f"  Overview fields updated: {sync_summary['overview_fields_updated']}")
-    print(f"  Introduction fields updated: {sync_summary['introduction_fields_updated']}")
-    print(f"  Data flow rows updated: {sync_summary['dataflows_updated']}")
+    print(f"  Overview fields updated:      {sync_summary['overview_fields_updated']}")
+    print(f"  Introduction fields updated:  {sync_summary['introduction_fields_updated']}")
+    print(f"  Components added:             {sync_summary['components_added']}")
+    print(f"  Data flow rows updated:       {sync_summary['dataflows_updated']}")
+    if sync_summary['patterns_selected']:
+        print(f"  Patterns selected:            {', '.join(sync_summary['patterns_selected'])}")
+    else:
+        print("  Patterns selected:            (none ticked — keyword detection will apply)")
 
     update_page_body(session, base_url, main_page, updated_html)
     print("Main page updated from questionnaire.")
 
+    # Separate EDAP vs UKHSA pattern IDs for the respective env vars
+    edap_ids = [p for p in selected_patterns if p.upper().startswith("EDAP")]
+    ukhsa_ids = [p for p in selected_patterns if not p.upper().startswith("EDAP")]
+
     if auto_generate:
         workspace = os.path.dirname(__file__)
         print("Auto-generating diagrams...")
-        run_diagram_generation(workspace, str(main_page.get("id", main_page_id)))
+        run_diagram_generation(
+            workspace,
+            str(main_page.get("id", main_page_id)),
+            ukhsa_pattern_ids=ukhsa_ids or None,
+            edap_pattern_ids=edap_ids or None,
+        )
         print("Diagrams regenerated.")
 
         if auto_sync_lld:
             print("Auto-syncing HLD to LLD and regenerating LLD detailed diagrams...")
-            run_lld_sync_and_diagrams(workspace)
+            run_lld_sync_and_diagrams(
+                workspace,
+                ukhsa_pattern_ids=ukhsa_ids or None,
+                edap_pattern_ids=edap_ids or None,
+            )
             print("LLD synced and detailed diagrams regenerated.")
 
 

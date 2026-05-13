@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="LLD Flow Step S6">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="flow-step-title-6" value="Flow Playback: Step S6 of S8" style="text;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="20" y="20" width="980" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-step-src-6" value="&lt;b&gt;Validation Processor&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;strokeWidth=1.8;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="120" y="220" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-step-tgt-6" value="&lt;b&gt;Curated Database&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=1.8;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="760" y="220" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-step-edge-6" value="S6 -&gt;" style="edgeStyle=elbowEdgeStyle;elbow=horizontal;rounded=1;jettySize=auto;fontSize=14;fontStyle=1;strokeWidth=3;strokeColor=#EA580C;endArrow=block;endFill=1;labelBackgroundColor=#FFEDD5;labelBorderColor=#FB923C;" parent="1" source="flow-step-src-6" target="flow-step-tgt-6" edge="1">
+          <mxGeometry relative="1" x="0" y="-20" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-step-panel-6" value="" style="rounded=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.4;" parent="1" vertex="1">
+          <mxGeometry x="120" y="360" width="900" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-step-panel-text-6" value="&lt;b&gt;Source:&lt;/b&gt; Validation Processor&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Target:&lt;/b&gt; Curated Database&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Direction:&lt;/b&gt; One-way&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Channel:&lt;/b&gt; Insert validated records | TLS, DB auth&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Authentication/Authorization:&lt;/b&gt; TLS, DB auth" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=11;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="140" y="380" width="860" height="130" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

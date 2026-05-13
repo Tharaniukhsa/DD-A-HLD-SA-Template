@@ -1,12 +1,12 @@
 {
-  "generated_at_utc": "2026-05-08T16:46:58.687661+00:00",
+  "generated_at_utc": "2026-05-10T17:50:15.135328+00:00",
   "source_page": {
     "id": "520783944",
-    "title": "Solution Architecture"
+    "title": "High-level Design (HLD) Solution Architecture Template"
   },
   "counts": {
-    "components": 0,
-    "datasets": 0
+    "components": 9,
+    "datasets": 3
   },
   "outputs": {
     "aws_terraform": "output\\terraform\\aws\\main.tf",

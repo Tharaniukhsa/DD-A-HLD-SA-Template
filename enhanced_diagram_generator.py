@@ -190,82 +190,29 @@ def generate_aws_architecture_with_icons(components: list[dict], connections: li
 
 def generate_authentication_flow_diagram() -> str:
     """
-    Generate detailed OAuth2/OIDC authentication flow diagram.
+    Generate a sequence diagram for the authentication flow.
     Shows: User -> Web App -> API Gateway -> Identity Provider -> Service -> DB
     """
     mxfile = ET.Element("mxfile")
-    diagram = ET.SubElement(mxfile, "diagram", name="Authentication Flow")
-    ET.SubElement(diagram, "mxGraphModel",
-                  dx="1400", dy="800", grid="1", gridSize="10", guides="1",
-                  tooltips="1", connect="1", arrows="1", fold="1",
-                  page="0", pageScale="1", pageWidth="1400", pageHeight="800",
-                  math="0", shadow="0")
-    root = ET.SubElement(diagram.find("mxGraphModel"), "root")
-    ET.SubElement(root, "mxCell", id="0")
-    ET.SubElement(root, "mxCell", id="1", parent="0")
+    diagram = ET.SubElement(mxfile, "diagram", name="Authentication Flow Sequence")
+    graph_model = ET.SubElement(diagram, "mxGraphModel",
+                                dx="1400", dy="800", grid="1", gridSize="10", guides="1",
+                                tooltips="1", connect="1", arrows="1", fold="1")
 
-    # Define actors and steps
-    actors = [
-        ("User", "End User"),
-        ("WebApp", "Web Application"),
-        ("APIGateway", "API Gateway"),
-        ("IdentityProvider", "Cognito / Entra ID"),
-        ("Service", "Business Service"),
-        ("Database", "Database"),
-    ]
+    # Define the sequence diagram elements
+    user = ET.SubElement(graph_model, "User", label="User")
+    web_app = ET.SubElement(graph_model, "WebApp", label="Web App")
+    api_gateway = ET.SubElement(graph_model, "APIGateway", label="API Gateway")
+    identity_provider = ET.SubElement(graph_model, "IdentityProvider", label="Identity Provider")
+    service = ET.SubElement(graph_model, "Service", label="Service")
+    database = ET.SubElement(graph_model, "Database", label="Database")
 
-    # Position actors in swim lanes
-    actor_x = {name: 50 + i * 220 for i, (name, _) in enumerate(actors)}
-    actor_y = 30
-
-    # Draw actor boxes
-    for actor_id, actor_label in actors:
-        box = ET.SubElement(root, "mxCell",
-            id=f"actor-{actor_id}",
-            value=actor_label,
-            style="rounded=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;fontStyle=1;",
-            parent="1", vertex="1")
-        ET.SubElement(box, "mxGeometry",
-            x=str(actor_x[actor_id]), y=str(actor_y),
-            width="150", height="50",
-            **{"as": "geometry"})
-
-    # Authentication flow steps
-    flows = [
-        ("User", "WebApp", "Step 1: User clicks Login", 120),
-        ("WebApp", "IdentityProvider", "Step 2: Redirect to IDP", 170),
-        ("IdentityProvider", "IdentityProvider", "Step 3: Authenticate credentials", 220),
-        ("IdentityProvider", "WebApp", "Step 4: Return auth code", 270),
-        ("WebApp", "IdentityProvider", "Step 5: Exchange code for token", 320),
-        ("IdentityProvider", "WebApp", "Step 5a: Return access token", 370),
-        ("WebApp", "APIGateway", "Step 6: API call + Bearer token", 420),
-        ("APIGateway", "IdentityProvider", "Step 7: Validate token", 470),
-        ("IdentityProvider", "APIGateway", "Step 7a: Token valid + claims", 520),
-        ("APIGateway", "Service", "Step 8: Route to service", 570),
-        ("Service", "Database", "Step 9: Query authorized data", 620),
-        ("Database", "Service", "Step 10: Return data", 670),
-        ("Service", "APIGateway", "Step 11: Response", 720),
-        ("APIGateway", "WebApp", "Step 12: Return data to app", 770),
-        ("WebApp", "User", "Step 13: Render secure UI", 820),
-    ]
-
-    # Draw flow arrows with step numbers
-    for i, (from_actor, to_actor, label, y_pos) in enumerate(flows):
-        from_x = actor_x[from_actor] + 75
-        to_x = actor_x[to_actor] + 75
-
-        # Determine arrow direction
-        if from_x < to_x:
-            arrow_style = "edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;"
-        else:
-            arrow_style = "edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;"
-
-        edge = ET.SubElement(root, "mxCell",
-            id=f"flow-{i}",
-            value=label,
-            style=arrow_style + "fontSize=10;fontStyle=1;",
-            parent="1", source=f"actor-{from_actor}", target=f"actor-{to_actor}", edge="1")
-        ET.SubElement(edge, "mxGeometry", relative="1", **{"as": "geometry"})
+    # Define the sequence flow
+    ET.SubElement(graph_model, "Sequence", source=user, target=web_app, label="Login Request")
+    ET.SubElement(graph_model, "Sequence", source=web_app, target=api_gateway, label="API Call")
+    ET.SubElement(graph_model, "Sequence", source=api_gateway, target=identity_provider, label="Token Validation")
+    ET.SubElement(graph_model, "Sequence", source=identity_provider, target=service, label="Service Request")
+    ET.SubElement(graph_model, "Sequence", source=service, target=database, label="Data Query")
 
     ET.indent(mxfile, space="  ")
     return ET.tostring(mxfile, encoding="unicode", xml_declaration=True)

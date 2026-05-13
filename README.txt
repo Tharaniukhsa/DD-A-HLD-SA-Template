@@ -72,6 +72,34 @@ Confluence Data Model Used by Diagram Generator
 - Dataset Relationships
 - Context Entities
 
+Cross-Team Policies and Standards (Apply at All Layers)
+
+Security
+- CIS Benchmarks: https://www.cisecurity.org/cis-benchmarks
+- Enterprise Guide Rails Catalogue: https://ukhsa.atlassian.net/wiki/spaces/AT/pages/170626343/Enterprise+Guide+Rails+Catalogue+Strategic?pageId=170626343
+- Security Frameworks and Legislations: https://ukhsa.atlassian.net/wiki/spaces/CCE/pages/176654107/Frameworks+and+Legislations
+
+Network Design
+- Network Design: https://ukhsa.atlassian.net/wiki/spaces/HALO/pages/172255190/Network+Design
+- Strategic Network Summary: https://ukhsa.atlassian.net/wiki/spaces/HIDM/pages/167629598/Strategic+Network+Summary
+- Cloud Network Security Pattern: https://ukhsa.atlassian.net/wiki/spaces/AT/pages/170627256/Cloud+Network+Security+Pattern
+
+Governance Controls
+- Governance controls: https://ukhsa.atlassian.net/wiki/spaces/UAOM/pages/484737698/Governance+controls
+- Governance Domains: https://ukhsa.atlassian.net/wiki/spaces/EDCE/pages/448954953/Governance+Domains
+- Governance risks and issues: https://ukhsa.atlassian.net/wiki/spaces/ICTPMO/pages/175112629/Governance+risks+and+issues
+
+Data Protection, DPIA and Data Sharing
+- UKHSA Cloud Platform Data Protection Impact Assessment (DPIA) Review Process: https://ukhsa.atlassian.net/wiki/spaces/HALO/pages/172194466/UKHSA+Cloud+Platform+Data+Protection+Impact+Assessment+DPIA+Review+Process
+- Data sharing arrangements (WIP): https://ukhsa.atlassian.net/wiki/spaces/EDGE/pages/164039010/Data+sharing+arrangements+WIP
+
+ITSM Management
+- ITSM Problem Management Policy: https://ukhsa.atlassian.net/wiki/spaces/ISM/pages/167627576/ITSM+Problem+Management+Policy
+
+EDAP Integration Requirement
+- EDAP is the analytical platform where analytical programs are being migrated to AWS.
+- For any new analytical requirement, architecture must be designed to integrate with EDAP, or explicitly justify a non-EDAP pattern.
+
 Output Folder
 - output/
   Contains generated draw.io files and implementation outputs.

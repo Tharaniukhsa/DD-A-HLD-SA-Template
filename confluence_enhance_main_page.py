@@ -13,6 +13,8 @@ from requests_negotiate_sspi import HttpNegotiateAuth
 
 load_dotenv()
 
+SECURE_BY_DESIGN_SAT_URL = "https://phecloud.sharepoint.com/:x:/r/sites/SecureByDesign/_layouts/15/Doc.aspx?sourcedoc=%7BDE70096D-47CA-4190-A8EB-710D5D15E178%7D&file=UKHSA%20Secure%20by%20Design%20-%20SAT%20-%20TEMPLATE%20v2.6.xlsx&action=default&mobileredirect=true"
+
 
 def get_auth_methods():
     """Return tuple of (primary_auth, fallback_auth) to try Bearer first, then Basic."""
@@ -41,28 +43,33 @@ def _make_request(session: requests.Session, method: str, url: str, **kwargs) ->
     user_email = (os.getenv("CONFLUENCE_USER_EMAIL") or "").strip()
     verify = kwargs.pop("verify", get_tls_verify())
     
-    # Try Bearer auth first if we have a token
+    base_headers = dict(kwargs.pop("headers", {}) or {})
+
+    # Try Bearer auth first if we have a token.
     if api_token:
-        session_copy = requests.Session()
-        session_copy.headers.update(session.headers)
-        session_copy.headers.update({"Authorization": f"Bearer {api_token}"})
-        try:
-            resp = session_copy.request(method, url, verify=verify, **kwargs)
-            if resp.status_code != 403:
-                return resp
-        except Exception:
-            pass
-    
-    # Fallback to Basic auth if we have email + token
+      bearer_headers = dict(base_headers)
+      bearer_headers["Authorization"] = f"Bearer {api_token}"
+      try:
+        resp = session.request(method, url, verify=verify, headers=bearer_headers, auth=None, **kwargs)
+        if resp.status_code != 403:
+          return resp
+      except requests.RequestException:
+        pass
+
+    # Fallback to Basic auth if we have email + token.
     if user_email and api_token:
-        session_copy = requests.Session()
-        session_copy.headers.update(session.headers)
-        session_copy.auth = HTTPBasicAuth(user_email, api_token)
-        resp = session_copy.request(method, url, verify=verify, **kwargs)
-        return resp
+      resp = session.request(
+        method,
+        url,
+        verify=verify,
+        headers=base_headers,
+        auth=HTTPBasicAuth(user_email, api_token),
+        **kwargs,
+      )
+      return resp
     
     # Last resort: use session as-is
-    return session.request(method, url, verify=verify, **kwargs)
+    return session.request(method, url, verify=verify, headers=base_headers, **kwargs)
 
 
 def get_tls_verify():
@@ -146,36 +153,47 @@ def upload_attachment(session: requests.Session, base_url: str, page_id: str, fi
     verify = get_tls_verify()
     
     resp = None
-    # Try Bearer auth first
-    if api_token:
-        temp_session = requests.Session()
-        temp_session.headers.update({"Authorization": f"Bearer {api_token}", "X-Atlassian-Token": "no-check"})
+    upload_headers = {"X-Atlassian-Token": "no-check"}
+    upload_url = f"{url}/{existing[0]['id']}/data" if existing else url
+    original_content_type = session.headers.pop("Content-Type", None)
+
+    try:
+      # Try Bearer auth first.
+      if api_token:
+        bearer_headers = dict(upload_headers)
+        bearer_headers["Authorization"] = f"Bearer {api_token}"
         try:
-            if existing:
-                att_id = existing[0]["id"]
-                resp = temp_session.post(f"{url}/{att_id}/data", files=_make_files_payload(), verify=verify, timeout=30)
-            else:
-                resp = temp_session.post(url, files=_make_files_payload(), verify=verify, timeout=30)
-            if resp.status_code != 403:
-                if resp.status_code not in (200, 201):
-                    raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
-                return resp.json()
-        except Exception:
-            pass
-    
-    # Fallback to Basic auth
-    if user_email and api_token:
-        temp_session = requests.Session()
-        temp_session.auth = HTTPBasicAuth(user_email, api_token)
-        temp_session.headers.update({"X-Atlassian-Token": "no-check"})
-        if existing:
-            att_id = existing[0]["id"]
-            resp = temp_session.post(f"{url}/{att_id}/data", files=_make_files_payload(), verify=verify, timeout=30)
-        else:
-            resp = temp_session.post(url, files=_make_files_payload(), verify=verify, timeout=30)
+          resp = session.post(
+            upload_url,
+            files=_make_files_payload(),
+            headers=bearer_headers,
+            auth=None,
+            verify=verify,
+            timeout=30,
+          )
+          if resp.status_code != 403:
+            if resp.status_code not in (200, 201):
+              raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
+            return resp.json()
+        except requests.RequestException:
+          pass
+
+      # Fallback to Basic auth.
+      if user_email and api_token:
+        resp = session.post(
+          upload_url,
+          files=_make_files_payload(),
+          headers=upload_headers,
+          auth=HTTPBasicAuth(user_email, api_token),
+          verify=verify,
+          timeout=30,
+        )
         if resp.status_code not in (200, 201):
-            raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
+          raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
         return resp.json()
+    finally:
+      if original_content_type is not None:
+        session.headers["Content-Type"] = original_content_type
     
     raise RuntimeError(f"Failed to upload attachment '{filename}': No valid authentication")
 
@@ -248,14 +266,29 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
   </ac:rich-text-body>
 </ac:structured-macro>
 
-<ac:structured-macro ac:name="info">
-  <ac:parameter ac:name="title">How to Use This Page</ac:parameter>
+<ac:structured-macro ac:name="note">
+  <ac:parameter ac:name="title">Quick Workflow Summary</ac:parameter>
   <ac:rich-text-body>
     <ol>
       <li><strong>Discovery</strong> – fill in Sections 1–6 (Overview, Introduction, Background, Pain Points, Functional Requirements, Non-Functional Requirements) with the project team.</li>
       <li><strong>Design</strong> – complete Sections 7–13 (HLD options, pattern selection, components, connections, data flows, datasets, relationships).</li>
-      <li><strong>Generate diagrams</strong> – run <code>confluence_update_diagrams.py</code> to auto-create all diagrams from the tables above.</li>
-      <li><strong>Implementation pack</strong> – run <code>confluence_generate_implementation_pack.py</code> to output Terraform scaffolds and delivery summary.</li>
+      <li><strong>Generate diagrams</strong> – run <code>confluence_update_diagrams.py</code> to auto-create all diagrams from the tables in Sections 9-13.</li>
+      <li><strong>Implementation pack</strong> – run <code>confluence_generate_implementation_pack.py</code> to output Terraform scaffolds and delivery summary from the completed HLD.</li>
+    </ol>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="info">
+  <ac:parameter ac:name="title">How to Use This Page</ac:parameter>
+  <ac:rich-text-body>
+    <ol>
+      <li><strong>Step 1 - Discovery inputs (Sections 1-6)</strong>: complete Section 1 Solution Overview, Section 2 Introduction, Section 3 Background, Section 4 Pain Points, Section 5 Functional Requirements, and Section 6 Non-Functional Requirements.</li>
+      <li><strong>Step 2 - Design decisions and data model (Sections 7-13)</strong>: complete Section 7 HLD Options, Section 8 Pattern Selection, Section 9 Context Entities, Section 10 Architecture Components, Section 11 Architecture Connections, Section 12 Data Flow Entries, and Section 13 Dataset Inventory.</li>
+      <li><strong>Step 3 - Section 14 (Auto-Generated Diagrams)</strong>: run <code>confluence_update_diagrams.py</code> after Sections 9-13 are populated. This creates the Context, C4 Logical, Architecture, Data Flow, and Dataset Relationship diagrams in Section 14.</li>
+      <li><strong>Step 4 - Section 15 (LLD Summary)</strong>: capture final design decisions, owners, and status updates agreed at HLD sign-off.</li>
+      <li><strong>Step 5 - Section 16 (Solution Option Cost Comparison)</strong>: record option-level cost inputs and recommendation rationale for governance approval.</li>
+      <li><strong>Step 6 - Section 17 (Implementation Handover)</strong>: complete handover scope, dependencies, plan links, and delivery readiness notes.</li>
+      <li><strong>Step 7 - Generate implementation pack</strong>: run <code>confluence_generate_implementation_pack.py</code> to generate Terraform scaffolds and delivery summary from the completed HLD content.</li>
     </ol>
   </ac:rich-text-body>
 </ac:structured-macro>
@@ -446,6 +479,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <div style="background-color: #f0f8f0; border-left: 5px solid #059669; padding: 15px; margin: 20px 0; border-radius: 4px;">
   <h2 id="section8" style="color: #059669; margin-top: 0;">8. Pattern Selection</h2>
 <p><em>Select the approved UKHSA patterns for the chosen HLD option. See the UKHSA Cloud Strategy & Approved patterns.md file for pattern reference.</em></p>
+<p><em>Secure by Design reference:</em> <a href=""" + html.escape(SECURE_BY_DESIGN_SAT_URL, quote=True) + """>UKHSA Secure by Design - SAT Template v2.6</a></p>
 
   <h3 id="section8a" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8a. Ingestion Patterns</h3>
 <table>
@@ -508,10 +542,11 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <table>
   <thead><tr><th>Entity Name</th><th>Type (User / System / Partner / Service)</th><th>Interaction Description</th><th>Direction (In / Out / Both)</th></tr></thead>
   <tbody>
-    <tr><td></td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td>On-Prem Business App</td><td>System</td><td>Produces daily surveillance files via SFTP export</td><td>Out</td></tr>
+    <tr><td>On-Prem SFTP Server</td><td>System</td><td>Stages and relays files for secure cloud transfer</td><td>Both</td></tr>
+    <tr><td>UKHSA Intra Identity (Azure Entra ID)</td><td>Service</td><td>Provides SSO and MFA authentication for transfer users and support access</td><td>Both</td></tr>
+    <tr><td>Data Analyst Team</td><td>User</td><td>Consumes validated data outputs</td><td>In</td></tr>
+    <tr><td>Security Operations</td><td>Service</td><td>Reviews logs and alerts</td><td>In</td></tr>
   </tbody>
 </table>
 
@@ -519,18 +554,29 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <!-- SECTION 10: ARCHITECTURE COMPONENTS -->
 <div style="background-color: #f8f0e8; border-left: 5px solid #EA580C; padding: 15px; margin: 20px 0; border-radius: 4px;">
   <h2 id="section10" style="color: #EA580C; margin-top: 0;">10. Architecture Components</h2>
-<p><em>Drives the <strong>Solution Architecture</strong> and <strong>Logical View</strong> diagrams. Valid layers: <strong>Edge, Network, Platform, Application, Data</strong></em></p>
+<p><em>Drives the <strong>Solution Architecture</strong> and <strong>Logical View</strong> diagrams. Valid layers: <strong>Edge, Network, Platform, Application, Data, Security, Governance</strong></em></p>
 <table>
   <thead>
     <tr><th>No</th><th>Component Name</th><th>Layer</th><th>Technology / Service</th><th>Cloud (AWS/Azure/Both)</th><th>Description</th><th>Links to FR/NFR</th></tr>
   </thead>
   <tbody>
-    <tr><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>4</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>5</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>6</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td colspan="7"><strong>Core Infrastructure Components</strong></td></tr>
+    <tr><td>1</td><td></td><td>Edge</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>2</td><td></td><td>Network</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>3</td><td></td><td>Platform</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>4</td><td></td><td>Application</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>5</td><td></td><td>Data</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td colspan="7"><strong>Security Layer Components</strong></td></tr>
+    <tr><td>6</td><td>Identity & Access Management (IAM)</td><td>Security</td><td>AWS IAM / Azure Entra ID</td><td>Both</td><td>User authentication, authorization, and role-based access control across all layers</td><td>NFR4</td></tr>
+    <tr><td>7</td><td>Encryption at Rest & Transit</td><td>Security</td><td>AWS KMS / Azure Key Vault</td><td>Both</td><td>Data encryption for storage and network communications</td><td>NFR4, NFR5</td></tr>
+    <tr><td>8</td><td>Secret Management</td><td>Security</td><td>AWS Secrets Manager / Azure Key Vault</td><td>Both</td><td>Secure storage and rotation of credentials, API keys, database passwords</td><td>NFR4</td></tr>
+    <tr><td>9</td><td>Network Security & DDoS Protection</td><td>Security</td><td>AWS WAF, Shield / Azure DDoS Protection</td><td>Both</td><td>Web application firewall and distributed denial-of-service mitigation</td><td>NFR2, NFR4</td></tr>
+    <tr><td>10</td><td>Threat Detection & Response</td><td>Security</td><td>AWS GuardDuty / Azure Defender</td><td>Both</td><td>Continuous monitoring for threats and automated incident response</td><td>NFR4</td></tr>
+    <tr><td colspan="7"><strong>Governance Layer Components</strong></td></tr>
+    <tr><td>11</td><td>Audit Logging & Compliance Monitoring</td><td>Governance</td><td>AWS CloudTrail / Azure Activity Log</td><td>Both</td><td>Complete audit trail of all API calls, user actions, and configuration changes</td><td>NFR6</td></tr>
+    <tr><td>12</td><td>Policy Enforcement & Management</td><td>Governance</td><td>AWS Config / Azure Policy</td><td>Both</td><td>Automated policy compliance checking and remediation across infrastructure</td><td>NFR6</td></tr>
+    <tr><td>13</td><td>Data Lineage & Governance</td><td>Governance</td><td>AWS Glue / Azure Purview</td><td>Both</td><td>Track data provenance, ownership, and transformation lineage for governance</td><td>NFR5, NFR6</td></tr>
+    <tr><td>14</td><td>Cost Optimization & Usage Monitoring</td><td>Governance</td><td>AWS Cost Explorer / Azure Cost Management</td><td>Both</td><td>Monitor spend, optimize resource utilization, and enforce cost controls</td><td>NFR9</td></tr>
   </tbody>
 </table>
 
@@ -578,10 +624,10 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
     <tr><th>ID</th><th>Dataset Name</th><th>Type (Structured/Semi/Unstructured)</th><th>Source System</th><th>Primary Key</th><th>Sensitivity</th><th>Volume Estimate</th><th>Retention Period</th></tr>
   </thead>
   <tbody>
-    <tr><td>D1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>D2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>D3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>D4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>D1</td><td>Patient Demographics</td><td>Structured</td><td>UKHSA On-Prem</td><td>patient_id</td><td>Official-Sensitive</td><td>100GB</td><td>7 years</td></tr>
+    <tr><td>D2</td><td>Medical History</td><td>Structured</td><td>UKHSA On-Prem</td><td>record_id</td><td>Official-Sensitive</td><td>500GB</td><td>10 years</td></tr>
+    <tr><td>D3</td><td>Lab Results</td><td>Structured</td><td>UKHSA AWS</td><td>result_id</td><td>Official-Sensitive</td><td>250GB</td><td>5 years</td></tr>
+    <tr><td>D4</td><td>Audit Trail</td><td>Structured</td><td>UKHSA AWS</td><td>audit_id</td><td>Secret</td><td>50GB</td><td>3 years</td></tr>
   </tbody>
 </table>
 
@@ -592,9 +638,35 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
     <tr><th>From Dataset</th><th>To Dataset</th><th>Relationship Type (1:1 / 1:N / M:N)</th><th>Key Mapping (e.g. patient_id)</th><th>Notes</th></tr>
   </thead>
   <tbody>
-    <tr><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Patient Demographics</td><td>Medical History</td><td>1:N</td><td>patient_id → patient_id</td><td>One patient has many medical records</td></tr>
+    <tr><td>Patient Demographics</td><td>Lab Results</td><td>1:N</td><td>patient_id → patient_id</td><td>One patient has many lab results</td></tr>
+    <tr><td>Medical History</td><td>Lab Results</td><td>M:N</td><td>record_id ↔ lab_id</td><td>Multiple records can have multiple lab tests</td></tr>
+  </tbody>
+</table>
+
+</div>
+<!-- SECTION 13B: NETWORK SEGMENTATION INPUTS -->
+<div style="background-color: #eef6ff; border-left: 5px solid #1D4ED8; padding: 15px; margin: 20px 0; border-radius: 4px;">
+  <h2 id="section13b" style="color: #1D4ED8; margin-top: 0;">13b. Network Segmentation Inputs</h2>
+<p><em>Provides explicit inputs for the <strong>Network Segregation diagram</strong> so it matches AWS reference architecture clarity.</em></p>
+<table>
+  <thead>
+    <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>VPC CIDR</td><td>10.0.0.0/16</td><td>Primary workload VPC range</td></tr>
+    <tr><td>Public Subnet CIDR</td><td>10.0.1.0/24</td><td>Ingress / ALB</td></tr>
+    <tr><td>Private Subnet CIDR</td><td>10.0.2.0/24</td><td>Application runtime</td></tr>
+    <tr><td>Data Subnet CIDR</td><td>10.0.3.0/24</td><td>RDS/data services</td></tr>
+    <tr><td>On-Prem CIDR</td><td>172.16.0.0/16</td><td>Corporate/legacy network</td></tr>
+    <tr><td>Connectivity Type</td><td>Site-to-Site VPN</td><td>Or Direct Connect + VPN backup</td></tr>
+    <tr><td>Public Ingress Path</td><td>Internet -> IGW -> ALB</td><td>North-south ingress</td></tr>
+    <tr><td>Private Ingress Path</td><td>On-prem -> VPN -> Private Route Table -> EKS</td><td>Hybrid private access</td></tr>
+    <tr><td>Public SG Rules</td><td>HTTP(80), HTTPS(443)</td><td>Internet-facing controls</td></tr>
+    <tr><td>Private SG Rules</td><td>Internal east-west only</td><td>No direct internet</td></tr>
+    <tr><td>Data SG Rules</td><td>DB ports (3306, 5432, 6379)</td><td>Strict application-to-data only</td></tr>
+    <tr><td>Public Route</td><td>0.0.0.0/0 via IGW</td><td>Public subnet route table</td></tr>
+    <tr><td>Private Route</td><td>On-prem CIDR via VPN</td><td>Private subnet route table</td></tr>
   </tbody>
 </table>
 
@@ -602,17 +674,20 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <!-- SECTION 14: AUTO-GENERATED DIAGRAMS -->
 <div style="background-color: #e8f8f0; border-left: 5px solid #059669; padding: 15px; margin: 20px 0; border-radius: 4px;">
   <h2 id="section14" style="color: #059669; margin-top: 0;">14. Auto-Generated Diagrams</h2>
-<p><em>All architectural diagrams are auto-generated from the tables above (Sections 10-13) and maintained on a separate page for clarity and editability.</em></p>
+<p><em>All architectural diagrams are auto-generated from the tables above (Sections 10-13b) and maintained on a separate page for clarity and editability.</em></p>
 
 <p><strong>To generate or update diagrams:</strong> Run <code>confluence_update_diagrams.py</code> after completing the architecture tables.</p>
 
 <p style="margin-top: 15px; font-size: 16px;"><strong><ac:link><ri:page ri:space-key="CDA" ri:content-title="Architecture Diagrams" /></ac:link></strong></p>
+<p style="margin-top: 10px; font-size: 16px;"><strong><ac:link><ri:page ri:space-key="CDA" ri:content-title="Architecture Patterns Reference" /></ac:link></strong></p>
+
+<p><em>Use the <strong>Architecture Patterns Reference</strong> page to pick reusable Security, Network, Governance, DPIA/DSA, and EDAP-aligned integration patterns.</em></p>
 
 <h3>Diagram Types Generated</h3>
 <ul>
   <li><strong>Context View</strong> – System boundary and external entities</li>
   <li><strong>Logical View</strong> – Services by responsibility and interaction</li>
-  <li><strong>Solution Architecture</strong> – Layer-based component view (Edge, Network, Platform, Application, Data)</li>
+  <li><strong>Solution Architecture</strong> – Layer-based component view (Edge, Network, Platform, Application, Data, Security, Governance)</li>
   <li><strong>Data Flow Diagram (DFD)</strong> – All data movements between components</li>
   <li><strong>Dataset Relationship Diagram (ERD)</strong> – Datasets and their relationships</li>
   <li><strong>Authentication Flow</strong> – OAuth2/Cognito authentication sequence</li>
@@ -694,6 +769,738 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 """
 
 
+def build_approved_patterns_page_html() -> str:
+  """Create a dedicated reusable approved-patterns reference page."""
+  secure_by_design_link = html.escape(SECURE_BY_DESIGN_SAT_URL, quote=True)
+  return """
+<h1>Architecture Patterns Reference</h1>
+
+<p><em>Reusable reference designs for Security, Network, Governance, DPIA/DSA, and EDAP integration patterns. Use this page to select a baseline structure quickly for new HLD designs. EDAP integration patterns are sourced from the <a href="https://ukhsa.atlassian.net/wiki/spaces/EDAP/pages/165353198/AWS+High+Level+Design">EDAP AWS High Level Design</a> and <a href="https://ukhsa.atlassian.net/wiki/spaces/EDAP/pages/165357494/AWS+Technical+Design">EDAP AWS Technical Design</a> pages.</em></p>
+
+<ac:structured-macro ac:name="info">
+  <ac:parameter ac:name="title">How to Use This Page</ac:parameter>
+  <ac:rich-text-body>
+    <ol>
+      <li>Select the required domain pattern(s) from the catalog below.</li>
+      <li>Copy the pattern ID(s) and rationale into Section 8 (Pattern Selection) on the main HLD page.</li>
+      <li>Apply mandatory controls listed for each pattern at all layers.</li>
+      <li>For analytics workloads, ensure EDAP integration is explicit in the selected pattern.</li>
+    </ol>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>Policy and Standards Coverage</h2>
+<table>
+  <thead><tr><th>Domain</th><th>Reference</th></tr></thead>
+  <tbody>
+    <tr><td>Security baseline</td><td><a href=\"https://www.cisecurity.org/cis-benchmarks\">CIS Benchmarks</a></td></tr>
+    <tr><td>Enterprise guardrails</td><td><a href=\"https://ukhsa.atlassian.net/wiki/spaces/AT/pages/170626343/Enterprise+Guide+Rails+Catalogue+Strategic?pageId=170626343\">Enterprise Guide Rails Catalogue</a></td></tr>
+    <tr><td>Frameworks and legislation</td><td><a href=\"https://ukhsa.atlassian.net/wiki/spaces/CCE/pages/176654107/Frameworks+and+Legislations\">Security Frameworks and Legislations</a></td></tr>
+    <tr><td>Network architecture</td><td><a href=\"https://ukhsa.atlassian.net/wiki/spaces/HALO/pages/172255190/Network+Design\">Network Design</a> | <a href=\"https://ukhsa.atlassian.net/wiki/spaces/HIDM/pages/167629598/Strategic+Network+Summary\">Strategic Network Summary</a> | <a href=\"https://ukhsa.atlassian.net/wiki/spaces/AT/pages/170627256/Cloud+Network+Security+Pattern\">Cloud Network Security Pattern</a></td></tr>
+    <tr><td>Governance controls</td><td><a href=\"https://ukhsa.atlassian.net/wiki/spaces/UAOM/pages/484737698/Governance+controls\">Governance controls</a> | <a href=\"https://ukhsa.atlassian.net/wiki/spaces/EDCE/pages/448954953/Governance+Domains\">Governance Domains</a> | <a href=\"https://ukhsa.atlassian.net/wiki/spaces/ICTPMO/pages/175112629/Governance+risks+and+issues\">Governance risks and issues</a></td></tr>
+    <tr><td>DPIA / Data sharing</td><td><a href=\"https://ukhsa.atlassian.net/wiki/spaces/HALO/pages/172194466/UKHSA+Cloud+Platform+Data+Protection+Impact+Assessment+DPIA+Review+Process\">DPIA Review Process</a> | <a href=\"https://ukhsa.atlassian.net/wiki/spaces/EDGE/pages/164039010/Data+sharing+arrangements+WIP\">Data sharing arrangements (WIP)</a></td></tr>
+    <tr><td>ITSM operations</td><td><a href=\"https://ukhsa.atlassian.net/wiki/spaces/ISM/pages/167627576/ITSM+Problem+Management+Policy\">ITSM Problem Management Policy</a></td></tr>
+    <tr><td>Secure by Design</td><td><a href=\""" + secure_by_design_link + "\">UKHSA Secure by Design - SAT Template v2.6</a></td></tr>
+  </tbody>
+</table>
+
+<h2>Approved Pattern Catalog</h2>
+<table>
+  <thead><tr><th>Pattern ID</th><th>Domain</th><th>Reusable Structure</th><th>Use When</th><th>Mandatory Controls</th><th>EDAP Alignment</th></tr></thead>
+  <tbody>
+    <tr><td>SEC-01</td><td>Security</td><td>Zero-Trust baseline (IAM, RBAC, KMS, secrets, audit)</td><td>All cloud solutions</td><td>CIS hardening, least privilege, encryption in transit/at rest, audit logging</td><td>Required for EDAP-integrated analytics workloads</td></tr>
+    <tr><td>NET-01</td><td>Network</td><td>Segmented VPC (public/private/data subnets, SG/NACL, controlled routes)</td><td>Any workload with private data or hybrid connectivity</td><td>Cloud Network Security Pattern, route isolation, explicit ingress/egress paths</td><td>Use for EDAP producer/consumer connectivity patterns</td></tr>
+    <tr><td>GOV-01</td><td>Governance</td><td>Policy and assurance overlay (control owners, evidence, review cadence)</td><td>Regulated or high-impact solutions</td><td>Governance controls/domains, risk register linkage, decision traceability</td><td>Map controls to EDAP data and platform ownership</td></tr>
+    <tr><td>DPIA-01</td><td>Data protection</td><td>DPIA + DSA integrated design gate</td><td>Personal data or cross-team sharing</td><td>DPIA completion criteria, DSA checkpoints, minimisation and retention controls</td><td>Mandatory for analytics onboarding to EDAP</td></tr>
+    <tr><td>OPS-01</td><td>Operations</td><td>ITSM-ready operating model (incident/problem/change, observability)</td><td>Production service handover</td><td>ITSM policy alignment, runbooks, alerting and ownership model</td><td>Align EDAP support boundaries and escalation paths</td></tr>
+    <tr><td>SBD-01</td><td>Secure by Design</td><td>Threat modelling and abuse-case analysis baseline</td><td>New capabilities or material architecture changes</td><td>Documented threat model, trust boundaries, mitigations linked to NFR4/NFR6</td><td>Required before promoting to beta/live gates</td></tr>
+    <tr><td>SBD-02</td><td>Secure by Design</td><td>Secure SDLC and supply chain assurance</td><td>Any CI/CD-based deployment</td><td>SAST/DAST/SCA gates, signed artifacts, dependency governance, change approvals</td><td>Required for automated deployment pathways</td></tr>
+    <tr><td>SBD-03</td><td>Secure by Design</td><td>Data protection and privacy-by-design controls</td><td>Sensitive, personal, or shared data processing</td><td>DPIA checkpoints, minimisation, retention, masking/tokenisation, lawful basis</td><td>Map controls to dataset inventory and flows</td></tr>
+    <tr><td>SBD-04</td><td>Secure by Design</td><td>Security telemetry and continuous assurance pattern</td><td>Operational services requiring ongoing compliance visibility</td><td>Central logging, alerting, audit evidence, policy drift detection, periodic control testing</td><td>Feed governance and operational review cadences</td></tr>
+  </tbody>
+</table>
+
+<h2>Pattern Diagrams (Reference)</h2>
+<p><em>These blocks are the dedicated locations for approved-pattern diagrams and explanations.</em></p>
+
+<h3>Security Pattern Diagram (SEC-01)</h3>
+<p><strong>Diagram block:</strong> [[DIAGRAM:approved-pattern-security]]</p>
+<p><strong>Explanation:</strong> Shows baseline controls at all layers: identity, encryption, secrets, logging, and monitoring.</p>
+
+<h3>Network Pattern Diagram (NET-01)</h3>
+<p><strong>Diagram block:</strong> [[DIAGRAM:approved-pattern-network]]</p>
+<p><strong>Explanation:</strong> Shows segmented network structure with ingress, private east-west paths, and data subnet isolation.</p>
+
+<h3>Governance Controls Pattern (GOV-01)</h3>
+<p><strong>Diagram block:</strong> [[DIAGRAM:approved-pattern-governance]]</p>
+<p><strong>Explanation:</strong> Shows governance domains, control ownership, evidence points, and risk/issue integration.</p>
+
+<h3>DPIA + DSA Pattern (DPIA-01)</h3>
+<p><strong>Diagram block:</strong> [[DIAGRAM:approved-pattern-dpia-dsa]]</p>
+<p><strong>Explanation:</strong> Shows privacy impact assessment and data sharing checkpoints through design, build, and operate stages.</p>
+
+<h3>EDAP Integration Pattern (EDAP-01)</h3>
+<p><strong>Diagram block:</strong> [[DIAGRAM:approved-pattern-edap]]</p>
+<p><strong>Explanation:</strong> Shows how new analytics services integrate with EDAP as the target AWS analytics platform.</p>
+
+<h2>Design Pick Checklist</h2>
+<ul>
+  <li>Selected pattern IDs captured in Section 8 of the main HLD page.</li>
+  <li>Security and governance controls applied at Edge, Network, Platform, Application, and Data layers.</li>
+  <li>DPIA/DSA obligations identified and linked to design decisions.</li>
+  <li>EDAP integration confirmed for analytics requirements (or exception justified).</li>
+</ul>
+
+<h2>EDAP Integration Patterns</h2>
+<p><em>The following patterns are sourced from the UKHSA Enterprise Data Analytics Platform (EDAP) — UKHSA's approved AWS analytical platform. All new data solutions with an analytics or reporting requirement must evaluate these patterns before designing a bespoke alternative.</em></p>
+<p><strong>EDAP References:</strong>
+  <a href="https://ukhsa.atlassian.net/wiki/spaces/EDAP/pages/165353198/AWS+High+Level+Design">EDAP AWS High Level Design</a> |
+  <a href="https://ukhsa.atlassian.net/wiki/spaces/EDAP/pages/165357494/AWS+Technical+Design">EDAP AWS Technical Design</a>
+</p>
+
+<ac:structured-macro ac:name="info">
+  <ac:parameter ac:name="title">EDAP Mandate</ac:parameter>
+  <ac:rich-text-body>
+    <p>Analytics workloads must integrate with EDAP as the target AWS analytics platform unless a formal exception is approved via the Architecture Review Board. Document your EDAP decision in Section 8 (Pattern Selection) of the HLD.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>EDAP-INT-01: Source2Ingest – SFTP Push Pattern</h3>
+<p><em>Reference: EDAP AWS Technical Design §6.1</em></p>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>EDAP-INT-01</td></tr>
+    <tr><th>Name</th><td>Source2Ingest – SFTP Push</td></tr>
+    <tr><th>Use When</th><td>A third-party system initiates a file transfer into EDAP using SFTP protocol (push from external source)</td></tr>
+    <tr><th>Integration Mechanism</th><td>Third party → Network Load Balancer (port 22, Elastic IPs per AZ) → AWS Transfer Family Server (VPC-hosted, Internal) → S3 Ingestion/Staging bucket → EventBridge notification → Antivirus scan → S3 Ingestion/Cleared → Step Functions Ingestion2Raw workflow</td></tr>
+    <tr><th>Approved AWS Services</th><td>AWS Transfer Family (SFTP, domain: S3), Network Load Balancer, Amazon S3 (Ingestion Layer: Staging + Cleared sublayers), Amazon EventBridge, AWS IAM (per-user scoped S3 roles), AWS CloudWatch Logs</td></tr>
+    <tr><th>Network Path</th><td>VPC-hosted Transfer Family endpoint (Internal access). Elastic IPs attached to NLB in public subnets per AZ. IP filtering performed by external firewall or Network ACL. No public S3 access — all traffic within VPC via S3 Gateway VPC Endpoint.</td></tr>
+    <tr><th>Authentication</th><td>Service-managed identity provider on Transfer Family. Each source system has a dedicated Transfer Family user mapped to its own S3 bucket/prefix. IAM role per user scoped to target prefix only (trust: transfer.amazonaws.com).</td></tr>
+    <tr><th>File Processing</th><td>Files land in Ingestion/Staging. Cloud Storage Security antivirus scans each file. Clean files move to Ingestion/Cleared (triggers I2R). Infected files quarantined. EventBridge filters error folders to suppress reprocessing loops.</td></tr>
+    <tr><th>Encryption</th><td>SSE-KMS on all Ingestion S3 buckets. Bucket policy rejects unencrypted uploads and non-KMS encryption. Lifecycle rule moves objects to low-cost storage after 2 years. Transfer Family security policy: TransferSecurityPolicy-2020-06.</td></tr>
+    <tr><th>Logging</th><td>Transfer Family activity logged to CloudWatch Logs group /aws/transfer/&lt;server-name&gt; via dedicated IAM logging role. S3 data events via CloudTrail.</td></tr>
+  </tbody>
+</table>
+
+<h3>EDAP-INT-02: Source2Ingest – Pull-Based Ingestion Pattern</h3>
+<p><em>Reference: EDAP AWS Technical Design §6.2 (SFTP Pull), §6.3 (REST API Pull), §6.5 (S3 Pull), §6.8 (Screen Scraping)</em></p>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>EDAP-INT-02</td></tr>
+    <tr><th>Name</th><td>Source2Ingest – Pull-Based Ingestion (SFTP / REST API / S3)</td></tr>
+    <tr><th>Use When</th><td>EDAP must retrieve data from an external system on a schedule — remote SFTP server, REST API, external S3 bucket, or web source</td></tr>
+    <tr><th>Integration Mechanism</th><td>EventBridge scheduled rule → ECS Fargate task (containerised client: RClone for SFTP, custom Python for APIs, AWS Sync for S3) → AppConfig (task config, versioned JSON) + Secrets Manager (credentials) → S3 Ingestion/Staging bucket</td></tr>
+    <tr><th>Approved AWS Services</th><td>Amazon ECS (Fargate), Amazon ECR (private repositories, vulnerability scanning enabled), Amazon EventBridge (scheduling), AWS AppConfig (configuration), AWS Secrets Manager (credentials), Amazon S3 (Ingestion Layer), AWS IAM</td></tr>
+    <tr><th>Network Path</th><td>Fargate tasks run in private subnets. S3 and AppConfig accessed via VPC Gateway/Interface Endpoints. External API/SFTP calls routed through NAT Gateway in public subnets. ECR images pulled via ECR VPC Endpoint.</td></tr>
+    <tr><th>Configuration</th><td>All task parameters (origin, credentials reference, target bucket/prefix, directories) stored in AWS AppConfig as versioned JSON documents. Credential secrets stored in AWS Secrets Manager — never in AppConfig or task definition.</td></tr>
+    <tr><th>AppFlow Alternative</th><td>Where an Amazon AppFlow native connector exists for the source SaaS system, AppFlow is the preferred option over a custom Fargate container (per Prefer Native AWS Services principle).</td></tr>
+    <tr><th>Mandatory Controls</th><td>ECR repositories private; images scanned on push; task IAM role scoped to target S3 prefix only; concurrent executions limited by EventBridge schedule configuration; logs written to CloudWatch via awslogs driver.</td></tr>
+  </tbody>
+</table>
+
+<h3>EDAP-INT-03: Source2Ingest – Streaming and Event Ingestion Pattern</h3>
+<p><em>Reference: EDAP AWS Technical Design §6.4 (Stream), §6.13 (Event)</em></p>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>EDAP-INT-03</td></tr>
+    <tr><th>Name</th><td>Source2Ingest – Streaming and Event-Based Ingestion</td></tr>
+    <tr><th>Use When</th><td>A third-party system sends continuous streamed records or discrete EventBridge events that must land directly in the EDAP Raw Layer in near-real-time (bypasses Ingestion Layer)</td></tr>
+    <tr><th>Integration Mechanism</th><td><strong>Streaming:</strong> Source → Kinesis Firehose Delivery Stream (Direct PUT) → Lambda transformation (RRD tagging + Parquet conversion, AppConfig-driven) → S3 Raw Layer (Parquet, Snappy compressed). <strong>Event:</strong> Third-party EventBridge source → EventBridge Rule (cross-account) → Kinesis Firehose → Lambda → S3 Raw Layer.</td></tr>
+    <tr><th>Approved AWS Services</th><td>Amazon Kinesis Data Firehose, AWS Lambda (data transformation + RRD tagging), Amazon EventBridge (cross-account event bus rules), Amazon S3 (Raw Layer), AWS AppConfig (transformation config), AWS KMS (stream + bucket encryption)</td></tr>
+    <tr><th>Data Format</th><td>Kinesis Firehose record format conversion enabled. Output: Apache Parquet, Snappy compression. Schema derived from Glue Data Catalog. RRD metadata columns added by Lambda (SourceSystemId, DataPipelineId, VisibilityCode, timestamps).</td></tr>
+    <tr><th>Error Handling</th><td>Failed Lambda transformation records delivered to S3 processing-failed prefix. CloudWatch Firehose metrics monitored. Lambda logs errors to CloudWatch under /aws/lambda/&lt;function-name&gt;.</td></tr>
+    <tr><th>Kafka Integration</th><td>Kafka sources use AWSLabs kinesis-kafka-connector in a Fargate container. Connector config fetched from AppConfig on startup (topics, Delivery Stream target).</td></tr>
+    <tr><th>Mandatory Controls</th><td>KMS CMK encryption on Firehose queue and target S3 bucket; EventBridge resource policy restricts source accounts; IAM role per stream source scoped to target Firehose only; persistence KMS-configured on Delivery Stream; buffer size/timeout configured per stream requirements.</td></tr>
+  </tbody>
+</table>
+
+<h3>EDAP-INT-04: Source2Ingest – Azure / Cross-Cloud Object Storage Ingestion Pattern</h3>
+<p><em>Reference: EDAP AWS Technical Design §6.7 (Azure Object Storage Pull), §6.10 (S3 Replication), §6.12 (DMS)</em></p>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>EDAP-INT-04</td></tr>
+    <tr><th>Name</th><td>Source2Ingest – Azure / Cross-Cloud and Database Migration Ingestion</td></tr>
+    <tr><th>Use When</th><td>Source data resides in Azure Blob Storage, an external AWS S3 bucket, or an external relational database requiring bulk or incremental migration into EDAP</td></tr>
+    <tr><th>Integration Mechanism</th><td><strong>Azure Blob:</strong> AWS DataSync Agent (deployed as VHD in Azure) → DataSync Task (scheduled) → S3 Ingestion/Staging. <strong>External S3:</strong> AWS DataSync S3 Locations (source + target) → DataSync Task → S3 Ingestion/Staging. <strong>Database:</strong> AWS DMS Replication Task (per source database) → S3 Ingestion Layer.</td></tr>
+    <tr><th>Approved AWS Services</th><td>AWS DataSync (tasks, schedules, S3/Azure locations), AWS DataSync Agent (VHD deployment in Azure), AWS DMS (Database Migration Service), Amazon S3 (Ingestion Layer), AWS IAM (source + target roles), AWS CloudWatch (DataSync monitoring)</td></tr>
+    <tr><th>Authentication – Azure</th><td>AWS DataSync Agent authenticates to Azure Blob using Azure storage account credentials. UKHSA Azure AD (Entra ID) federated to AWS IAM via IAM Federation for human-operated tasks. AD Connector for AWS Workspaces user authentication.</td></tr>
+    <tr><th>Network Path</th><td>DataSync Agent in Azure communicates outbound to AWS DataSync service endpoints over HTTPS. No inbound firewall rules required in Azure. DataSync Agent in AWS scenario uses IAM roles; no agent required for AWS-to-AWS S3 transfers.</td></tr>
+    <tr><th>Alternative (SFTP Pull)</th><td>For Azure-sourced data that does not use Blob Storage, the SFTP Pull Fargate pattern (EDAP-INT-02) using RClone with Azure as source is a supported alternative.</td></tr>
+    <tr><th>Mandatory Controls</th><td>DataSync CloudWatch log group configured with resource policy granting DataSync permissions; IAM roles scoped to source/target prefixes; KMS encryption on target S3 buckets; DMS source endpoints require read-only database credentials in Secrets Manager; CloudTrail data events on Ingestion buckets.</td></tr>
+  </tbody>
+</table>
+
+<h3>EDAP-INT-05: Ingestion-to-Raw (I2R) Processing Pipeline Pattern</h3>
+<p><em>Reference: EDAP AWS Technical Design §8 (Ingestion2Raw), §8.1 (RRD Tagging), §10 (Raw2Conform)</em></p>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>EDAP-INT-05</td></tr>
+    <tr><th>Name</th><td>Ingestion2Raw and Raw2Conform Processing Pipeline</td></tr>
+    <tr><th>Use When</th><td>File-based ingested data in the Ingestion/Cleared sublayer must be validated, quality-checked, transformed to Parquet, RRD-tagged, and written to the Raw Layer; and subsequently conformed and written to the Conform Layer</td></tr>
+    <tr><th>Integration Mechanism</th><td><strong>I2R:</strong> EventBridge (S3 Ingestion/Cleared object created) → Step Functions I2R Workflow → Lambda (file format check → integrity check) → Glue DataBrew Profile Job (data quality) → Glue Job (Parquet transform + RRD tagging + Snappy compression) → S3 Raw Layer → Glue Crawler → Glue Data Catalog → Lake Formation. <strong>R2C:</strong> EventBridge (S3 Raw object or schedule) → Step Functions R2C Workflow → Glue Job (generic transform/copy, lookup, DataBrew transforms) → S3 Conform Layer → Redshift Spectrum (external tables) → Glue Crawler → Lake Formation.</td></tr>
+    <tr><th>Approved AWS Services</th><td>AWS Step Functions, AWS Lambda, AWS Glue (Jobs + DataBrew + Crawlers), Amazon S3 (Ingestion / Raw / Conform layers), Amazon SQS (lineage messages), AWS AppConfig (pipeline configuration), AWS Lake Formation (TBAC, filters, grants), Amazon Redshift (Spectrum external tables), AWS KMS, Amazon DynamoDB (workflow synchronisation)</td></tr>
+    <tr><th>RRD Tagging</th><td>Every Parquet file written to Raw Layer includes RRD metadata columns: CreatedBy, CreatedDate, LastUpdatedBy, LastUpdatedDate, SourceSystemId (format: S-XXXXXXXX), DataPipelineId (format: P-XXXXXXXX), SourceFileName, VisibilityCode (default: V-ZZZZZZ). Added by the Glue Parquet Transform Job and Lambda in streaming path.</td></tr>
+    <tr><th>Configuration</th><td>All I2R and R2C workflow steps driven by AppConfig versioned JSON per feed. Enables single generic Step Functions state machine for all feeds. Feed-specific Glue DataBrew Profile Jobs and transformation configs registered per origin.</td></tr>
+    <tr><th>Data Lineage</th><td>Every workflow step emits OpenLineage format messages to SQS Lineage Queue on START and END. Messages include job name, hierarchy, versions, data sources/targets, column-level lineage, SQL executed. Consumed by Data Governance tool.</td></tr>
+    <tr><th>Access Control</th><td>All Lambda and Glue Jobs use VPC network interfaces. S3 and service access via VPC Endpoints (Gateway for S3, Interface for others). Lake Formation Tag-Based Access Control (TBAC) on Raw and Conform layer tables. Column-level and row-level grants per role.</td></tr>
+    <tr><th>Mandatory Controls</th><td>SSE-KMS on all Raw and Conform S3 buckets; bucket policy rejects non-KMS uploads; Lifecycle rules per bucket; EventBridge filters error prefixes to prevent reprocessing loops; Glue job continuous logging to CloudWatch (/aws-glue/jobs/logs-v2); DataBrew quality failures halt pipeline and raise CloudWatch alarm.</td></tr>
+  </tbody>
+</table>
+
+<h3>EDAP-INT-06: Analytics Access, Virtualisation and Export Pattern</h3>
+<p><em>Reference: EDAP AWS Technical Design §14 (Export), §15 (Power BI), §16 (Data Virtualisation), §17 (Data Science), §18.6 (End User Auth)</em></p>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>EDAP-INT-06</td></tr>
+    <tr><th>Name</th><td>Analytics Access, Data Virtualisation and Export</td></tr>
+    <tr><th>Use When</th><td>Data scientists, BI dashboards, or external consumers need to query, visualise, or export data from EDAP's Raw, Conform, or DataMart layers</td></tr>
+    <tr><th>Integration Mechanism</th><td><strong>Ad-hoc Query (Data Scientists):</strong> Azure AD → IAM Federation → Athena Workgroup (per user) → Lake Formation → S3 Raw/Conform (Parquet) via Glue Catalog. Athena JDBC/ODBC with Azure AD integration for authentication. <strong>Dashboards (Power BI):</strong> Power BI Gateway (EC2, Windows, ≥2 instances, private subnets, multi-AZ) → Redshift (direct VPC) or Athena (VPC Endpoint). Power BI Service connects via HTTPS to Microsoft Azure Service Bus. <strong>Data Science/ML:</strong> SageMaker Notebook (VPC-only domain) → Lake Formation → Conform/DataMart via VPC Endpoints or Athena Federated Queries (Redshift Connector Lambda). <strong>Export API:</strong> Redshift Data API → API Gateway (Route53) → authenticated consumer. <strong>Scheduled Export:</strong> Step Functions Export Flow → Glue Job → Export Store (S3, Parquet) or Kinesis Data Stream.</td></tr>
+    <tr><th>Approved AWS Services</th><td>Amazon Athena (Workgroups, Federated Queries), Amazon Redshift (RA3 nodes, Spectrum, Data API), AWS Lake Formation, AWS Glue Data Catalog, Amazon QuickSight (Enterprise, VPC connection), Amazon SageMaker (Notebook instances, Model Registry, Batch Transform), Amazon WorkSpaces (AD Connector, Amazon Linux bundles), AWS Step Functions (Export Flow), Amazon Kinesis Data Streams (Export Stream), Amazon API Gateway, Amazon Route53, AWS KMS</td></tr>
+    <tr><th>Authentication</th><td>UKHSA Azure AD (Entra ID) federated to AWS IAM via IAM Federation. AD Connector bridges Azure AD to AWS Workspaces directory. MFA enforced for all user accounts. Athena access authenticated via Azure AD using Athena JDBC/ODBC drivers. Redshift user-activity logs sent to CloudWatch. IAM roles are read-only on required datasets only.</td></tr>
+    <tr><th>Data Scientist Workspaces</th><td>Amazon WorkSpaces in a dedicated VPC (separate from processing VPC per AWS recommendation). Predefined Amazon Linux hardened bundles with pre-installed git client. OS patches managed at OS level; tool patches via Amazon WorkSpaces Application Manager.</td></tr>
+    <tr><th>Export Controls</th><td>Export Store S3 buckets: SSE-KMS encryption, lifecycle rules. Export Flow triggered by: scheduled EventBridge rules, S3 event notifications, manual API/Console invocation, or end-of-pipeline EventBridge events. All exported files crawled and registered in Glue Catalog. Kinesis Data Streams per export topic: SSE-KMS encrypted.</td></tr>
+    <tr><th>Mandatory Controls</th><td>Athena per-user Workgroup with dedicated S3 query results bucket (SSE-KMS); Lake Formation fine-grained access enforced for all Athena and Redshift Spectrum queries; Power BI Gateway RDP access restricted by Security Group; Redshift not internet-facing (private subnets); all Redshift audit logs to CloudWatch; API Gateway with Route53 for Export REST API; QuickSight Enterprise enabled in account.</td></tr>
+  </tbody>
+</table>
+
+<h3>EDAP Integration Pattern Summary</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Primary Use Case</th><th>Key AWS Services</th><th>EDAP Layer</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>EDAP-INT-01</td><td>Source2Ingest – SFTP Push</td><td>Third-party pushes files via SFTP into EDAP</td><td>Transfer Family, NLB, S3, EventBridge, Antivirus (Cloud Storage Security)</td><td>Ingestion (Staging → Cleared)</td></tr>
+    <tr><td>EDAP-INT-02</td><td>Source2Ingest – Pull Ingestion</td><td>EDAP pulls from SFTP servers, REST APIs, or S3</td><td>ECS Fargate, ECR, AppConfig, Secrets Manager, EventBridge, S3</td><td>Ingestion (Staging)</td></tr>
+    <tr><td>EDAP-INT-03</td><td>Source2Ingest – Streaming / Event</td><td>Continuous streamed records or EventBridge events into Raw Layer</td><td>Kinesis Firehose, Lambda, EventBridge, AppConfig, KMS</td><td>Raw (direct — bypasses Ingestion)</td></tr>
+    <tr><td>EDAP-INT-04</td><td>Source2Ingest – Azure / Cross-Cloud</td><td>Sync from Azure Blob, external S3, or external databases</td><td>AWS DataSync, DataSync Agent (Azure VHD), AWS DMS, S3, IAM</td><td>Ingestion (Staging)</td></tr>
+    <tr><td>EDAP-INT-05</td><td>Ingestion2Raw + Raw2Conform Pipeline</td><td>Transform, quality-check, RRD-tag, Parquet-convert and govern ingested data</td><td>Step Functions, Glue (Jobs/DataBrew/Crawlers), Lambda, Lake Formation, SQS (lineage), AppConfig, Redshift Spectrum</td><td>Ingestion/Cleared → Raw → Conform</td></tr>
+    <tr><td>EDAP-INT-06</td><td>Analytics Access and Export</td><td>Query, visualise, ML, and export data from EDAP layers</td><td>Athena, Redshift, Lake Formation, SageMaker, WorkSpaces, Power BI Gateway, QuickSight, API Gateway, Kinesis Streams</td><td>Raw / Conform / DataMart</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- SECTION: UKHSA INFRASTRUCTURE PATTERNS                        -->
+<!-- Source: Baseline Current State Architecture (Sections 3–6)   -->
+<!-- ============================================================ -->
+
+<h2>UKHSA Infrastructure Patterns</h2>
+<p><em>Sourced from the <strong>UKHSA Baseline Current State Architecture</strong>. These patterns define the approved landing zone, connectivity, identity, DNS, and platform structures that all workloads must align with. Deviations require Architecture Review Board approval.</em></p>
+
+<h3>UKHSA-INF-01: Landing Zone Pattern</h3>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>UKHSA-INF-01</td></tr>
+    <tr><th>Name</th><td>UKHSA Strategic Landing Zone Placement</td></tr>
+    <tr><th>Strategic Landing Zones</th><td><strong>UKHSA Azure LZ</strong> (PHECloud tenant) — primary Azure target; <strong>UKHSA AWS LZ</strong> (HALO / Test &amp; Trace accounts) — primary AWS target</td></tr>
+    <tr><th>Legacy LZs (Decommissioning)</th><td>PHE Azure LZ, NIHP Azure LZ, PHE AWS LZ — all being decommissioned. No new workloads permitted.</td></tr>
+    <tr><th>Mandate</th><td>All new workloads must be deployed to a strategic landing zone only. Existing workloads in legacy LZs must have a migration plan to the strategic target.</td></tr>
+    <tr><th>Key Observations (Baseline)</th><td>Lift-and-shift migrations limit cloud-native capabilities. Workloads in wrong LZs create security and compliance risk. Legacy LZs add complexity and security exposure. No standardised data lifecycle controls exist across LZs.</td></tr>
+    <tr><th>Reference Section</th><td>Baseline Current State Architecture §3</td></tr>
+  </tbody>
+</table>
+
+<h3>UKHSA-INF-02: Hybrid Connectivity Pattern</h3>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>UKHSA-INF-02</td></tr>
+    <tr><th>Name</th><td>Hybrid Cloud Connectivity (Direct Connect + ExpressRoute)</td></tr>
+    <tr><th>AWS Connectivity</th><td>AWS Direct Connect to on-premises data centres (Porton Down + Colindale)</td></tr>
+    <tr><th>Azure Connectivity</th><td>Azure ExpressRoute to on-premises data centres (Porton Down + Colindale)</td></tr>
+    <tr><th>WAN</th><td>Virgin Media MPLS WAN connecting sites and data centres</td></tr>
+    <tr><th>Internet Access</th><td>No direct internet to cloud landing zones. All internet-bound traffic currently routed through on-premises data centres (bottleneck — target state will address).</td></tr>
+    <tr><th>East-West (Azure ↔ AWS)</th><td>Cross-cloud traffic currently routed via on-premises data centres. No direct LZ-to-LZ connectivity (gap to be addressed in target state).</td></tr>
+    <tr><th>Firewall</th><td>Palo Alto firewalls manage North-South (N/S) traffic at DC perimeter</td></tr>
+    <tr><th>Key Observations (Baseline)</th><td>Traffic to strategic LZs still routed through legacy infrastructure (latency, complexity, security risk). No direct connectivity between strategic LZs across cloud providers. Internet-bound traffic via on-prem creates bottlenecks. Centralised firewalls limit scalability.</td></tr>
+    <tr><th>Reference Section</th><td>Baseline Current State Architecture §4</td></tr>
+  </tbody>
+</table>
+
+<h3>UKHSA-INF-03: Zero Trust End-User Access Pattern</h3>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>UKHSA-INF-03</td></tr>
+    <tr><th>Name</th><td>Zero Trust End-User Internet Access (zScaler)</td></tr>
+    <tr><th>Technology</th><td>zScaler Zero Trust Exchange — cloud-native ZTNA/SWG proxy for all end-user internet access</td></tr>
+    <tr><th>Mandate</th><td>No direct internet traversal for end users. All outbound internet traffic inspected via zScaler Zero Trust Exchange.</td></tr>
+    <tr><th>ADR Alignment</th><td>ADR-010 (Zero Trust Network Architecture)</td></tr>
+    <tr><th>Reference Section</th><td>Baseline Current State Architecture §4</td></tr>
+  </tbody>
+</table>
+
+<h3>UKHSA-INF-04: Split-Horizon DNS Pattern</h3>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>UKHSA-INF-04</td></tr>
+    <tr><th>Name</th><td>Split-Horizon DNS Architecture</td></tr>
+    <tr><th>Public DNS — Legacy</th><td>ukhsa.gov.uk and phe.gov.uk hosted in PHE Azure LZ (legacy). Not yet in AWS — limits AWS-native integration.</td></tr>
+    <tr><th>Public DNS — Strategic</th><td>test-and-trace.gov.uk hosted in AWS (strategic target). Route 53 used for cloud-native DNS resolution.</td></tr>
+    <tr><th>Private DNS</th><td>All landing zones and on-premises data centres (Porton + Colindale) resolve private DNS from on-premises DC DNS servers. DNS queries forwarded between multiple DCs (latency/complexity).</td></tr>
+    <tr><th>Key Observations (Baseline)</th><td>DNS queries forwarded between multiple DCs add latency and complexity. ukhsa.gov.uk/phe.gov.uk not in AWS limits AWS-native DNS integration. Target state should consolidate DNS into Route 53 with Private Hosted Zones.</td></tr>
+    <tr><th>Reference Section</th><td>Baseline Current State Architecture §4</td></tr>
+  </tbody>
+</table>
+
+<h3>UKHSA-INF-05: Federated Identity Pattern</h3>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>UKHSA-INF-05</td></tr>
+    <tr><th>Name</th><td>Federated Identity — Microsoft Entra ID as Golden Source</td></tr>
+    <tr><th>Golden Source IdP</th><td>Microsoft Entra ID (UKHSA tenant, PHECloud) — single source of truth for all identities</td></tr>
+    <tr><th>AWS Integration</th><td>SCIM provisioning from Entra ID → AWS IAM Identity Center. Federated SSO for all AWS console and CLI access.</td></tr>
+    <tr><th>On-Prem Sync</th><td>Entra ID ↔ on-premises Active Directory sync via Entra ID Connect</td></tr>
+    <tr><th>SaaS Federation</th><td>Entra ID federated to: Microsoft 365, Atlassian (Confluence/Jira), MAPS, CIMS, and other approved SaaS platforms</td></tr>
+    <tr><th>MFA</th><td>MFA enforced for all user accounts. No exceptions without ARB approval.</td></tr>
+    <tr><th>Local Accounts Prohibition</th><td>Local user accounts in workload accounts are prohibited. Enforced via AWS Service Control Policies (SCPs) at the Organization level.</td></tr>
+    <tr><th>Key Observations (Baseline)</th><td>Use of local accounts in workload accounts creates credential sprawl and audit risk. Centralised identity team creates bottlenecks — delegated administration model needed. RBAC using centrally managed identities required.</td></tr>
+    <tr><th>ADR Alignment</th><td>ADR-010 (Zero Trust)</td></tr>
+    <tr><th>Reference Section</th><td>Baseline Current State Architecture §5</td></tr>
+  </tbody>
+</table>
+
+<h3>UKHSA-INF-06: Platform-in-Platform Pattern</h3>
+<table>
+  <tbody>
+    <tr><th>Pattern ID</th><td>UKHSA-INF-06</td></tr>
+    <tr><th>Name</th><td>Approved Platform Portfolio (Platform-in-Platform)</td></tr>
+    <tr><th>Approved Compute Platforms</th><td>
+      <strong>EDAP</strong> — AWS-hosted enterprise data analytics platform (mandatory for analytics workloads)<br/>
+      <strong>VMware on Azure</strong> — legacy virtualisation in Azure LZ (migration target; new VMware deployments discouraged)<br/>
+      <strong>HPC (High Performance Computing)</strong> — on-premises at Porton Down and Colindale DCs
+    </td></tr>
+    <tr><th>Approved Shared Services</th><td>
+      <strong>Microsoft Sentinel</strong> — SIEM/SOAR for centralised security monitoring<br/>
+      <strong>Azure API Management (APIM)</strong> — centralised API gateway and lifecycle management<br/>
+      <strong>Azure Virtual Desktop (AVD)</strong> — virtual desktop infrastructure (replacing legacy VDI)<br/>
+      <strong>SGSS</strong> — shared government security service<br/>
+      <strong>Atlassian</strong> — Confluence and Jira (hosted + Atlassian Cloud)
+    </td></tr>
+    <tr><th>Key Observations (Baseline)</th><td>Key applications remain in legacy LZs, increasing technical debt and security risk. VMware on Azure limits scalability and prevents use of Azure-native services. Strategic workloads must be refactored during migration to benefit from cloud-native services.</td></tr>
+    <tr><th>Reference Section</th><td>Baseline Current State Architecture §6</td></tr>
+  </tbody>
+</table>
+
+<h3>Infrastructure Pattern Summary</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Area</th><th>Key Technology</th><th>Mandate</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>UKHSA-INF-01</td><td>Strategic Landing Zone Placement</td><td>Landing Zones</td><td>UKHSA Azure LZ (PHECloud), UKHSA AWS LZ (HALO)</td><td>All new workloads to strategic LZs only</td></tr>
+    <tr><td>UKHSA-INF-02</td><td>Hybrid Cloud Connectivity</td><td>Networking</td><td>AWS Direct Connect, Azure ExpressRoute, Virgin Media MPLS, Palo Alto</td><td>No direct internet to LZs; on-prem DC as transit hub</td></tr>
+    <tr><td>UKHSA-INF-03</td><td>Zero Trust End-User Access</td><td>Networking / Security</td><td>zScaler Zero Trust Exchange</td><td>All user internet traffic via zScaler — no direct traversal</td></tr>
+    <tr><td>UKHSA-INF-04</td><td>Split-Horizon DNS</td><td>Networking / DNS</td><td>Route 53 (strategic), on-prem DC DNS (private), Azure (legacy public)</td><td>Private DNS resolved from on-prem DCs; public DNS per domain</td></tr>
+    <tr><td>UKHSA-INF-05</td><td>Federated Identity</td><td>Identity &amp; Access</td><td>Microsoft Entra ID, AWS IAM Identity Center, SCIM, MFA, SCPs</td><td>No local accounts; federated auth mandatory; MFA enforced</td></tr>
+    <tr><td>UKHSA-INF-06</td><td>Platform Portfolio</td><td>Platforms &amp; Services</td><td>EDAP, VMware/Azure, HPC, Sentinel, APIM, AVD, Atlassian</td><td>EDAP mandatory for analytics; VMware migration in progress</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- SECTION: UKHSA APPROVED DATA PATTERNS (28 PATTERNS, 8 LAYERS) -->
+<!-- Source: UKHSA Cloud Strategy & Approved Patterns              -->
+<!-- ============================================================ -->
+
+<h2>UKHSA Approved Data Patterns</h2>
+<p><em>Sourced from the <strong>UKHSA Cloud Strategy &amp; Approved Patterns</strong>. These 28 patterns cover the full data lifecycle across 8 layers. All new data workloads must select from this catalogue or document a justified exception via the Architecture Review Board.</em></p>
+
+<h3>Layer 1 — Data Ingestion</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Use When</th><th>Approved AWS Services</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1A</td><td>Direct API Ingestion</td><td>Real-time or continuous feeds from external APIs</td><td>API Gateway, SQS, EventBridge</td></tr>
+    <tr><td>1B</td><td>Batch File Upload</td><td>Bulk scheduled file transfers from external sources</td><td>Amazon S3, AWS Glue, AWS Transfer Family (SFTP)</td></tr>
+    <tr><td>1C</td><td>Database Replication</td><td>Sync operational/on-prem database to cloud for analytics or DR</td><td>AWS DMS, Amazon RDS, Amazon Aurora</td></tr>
+    <tr><td>1D</td><td>Streaming Ingestion</td><td>High-speed sensor data, metrics, IoT, or event streams</td><td>Amazon Kinesis, Amazon MSK (Kafka), AWS Lambda</td></tr>
+  </tbody>
+</table>
+
+<h3>Layer 2 — Data Processing</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Use When</th><th>Approved AWS Services</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>2A</td><td>Batch ETL</td><td>Nightly or scheduled large-volume data transformation jobs</td><td>AWS Glue, AWS Step Functions, AWS Glue DataBrew</td></tr>
+    <tr><td>2B</td><td>Real-Time Stream Processing</td><td>Instant anomaly detection, live dashboards, or real-time alerting</td><td>Amazon Kinesis Data Analytics, AWS Lambda</td></tr>
+    <tr><td>2C</td><td>Scheduled Spark / ML Jobs</td><td>ML model training or large-scale Spark processing that runs then stops</td><td>Amazon EMR, Amazon SageMaker</td></tr>
+    <tr><td>2D</td><td>Federated Query</td><td>Cross-dataset analysis without copying data between stores</td><td>Amazon Athena, Amazon Redshift Spectrum</td></tr>
+  </tbody>
+</table>
+
+<h3>Layer 3 — Data Storage</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Use When</th><th>Approved AWS Services</th><th>ADR Alignment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>3A</td><td>Transactional Database (OLTP)</td><td>Operational systems requiring ACID transactions</td><td>Amazon Aurora PostgreSQL, Amazon RDS, Amazon DynamoDB</td><td>ADR-001 (Aurora PostgreSQL preferred)</td></tr>
+    <tr><td>3B</td><td>Data Warehouse (OLAP)</td><td>Historical reporting and complex analytical queries across large datasets</td><td>Amazon Redshift, Amazon QuickSight</td><td>ADR-003 (&gt;100GB use Redshift Spectrum)</td></tr>
+    <tr><td>3C</td><td>Data Lake (Bronze/Silver/Gold)</td><td>Centralised storage for raw, conformed, and curated datasets</td><td>Amazon S3, AWS Glue Data Catalog, AWS Lake Formation</td><td>ADR-002 (S3+Glue not HDFS), ADR-007 (Bronze/Silver/Gold tiers)</td></tr>
+    <tr><td>3D</td><td>Time-Series Database</td><td>Lab capacity, infection rates, or any metric captured per minute/second</td><td>Amazon Timestream</td><td></td></tr>
+    <tr><td>3E</td><td>Document Store</td><td>Nested, variable-structure, or schema-flexible data</td><td>Amazon DynamoDB, Amazon DocumentDB, Amazon OpenSearch</td><td></td></tr>
+  </tbody>
+</table>
+
+<h3>Layer 4 — Data Integration</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Use When</th><th>Approved AWS Services</th><th>ADR Alignment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>4A</td><td>Event-Driven Pipelines</td><td>Loosely-coupled services that react to data changes or domain events</td><td>Amazon EventBridge, Amazon SQS, Amazon SNS, AWS Lambda</td><td>ADR-004 (EventBridge over SNS/SQS for routing)</td></tr>
+    <tr><td>4B</td><td>ETL Orchestration</td><td>Complex multi-step workflows with dependencies, retries, and branching logic</td><td>AWS Step Functions, Apache Airflow (MWAA)</td><td></td></tr>
+    <tr><td>4C</td><td>Data Replication &amp; Sync</td><td>High availability, compliance archiving, or multi-region data copies</td><td>Amazon S3 Cross-Region Replication (CRR), Amazon RDS Read Replicas</td><td></td></tr>
+  </tbody>
+</table>
+
+<h3>Layer 5 — Data Governance</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Use When</th><th>Approved AWS Services</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>5A</td><td>Centralised Data Catalogue</td><td>Discoverability, metadata management, and access control across all datasets</td><td>AWS Glue Data Catalog, AWS Lake Formation</td></tr>
+    <tr><td>5B</td><td>Data Quality &amp; Validation</td><td>Automated quality checks before data is promoted between layers</td><td>AWS Glue DataBrew, Glue Quality Checks, Amazon EventBridge (alerting)</td></tr>
+    <tr><td>5C</td><td>Data Lineage &amp; Audit Trail</td><td>Regulatory compliance, root-cause analysis, and data provenance tracking</td><td>AWS Lake Formation (lineage), AWS CloudTrail, Amazon S3 access logs</td></tr>
+  </tbody>
+</table>
+
+<h3>Layer 6 — Security &amp; Compliance (MANDATORY)</h3>
+<ac:structured-macro ac:name="warning">
+  <ac:parameter ac:name="title">Mandatory — All Data Workloads</ac:parameter>
+  <ac:rich-text-body>
+    <p>Layer 6 patterns are not optional. Every data workload must implement all four security patterns. Document compliance in Section 8 (Pattern Selection) of the HLD.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>What It Covers</th><th>Approved AWS Services</th><th>ADR Alignment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>6A</td><td>Access Control</td><td>Fine-grained identity-based access to data assets</td><td>AWS IAM + Microsoft Entra ID (federated), AWS Lake Formation, Amazon S3 Object Lock, MFA (mandatory)</td><td>ADR-010 (Zero Trust)</td></tr>
+    <tr><td>6B</td><td>Encryption &amp; Key Management</td><td>Data at-rest and in-transit encryption with managed key lifecycle</td><td>AWS KMS (customer-managed CMKs for sensitive data), AWS Secrets Manager, AWS ACM, TLS 1.2+ enforced</td><td>ADR-005 (TLS 1.2+), ADR-006 (CMK for sensitive data)</td></tr>
+    <tr><td>6C</td><td>Network Security &amp; Isolation</td><td>Network-level controls preventing data exfiltration and lateral movement</td><td>Amazon VPC, Security Groups, VPC Endpoints (Gateway + Interface), AWS PrivateLink, AWS WAF</td><td>ADR-010 (Zero Trust)</td></tr>
+    <tr><td>6D</td><td>Data Masking &amp; Anonymisation</td><td>PII/sensitive data de-identification for non-production and analytics use</td><td>AWS Glue DataBrew (masking transforms), AWS Lambda (custom anonymisation), Amazon RDS, Amazon Redshift</td><td></td></tr>
+  </tbody>
+</table>
+
+<h3>Layer 7 — Monitoring &amp; Observability</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Use When</th><th>Approved AWS Services</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>7A</td><td>Centralised Logging</td><td>Unified audit trail, security investigation, and operational diagnostics</td><td>Amazon CloudWatch Logs, AWS X-Ray, Amazon EventBridge, AWS CloudTrail</td></tr>
+    <tr><td>7B</td><td>Performance Monitoring &amp; Alerting</td><td>Proactive detection of degradation, capacity issues, or SLA breaches</td><td>Amazon CloudWatch Metrics, CloudWatch Alarms, Amazon SNS</td></tr>
+    <tr><td>7C</td><td>Cost Tracking &amp; Optimisation</td><td>FinOps — spend visibility, anomaly detection, and rightsizing recommendations</td><td>AWS Cost Explorer, AWS Budgets, AWS Compute Optimizer</td></tr>
+  </tbody>
+</table>
+
+<h3>Layer 8 — Resilience &amp; Disaster Recovery</h3>
+<table>
+  <thead>
+    <tr><th>Pattern ID</th><th>Name</th><th>Use When</th><th>Approved AWS Services</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>8A</td><td>Backup &amp; Point-in-Time Recovery</td><td>Data protection against accidental deletion, corruption, or ransomware</td><td>AWS Backup, Amazon RDS automated snapshots, Amazon S3 Versioning</td></tr>
+    <tr><td>8B</td><td>Multi-Region Failover</td><td>Business continuity for critical workloads with low RTO/RPO requirements</td><td>Amazon Route 53 (health-check based failover), Amazon S3 Cross-Region Replication, Amazon RDS Read Replicas (cross-region)</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- SECTION: UKHSA TARGET STATE ARCHITECTURE                      -->
+<!-- Source: Target State Architecture v1.0 (Mar 2025)            -->
+<!-- Authors: Thomas Larsen, Dan Farrar — Cloud Architecture Team -->
+<!-- ============================================================ -->
+
+<h2>UKHSA Target State Architecture</h2>
+<p><em>Sourced from the <strong>UKHSA Target State Architecture v1.0 (March 2025)</strong>, authored by the Cloud Architecture Team (CCoE). This document sets the recommended target state across Landing Zones, Networking, Identity, and Platforms &amp; Services. All new work should align with this target state or document a justified interim decision via the Architecture Review Board.</em></p>
+
+<ac:structured-macro ac:name="info">
+  <ac:parameter ac:name="title">Who This Applies To</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Application &amp; delivery teams</strong> — adopt pre-approved designs to accelerate route-to-live.<br/>
+    <strong>Platform engineers</strong> — implement shared services consistently across landing zones.<br/>
+    <strong>Solution &amp; enterprise architects</strong> — ensure new work aligns with UKHSA Cloud Strategy and these principles.<br/>
+    <strong>Governance, risk &amp; compliance leads</strong> — trace design decisions back to the CCF and UKHSA standards.<br/>
+    <strong>FinOps practitioners</strong> — understand architectural levers for cost control and financial accountability.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>TSA-LZ: Landing Zones Target State</h3>
+<p><em>Target State Architecture §2 — Landing Zones</em></p>
+<table>
+  <thead>
+    <tr><th>#</th><th>Principle</th><th>Description</th><th>Key Implementation Steps</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Standardised &amp; Secure Landing Zones</td><td>All LZs follow a security-hardened baseline for compliance and operational consistency</td><td>Define LZ blueprints; use Terraform / AWS Control Tower (AWS) and Azure Landing Zone Accelerator (Azure); automate account/subscription vending via IaC</td></tr>
+    <tr><td>2</td><td>Automated LZ Provisioning</td><td>Reduce manual provisioning through automation and governance controls</td><td>Self-service provisioning pipelines; enforce Azure Policy + AWS SCPs; integrate centralised IAM for automatic role assignments</td></tr>
+    <tr><td>3</td><td>Multi-Cloud Strategy &amp; Resilience</td><td>Support workloads across AWS and Azure with consistent governance and resilience</td><td>Define cross-cloud governance framework; implement cloud-agnostic workload placement policies; ensure network interoperability between LZs</td></tr>
+    <tr><td>4</td><td>Workload Placement &amp; Segmentation</td><td>Clear guidelines for where workloads deploy based on business and security requirements</td><td>Implement Workload Placement Strategy; restrict non-compliant deployments via LZ Policies; require workload classification before deployment</td></tr>
+    <tr><td>5</td><td>LZ Observability &amp; Governance</td><td>Real-time visibility into LZ health, security, and compliance</td><td>Deploy Azure Monitor, AWS CloudWatch, Sentinel/SIEM; automate logging; continuous compliance monitoring via CSPM (AWS Security Hub, Microsoft Defender for Cloud)</td></tr>
+    <tr><td>6</td><td>Cost Efficiency &amp; FinOps</td><td>Financial governance tracking and optimising cloud costs per LZ</td><td>Deploy AWS Cost Explorer, Azure Cost Management; automated budget alerts and chargeback models; enforce tagging policies for cost allocation per team/project</td></tr>
+    <tr><td>7</td><td>Disaster Recovery &amp; Business Continuity</td><td>LZs designed for high availability and rapid failover</td><td>Multi-region replication for critical workloads; automate backup and failover using AWS Backup and Azure Site Recovery</td></tr>
+  </tbody>
+</table>
+
+<h4>Shared Responsibility Model (SRM)</h4>
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Responsibility</th><th>Owner</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Cloud Infrastructure</td><td>Physical security, global networking, hardware management</td><td>AWS / Azure</td></tr>
+    <tr><td>Landing Zone Management</td><td>Security baselines, networking, IAM, observability, cost governance, LZ vending, IaC pipelines</td><td>Platform Team (CCoE)</td></tr>
+    <tr><td>Application Workloads</td><td>Application security, data encryption, DevSecOps practices, observability, DR runbooks</td><td>Application Teams</td></tr>
+  </tbody>
+</table>
+
+<h4>OU / Management Group Structure</h4>
+<table>
+  <thead>
+    <tr><th>OU / Management Group</th><th>Purpose</th><th>Security Posture</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Root</td><td>Top-level container — AWS Organization Root / Azure Tenant Root. Broad org-wide policies applied here.</td><td>Highest — org-wide SCPs/policies</td></tr>
+    <tr><td>Core</td><td>Critical shared services: centralised logging, networking, backup accounts</td><td>Locked down — strongest guardrails</td></tr>
+    <tr><td>Platform / Connectivity</td><td>Shared networking: hub VNets, VPN gateways, ExpressRoute, Azure Firewall, Transit Gateway</td><td>High — platform team managed</td></tr>
+    <tr><td>Platform / Identity</td><td>IAM functions: Azure AD, domain controllers, federation services</td><td>High — centralised identity framework</td></tr>
+    <tr><td>Platform / Management</td><td>Logging, monitoring, security tooling, governance — operational visibility</td><td>High — security data consolidation</td></tr>
+    <tr><td>Migration</td><td>Onboarding/transitioning workloads — detective controls (not preventive) to allow fixing noncompliant configs</td><td>Lower — graduated compliance path</td></tr>
+    <tr><td>Applications (Dev/Pre/Pro)</td><td>Standard workloads by lifecycle stage. Dev = lower controls, Pre = hardening, Pro = strictest guardrails</td><td>Graduated — strictest in Pro</td></tr>
+    <tr><td>Application Type N</td><td>Edge-case applications requiring non-standard policies, still with Dev/Pre/Pro subdivision</td><td>Custom — tailored per need</td></tr>
+    <tr><td>PolicyStaging</td><td>Test environment for new/updated SCPs, Azure Policies, compliance frameworks before prod rollout</td><td>Controlled — policy validation only</td></tr>
+    <tr><td>Sandbox</td><td>Minimal guardrails — experimentation, PoCs, education. No sensitive data or production workloads.</td><td>Low — rapid iteration</td></tr>
+    <tr><td>Breakglass</td><td>Emergency troubleshooting — accounts moved here temporarily during critical incidents</td><td>Elevated — monitored, time-limited</td></tr>
+    <tr><td>Graveyard / Decommissioned</td><td>Retired or historical workloads retained for compliance/audit. Minimal activity.</td><td>Locked — read-only</td></tr>
+    <tr><td>Quarantine</td><td>Strict isolation for compromised or high-risk resources — contains threats, prevents lateral movement</td><td>Maximum — elevated controls</td></tr>
+  </tbody>
+</table>
+
+<h4>Application Placement Patterns</h4>
+<table>
+  <thead>
+    <tr><th>Pattern</th><th>Isolation Level</th><th>Use When</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Type 1: Separate Accounts per Environment</td><td>Account-level (highest)</td><td>Full DevOps autonomy required; strict environment separation (Dev/Test/Live in separate accounts)</td></tr>
+    <tr><td>Type 2: Shared Account, Isolated VPCs</td><td>VPC-level</td><td>Applications with common characteristics grouped in same account but isolated by VPC. Can combine with Type 1 for two-layer abstraction.</td></tr>
+    <tr><td>Type 3: Shared Account + VPC, Isolated Subnets</td><td>Subnet-level (lowest)</td><td>Tightly coupled applications requiring integration. Suitable for smaller teams using managed shared infrastructure. Careful routing required.</td></tr>
+  </tbody>
+</table>
+
+<h3>TSA-NET: Networking Target State</h3>
+<p><em>Target State Architecture §3 — Networking</em></p>
+<table>
+  <thead>
+    <tr><th>#</th><th>Principle</th><th>Description</th><th>Key Implementation Steps</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Zero Trust Network Architecture (ZTNA)</td><td>All network access authenticated, authorised, and continuously monitored</td><td>Implement ZTNA solutions; enforce least privilege via firewall rules and micro-segmentation; continuous authentication and monitoring</td></tr>
+    <tr><td>2</td><td>Cloud-Native Networking</td><td>Replace traditional controls with software-defined networking (SDN) for scalability</td><td>Deploy NaaS; adopt AWS Security Groups / Azure NSGs; use load balancers and cloud gateways instead of VPN concentrators</td></tr>
+    <tr><td>3</td><td>Unified Hybrid &amp; Multi-Cloud Networking</td><td>Seamless connectivity across AWS, Azure, and on-premises</td><td>Deploy AWS Direct Connect + Azure ExpressRoute; establish direct AWS↔Azure peering (remove DC reliance); implement unified routing and DNS</td></tr>
+    <tr><td>4</td><td>Local Internet Breakout</td><td>Reduce latency by routing cloud workloads directly to internet (not via on-prem)</td><td>Implement direct egress via zScaler / Azure Firewall / AWS IGW; enforce TLS termination at cloud ingress</td></tr>
+    <tr><td>5</td><td>Micro-Segmentation &amp; Workload Isolation</td><td>Restrict traffic to necessary scope, limit lateral movement</td><td>Identity-based segmentation (not IP-based); enforce zero-trust between VPCs/VNets; per-service access controls</td></tr>
+    <tr><td>6</td><td>Observability &amp; Proactive Monitoring</td><td>Real-time visibility into traffic, performance, and security threats</td><td>AWS VPC Flow Logs, Azure Network Watcher, centralised SIEM (Sentinel/Splunk); automated alerts and incident response playbooks</td></tr>
+    <tr><td>7</td><td>DNS Security &amp; Unified Resolution</td><td>Consistent DNS across hybrid and multi-cloud — reduce complexity and risk</td><td>Split-horizon DNS; AWS Route 53 Resolver + Azure DNS Private Zones; enforce DNSSEC</td></tr>
+    <tr><td>8</td><td>Decentralised Cloud-Native Firewalls</td><td>Move from central on-prem firewalls to distributed per-workload security controls</td><td>Deploy Azure Firewall, AWS Network Firewall, per-application WAFs; automate firewall rules via IaC</td></tr>
+  </tbody>
+</table>
+
+<h4>Networking Pattern Options</h4>
+<table>
+  <thead>
+    <tr><th>Area</th><th>Pattern</th><th>Use When</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="2"><strong>Hybrid Connectivity</strong></td><td>Pattern 1: Private Only (Direct Connect + ExpressRoute)</td><td>High-bandwidth low-latency; sensitive/regulated workloads; minimise attack surface</td></tr>
+    <tr><td>Pattern 2: Private + IPSec VPN Overlay</td><td>End-to-end encryption mandated by compliance; extra security layer over private links</td></tr>
+    <tr><td rowspan="3"><strong>Inter VPC/VNet</strong></td><td>Pattern 1: AWS Transit Gateway + Azure Virtual WAN</td><td>Multiple VPCs/VNets across multi-region/account; centralised routing; transitive connectivity needed</td></tr>
+    <tr><td>Pattern 2: VPC/VNet Peering</td><td>High-bandwidth between specific pairs; avoid TGW/VWAN cost; few interconnections only</td></tr>
+    <tr><td>Pattern 3: Hybrid TGW/VWAN + Peering</td><td>Mix of high-bandwidth pairs and broader network; optimise cost and performance</td></tr>
+    <tr><td rowspan="2"><strong>Remote Site Ingress</strong></td><td>Option 1: AWS Verified Access (cloud-native ZTNA)</td><td>Lightweight identity-driven access to AWS-hosted private apps without VPN</td></tr>
+    <tr><td>Option 2: Zscaler Private Access (ZPA)</td><td>Cloud-delivered ZTNA; environments already using Zscaler; eliminate VPN infrastructure</td></tr>
+    <tr><td rowspan="4"><strong>Public Ingress</strong></td><td>Pattern 1: Centralised Ingress (shared ALB + WAF)</td><td>Central policy enforcement; compliance requirements; single point of WAF/firewall filtering</td></tr>
+    <tr><td>Pattern 2: Distributed Ingress (regional ALBs + WAF)</td><td>Low-latency for distributed users; per-region scaling; multi-region resiliency</td></tr>
+    <tr><td>Pattern 3: Deep Packet Inspection (NGFW before ALB)</td><td>Full packet inspection; IPS/IDS required; TLS decryption; Palo Alto Panorama management</td></tr>
+    <tr><td>Pattern 4: WAF Only (ALB + AWS WAF / Azure Front Door)</td><td>Web-based apps; OWASP Top 10 protection; cost-efficient; no DPI needed</td></tr>
+    <tr><td rowspan="2"><strong>Egress</strong></td><td>Option 1: Native Cloud Egress (TGW + VWAN + managed firewall)</td><td>Simplicity, cost-efficiency, deep AWS/Azure integration; URL filtering via managed firewall</td></tr>
+    <tr><td>Option 2: Zscaler Internet Access (ZIA)</td><td>Consistent global policy; existing Zscaler deployment; comprehensive web threat protection</td></tr>
+    <tr><td rowspan="4"><strong>Cloud Inter-Connectivity (AWS↔Azure)</strong></td><td>Pattern 1: Private Connectivity (Equinix Fabric / Megaport)</td><td>High-performance low-latency; regulated workloads; no public internet exposure</td></tr>
+    <tr><td>Pattern 2: Zscaler Private Access for Workloads</td><td>Application-layer trust; modern multi-cloud architectures; minimal attack surface; no network peering needed</td></tr>
+    <tr><td>Pattern 3: Private Connectivity + IPSec VPN Overlay</td><td>Compliance mandates encryption in transit even over private links</td></tr>
+    <tr><td>Pattern 4: IPSec VPN (App-to-App or TGW↔VWAN)</td><td>Incremental inter-cloud networking; start before full private connectivity</td></tr>
+    <tr><td rowspan="2"><strong>East-West Segmentation</strong></td><td>Pattern 1: Cloud-Native Firewalls (AWS Network Firewall / Azure Firewall) + SGs/NSGs</td><td>Layer 3/4 stateful inspection; fully managed; native integration; basic logging sufficient</td></tr>
+    <tr><td>Pattern 2: Third-Party NGFWs (Palo Alto) + SGs/NSGs</td><td>Layer 7 DPI; application-aware policies; IDS/IPS + TLS decryption; centralised Panorama management</td></tr>
+  </tbody>
+</table>
+
+<p><strong>DNS naming convention:</strong> <code>*.[workload].[hyperscaler].[parent-domain]</code> — e.g. <code>api.edap.aws.ukhsa.gov.uk</code>. Internal and external DNS use the same naming standard to support PKI certificate validation. DNS zone governance: Root zone managed by Cyber/Networking Team; LZ zones by Platform Engineering; workload zones by application teams via IaC.</p>
+
+<h3>TSA-IDN: Identity Target State</h3>
+<p><em>Target State Architecture §4 — Identity</em></p>
+<table>
+  <thead>
+    <tr><th>#</th><th>Principle</th><th>Description</th><th>Key Implementation Steps</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Identity-Centric Security &amp; Zero Trust</td><td>Verify every access request — MFA, Conditional Access, Least Privilege</td><td>Enable Conditional Access in Entra ID; enforce MFA across all workloads; apply PoLP via automated role provisioning; session-based access reviews</td></tr>
+    <tr><td>2</td><td>Centralised Identity Governance &amp; Federated Access</td><td>Entra ID as primary IdP; federation for AWS, SaaS, third-party; SCIM + PIM automation</td><td>All SaaS and AWS via Entra ID federation; enforce SCIM provisioning; configure PIM for JIT admin access</td></tr>
+    <tr><td>3</td><td>Eliminate Local User Accounts</td><td>Prohibit local IAM users in AWS and Azure; require centralised auth via federated identity</td><td>Audit existing IAM users; enforce SCPs (AWS) and Azure AD Conditional Access; transition all auth to Entra ID / AWS IAM Identity Center</td></tr>
+    <tr><td>4</td><td>RBAC + ABAC</td><td>Standardise RBAC; enforce ABAC for dynamic access decisions based on security posture and job function</td><td>Map existing roles; replace static IAM roles with dynamic ABAC policies; configure JIT access controls</td></tr>
+    <tr><td>5</td><td>Delegated Administration with Guardrails</td><td>Shift from fully centralised to delegated admin with strict governance via SCPs and Conditional Access</td><td>Define permission guardrails; allow workload teams to self-manage roles under predefined policies</td></tr>
+    <tr><td>6</td><td>Identity Observability &amp; Compliance</td><td>Centralised monitoring via Sentinel, CloudTrail, SIEM; automated access reviews</td><td>Integrate Entra ID logs with Sentinel; CloudTrail anomaly review; automate periodic access reviews</td></tr>
+    <tr><td>7</td><td>Secure Identity Lifecycle Management (JML)</td><td>Automate Joiner-Mover-Leaver processes — no orphaned accounts</td><td>Implement Azure Identity Governance; integrate HR systems for automatic role assignment; self-service access request workflows</td></tr>
+    <tr><td>8</td><td>Secure Machine Identities &amp; API Auth</td><td>Replace static credentials with workload identities and managed service identities</td><td>AWS IAM Roles + Azure Managed Identities; enforce API auth via OAuth2 and mutual TLS; remove hardcoded credentials</td></tr>
+  </tbody>
+</table>
+
+<h4>Identity Patterns</h4>
+<table>
+  <thead>
+    <tr><th>Pattern</th><th>Description</th><th>Key Technology</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>IAM Personas</strong></td><td>Baseline roles for all standard access requirements via AWS Identity Center Permission Sets and Azure AD Roles. Policy-as-Code (PaC) enforced. SCPs deny local IAM user creation org-wide. Permission Boundaries prevent privilege escalation.</td><td>AWS IAM Identity Center, Azure AD RBAC, AWS SCPs, Permission Boundaries</td></tr>
+    <tr><td><strong>Just-in-Time (JIT) Access</strong></td><td>Temporary elevated access for admin tasks via Entra ID PIM. Requires business justification + manager/security approval. Time-bound with auto-revocation. MFA re-auth required. Full audit in Sentinel + CloudTrail.</td><td>Entra ID PIM (Azure + federated AWS), AWS IAM Role assumption, Azure Sentinel, CloudTrail</td></tr>
+    <tr><td><strong>Bespoke Roles</strong></td><td>Only created if no existing persona satisfies the use case. Formal approval: request → security review → PoLP validation. Quarterly review and auto-expiry for idle roles. All activity logged.</td><td>AWS IAM, Azure RBAC, Entra ID PIM, AWS CloudTrail</td></tr>
+    <tr><td><strong>Breakglass Access</strong></td><td>Emergency-only access for IdP outage scenarios. Dedicated isolated AWS account / Azure subscription. No standing privileges — admin role assumed only in emergency. Hardware MFA (YubiKey/FIDO2). Time-limited, multi-level approval. Quarterly tested and credential-rotated.</td><td>Dedicated AWS Account, Azure Subscription, AWS Secrets Manager / Azure Key Vault, CloudTrail, Sentinel</td></tr>
+    <tr><td><strong>Identity Lifecycle (JML)</strong></td><td>Joiner: HR → Entra ID → auto-provision via SCIM + dynamic groups. Mover: ABAC auto-updates on HR attribute change; previous access revoked immediately. Leaver: Entra ID Lifecycle Workflows auto-disable; SCPs block deactivated accounts; automated alerts on login attempts from terminated users.</td><td>Entra ID Lifecycle Workflows, SCIM, HR integration, AWS IAM Access Analyzer, Entra ID PIM</td></tr>
+  </tbody>
+</table>
+
+<h3>TSA-PLT: Platforms &amp; Services Target State</h3>
+<p><em>Target State Architecture §5 — Platform Designs Catalogue</em></p>
+<p>Pre-approved platform designs aligned to the Cloud Control Framework (CCF). All teams should adopt these designs rather than build bespoke alternatives.</p>
+<table>
+  <thead>
+    <tr><th>Domain</th><th>CCF Control</th><th>Design</th><th>Cloud</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Platform</td><td>—</td><td>AWS Config configured with Service Linked Role</td><td>AWS</td></tr>
+    <tr><td>Platform</td><td>—</td><td>Security Hub Standards Update (HLD)</td><td>AWS</td></tr>
+    <tr><td>Platform</td><td>—</td><td>Enable Delegated Admin for Centralised Resource Explorer</td><td>AWS</td></tr>
+    <tr><td>Data</td><td>DAT-DAC-01</td><td>Preventative guardrail — block creation of public data stores</td><td>AWS</td></tr>
+    <tr><td>Data</td><td>DAT-DAC-01</td><td>Detective alerting for public data stores</td><td>AWS</td></tr>
+    <tr><td>Data</td><td>DAT-DAC-01</td><td>Azure design — block public data stores</td><td>Azure</td></tr>
+    <tr><td>Data</td><td>DAT-DAC-01</td><td>Implement alerting for public data stores</td><td>Azure</td></tr>
+    <tr><td>Finance</td><td>FIN-COA-01</td><td>Cost allocation and tagging design</td><td>AWS + Azure</td></tr>
+    <tr><td>Finance</td><td>FIN-COB-01</td><td>Budget alerting and cost anomaly detection</td><td>AWS + Azure</td></tr>
+    <tr><td>Finance</td><td>FIN-COB-02</td><td>Cost optimisation and rightsizing</td><td>AWS + Azure</td></tr>
+    <tr><td>Security</td><td>SEC-APS-03</td><td>Preventative guardrail — resources outside private networks</td><td>AWS + Azure</td></tr>
+    <tr><td>Security</td><td>SEC-APS-03</td><td>Detective guardrail — resources outside private networks</td><td>AWS + Azure</td></tr>
+    <tr><td>Security</td><td>SEC-APS-03</td><td>Detective guardrail — network resources not created by central team</td><td>AWS</td></tr>
+    <tr><td>Security</td><td>SEC-APS-03</td><td>Enable Delegated Admin for Firewall Manager</td><td>AWS</td></tr>
+    <tr><td>Security</td><td>SEC-APS-03</td><td>Ingress/Egress options design</td><td>General</td></tr>
+    <tr><td>Security</td><td>SEC-IAM-05</td><td>Process for Access Key / Client Secret renewal before 90-day expiry</td><td>AWS + Azure</td></tr>
+    <tr><td>Security</td><td>SEC-IAM-07</td><td>RBAC — process for requesting changes to permission sets</td><td>AWS</td></tr>
+    <tr><td>Security</td><td>SEC-IAM-07</td><td>Process for requesting enhanced developer permissions</td><td>AWS</td></tr>
+    <tr><td>Security</td><td>SEC-IAM-08</td><td>Centralised Root Access design</td><td>AWS</td></tr>
+    <tr><td>Security</td><td>SEC-IAM-09</td><td>Federated identity / SSO design</td><td>AWS + Azure</td></tr>
+  </tbody>
+</table>
+
+<h3>TSA-SUM: Target State — Next Steps &amp; Roadmap</h3>
+<p><em>Target State Architecture §6 — Summary &amp; Conclusion</em></p>
+<p>The transition state architecture bridges the baseline and target state. By comparing these, gaps are identified and intermediate milestones defined to ensure a smooth, phased migration aligned with organisational goals.</p>
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Activity</th><th>Participants</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase I</strong></td>
+      <td>Joint workshop to define Terms of Reference (ToR) for future cloud architectural decisions — agree Cloud Strategy principles, long-term target architecture goals, RACI for architectural working group, and appointment of accountable individuals per domain.<br/><br/>Domain-specific target architecture workshops (accounting for in-flight projects) → output: agreed comprehensive cloud architecture documents per domain.</td>
+      <td>Cloudscaler (facilitator), representatives from all technology domains, platform engineering and operations functions</td>
+    </tr>
+    <tr>
+      <td><strong>Phase II</strong></td>
+      <td>Establish architecture workgroups to develop designs to be delivered by platform engineering and application enablement functions, based on Phase I outputs.</td>
+      <td>Architects from relevant technology domains</td>
+    </tr>
+    <tr>
+      <td><strong>Phase III</strong></td>
+      <td>Create an enduring governance relationship with the CPE function in the CCoE to drive delivery of Cloud Strategy goals — guidance and oversight of the wider architectural function on a BAU basis.</td>
+      <td>Leads from relevant technology domains, CPE lead, CCoE architecture lead</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- SECTION: UKHSA ARCHITECTURE DECISION RECORDS (ADRs)          -->
+<!-- Source: UKHSA Cloud Strategy & Approved Patterns             -->
+<!-- ============================================================ -->
+
+<h2>UKHSA Architecture Decision Records (ADRs)</h2>
+<p><em>These 10 ADRs are firm, board-ratified architectural decisions. Deviating from an ADR requires an explicit exception approved by the Architecture Review Board with documented rationale.</em></p>
+<table>
+  <thead>
+    <tr><th>ADR ID</th><th>Decision</th><th>Rationale</th><th>Pattern(s) Affected</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>ADR-001</td><td>Aurora PostgreSQL is the preferred relational database</td><td>Managed, cost-effective, compatible with open-source PostgreSQL tooling; avoids vendor-proprietary lock-in for OLTP workloads</td><td>3A</td></tr>
+    <tr><td>ADR-002</td><td>Use Amazon S3 + AWS Glue for object storage — not HDFS</td><td>S3 provides elastic, serverless storage with native AWS integration; HDFS requires managed infrastructure with no cloud-native advantage</td><td>3C</td></tr>
+    <tr><td>ADR-003</td><td>Use Amazon Redshift Spectrum for analytical queries &gt;100 GB</td><td>Redshift Spectrum avoids loading large datasets into Redshift storage; queries S3 directly at scale with columnar optimisation</td><td>2D, 3B</td></tr>
+    <tr><td>ADR-004</td><td>Use Amazon EventBridge over SNS/SQS for event routing</td><td>EventBridge provides schema registry, content-based filtering, cross-account routing, and native SaaS integrations not available in SNS/SQS alone</td><td>4A</td></tr>
+    <tr><td>ADR-005</td><td>TLS 1.2 minimum for all data-in-transit</td><td>TLS 1.0/1.1 are deprecated and vulnerable (POODLE, BEAST). TLS 1.2+ required for NCSC and DSPT compliance.</td><td>6B, EDAP-INT-01</td></tr>
+    <tr><td>ADR-006</td><td>Customer-managed KMS keys (CMKs) for all sensitive data</td><td>AWS-managed keys do not provide key rotation control or cross-account access restrictions needed for sensitive/personal data categories</td><td>6B</td></tr>
+    <tr><td>ADR-007</td><td>Bronze / Silver / Gold data lake tier naming convention</td><td>Standardises data quality progression: Bronze = raw ingest, Silver = conformed/validated, Gold = curated/aggregated. Maps to EDAP Ingestion/Raw/Conform/DataMart layers.</td><td>3C, EDAP-INT-05</td></tr>
+    <tr><td>ADR-008</td><td>Multi-cloud strategy: AWS as primary analytics cloud, Azure as primary SaaS/identity cloud</td><td>Leverages EDAP (AWS) for data analytics and Microsoft Entra ID / M365 / AVD (Azure) for productivity and identity. Avoids single-vendor lock-in.</td><td>UKHSA-INF-01, UKHSA-INF-05</td></tr>
+    <tr><td>ADR-009</td><td>Infrastructure as Code (IaC) is mandatory for all cloud resources</td><td>Manual provisioning causes configuration drift, audit failures, and prevents repeatable deployments. Terraform (or CDK) required for all infrastructure.</td><td>All patterns</td></tr>
+    <tr><td>ADR-010</td><td>Zero Trust Network Architecture for all new connectivity</td><td>Perimeter-based security is insufficient for hybrid/multi-cloud. Identity-aware, least-privilege access enforced at every layer via zScaler, Entra ID, IAM Identity Center, and SCPs.</td><td>6A, 6C, UKHSA-INF-03, UKHSA-INF-05</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- SECTION: BASELINE CURRENT STATE — SUMMARY & OBSERVATIONS     -->
+<!-- Source: Baseline Current State Architecture §7               -->
+<!-- ============================================================ -->
+
+<h2>Baseline Current State — Key Observations &amp; Target Actions</h2>
+<p><em>Sourced from <strong>Baseline Current State Architecture §7 — Summary and Conclusion</strong>. These observations from the baseline inform the Target State Cloud Architecture and the remediation actions required to align with the UKHSA Cloud Strategy.</em></p>
+<table>
+  <thead>
+    <tr><th>Area</th><th>Key Observations (Current State)</th><th>Target State Actions</th><th>Reference</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Cloud Operating Model</strong></td>
+      <td>Difficulties establishing cohesive DevOps structure; teams lack empowerment for swift decisions; overly gated governance introduces bottlenecks; excessive artefact requirements delay delivery</td>
+      <td>Implement clear DevOps framework with defined roles; introduce flexible governance with predefined guardrails; streamline approvals with automated checks; replace artefacts with reusable templates and tooling; use review boards as exception only</td>
+      <td>Baseline §2.4</td>
+    </tr>
+    <tr>
+      <td><strong>Landing Zones</strong></td>
+      <td>Lift-and-shift limits cloud-native capability; workloads in wrong LZs create security/compliance risk; legacy LZs not decommissioned; migrated workloads not optimised; no unified observability platform; no standardised data lifecycle controls</td>
+      <td>Mandate migration to strategic LZs (UKHSA-INF-01); enforce cloud-native refactoring during migration; decommission legacy LZs with firm timeline; implement unified observability platform; standardise data lifecycle policies</td>
+      <td>Baseline §3.4</td>
+    </tr>
+    <tr>
+      <td><strong>Networking</strong></td>
+      <td>Strategic LZ traffic routed via legacy infrastructure (latency, complexity); no direct cross-cloud LZ connectivity; internet-bound traffic via on-prem DCs (bottleneck); centralised firewalls limit scalability; DNS forwarding between DCs adds latency; key domains not in AWS</td>
+      <td>Redesign network architecture (UKHSA-INF-02); enable direct LZ-to-LZ connectivity (cross-cloud); route internet traffic via zScaler (UKHSA-INF-03); adopt cloud-native security controls; migrate key domains to Route 53 (UKHSA-INF-04)</td>
+      <td>Baseline §4.4</td>
+    </tr>
+    <tr>
+      <td><strong>Identity</strong></td>
+      <td>Local user accounts in workload accounts create credential sprawl and audit risk; centralised identity team creates bottlenecks and over/under-provisioning; compliance risk from residual local accounts</td>
+      <td>Enforce federated authentication via Entra ID + AWS IAM Identity Center (UKHSA-INF-05); prohibit local accounts via SCPs; introduce delegated administration model with guardrails; continuous monitoring for residual local accounts; regular access reviews</td>
+      <td>Baseline §5.3</td>
+    </tr>
+    <tr>
+      <td><strong>Platforms &amp; Services</strong></td>
+      <td>Key applications in legacy LZs increase technical debt and security risk; VMware on Azure limits scalability and prevents use of Azure-native services; strategic workloads not refactored to cloud-native during migration</td>
+      <td>Migrate critical apps to strategic LZs (UKHSA-INF-01, UKHSA-INF-06); implement phased VMware modernisation to Azure-native (VMs, AKS); mandate cloud-native refactoring for strategic workloads; leverage EDAP for all analytics workloads (EDAP-INT-01 to EDAP-INT-06)</td>
+      <td>Baseline §6.3</td>
+    </tr>
+  </tbody>
+</table>
+"""
+
+
+
 def _template_path() -> str:
   """Path where synced page template is stored."""
   return os.path.join(os.path.dirname(__file__), "main_page_template.synced.html")
@@ -722,6 +1529,365 @@ def _update_questionnaire_plan_link(body_html: str, plan_link: str) -> str:
   )
   if re.search(pattern, body_html, flags=re.IGNORECASE):
     return re.sub(pattern, rf"\g<1>{plan_link}\g<3>", body_html, flags=re.IGNORECASE)
+  return body_html
+
+
+def _ensure_network_segmentation_section(body_html: str) -> str:
+  """Insert Section 13b if older synced templates do not yet contain it."""
+  if "Network Segmentation Inputs" in body_html:
+    return body_html
+
+  section_13b = """
+<!-- SECTION 13B: NETWORK SEGMENTATION INPUTS -->
+<div style="background-color: #eef6ff; border-left: 5px solid #1D4ED8; padding: 15px; margin: 20px 0; border-radius: 4px;">
+  <h2 id="section13b" style="color: #1D4ED8; margin-top: 0;">13b. Network Segmentation Inputs</h2>
+<p><em>Provides explicit inputs for the <strong>Network Segregation diagram</strong> so it matches AWS reference architecture clarity.</em></p>
+<table>
+  <thead>
+    <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>VPC CIDR</td><td>10.0.0.0/16</td><td>Primary workload VPC range</td></tr>
+    <tr><td>Public Subnet CIDR</td><td>10.0.1.0/24</td><td>Ingress / ALB</td></tr>
+    <tr><td>Private Subnet CIDR</td><td>10.0.2.0/24</td><td>Application runtime</td></tr>
+    <tr><td>Data Subnet CIDR</td><td>10.0.3.0/24</td><td>RDS/data services</td></tr>
+    <tr><td>On-Prem CIDR</td><td>172.16.0.0/16</td><td>Corporate/legacy network</td></tr>
+    <tr><td>Connectivity Type</td><td>Site-to-Site VPN</td><td>Or Direct Connect + VPN backup</td></tr>
+    <tr><td>Public Ingress Path</td><td>Internet -> IGW -> ALB</td><td>North-south ingress</td></tr>
+    <tr><td>Private Ingress Path</td><td>On-prem -> VPN -> Private Route Table -> EKS</td><td>Hybrid private access</td></tr>
+    <tr><td>Public SG Rules</td><td>HTTP(80), HTTPS(443)</td><td>Internet-facing controls</td></tr>
+    <tr><td>Private SG Rules</td><td>Internal east-west only</td><td>No direct internet</td></tr>
+    <tr><td>Data SG Rules</td><td>DB ports (3306, 5432, 6379)</td><td>Strict application-to-data only</td></tr>
+    <tr><td>Public Route</td><td>0.0.0.0/0 via IGW</td><td>Public subnet route table</td></tr>
+    <tr><td>Private Route</td><td>On-prem CIDR via VPN</td><td>Private subnet route table</td></tr>
+  </tbody>
+</table>
+
+</div>
+"""
+
+  marker = "<!-- SECTION 14: AUTO-GENERATED DIAGRAMS -->"
+  if marker in body_html:
+    return body_html.replace(marker, section_13b + "\n" + marker, 1)
+  return body_html + section_13b
+
+
+def _ensure_approved_patterns_link(body_html: str) -> str:
+  """Ensure main page has an easy link to the approved patterns reference page."""
+  if "Architecture Patterns Reference" in body_html:
+    return body_html
+
+  insert_block = (
+    '<p style="margin-top: 10px; font-size: 16px;"><strong>'
+    '<ac:link><ri:page ri:space-key="CDA" ri:content-title="Architecture Patterns Reference" />'
+    '</ac:link></strong></p>'
+    '<p><em>Use this page to pick reusable Security, Network, Governance, and EDAP-aligned integration patterns.</em></p>'
+  )
+
+  pattern = (
+    r'(<p[^>]*>\s*<strong>\s*<ac:link>\s*<ri:page[^>]*content-title="Architecture Diagrams"[^>]*/>'
+    r'\s*</ac:link>\s*</strong>\s*</p>)'
+  )
+  if re.search(pattern, body_html, flags=re.IGNORECASE):
+    return re.sub(pattern, r"\1" + insert_block, body_html, count=1, flags=re.IGNORECASE)
+  return body_html
+
+
+def _ensure_secure_by_design_link(body_html: str) -> str:
+  """Ensure the Secure by Design SAT template link is visible in Pattern Selection."""
+  if "Secure by Design - SAT" in body_html:
+    return body_html
+
+  sat_block = (
+    '<p><em>Secure by Design reference:</em> '
+    f'<a href="{html.escape(SECURE_BY_DESIGN_SAT_URL, quote=True)}">'
+    'UKHSA Secure by Design - SAT Template v2.6</a></p>'
+  )
+
+  pattern = r'(<h[1-3][^>]*>\s*8\.\s*Pattern Selection\s*</h[1-3]>\s*<p[^>]*>.*?</p>)'
+  if re.search(pattern, body_html, flags=re.DOTALL | re.IGNORECASE):
+    return re.sub(pattern, r"\1" + sat_block, body_html, count=1, flags=re.DOTALL | re.IGNORECASE)
+  return body_html
+
+
+def _ensure_secure_by_design_pattern_rows(body_html: str) -> str:
+  """Append Secure by Design control rows to Section 8d pattern table."""
+  if "SBD-01" in body_html:
+    return body_html
+
+  sbd_rows = """
+    <tr><td>SBD-01</td><td>Threat Modelling &amp; Abuse Cases</td><td>Security</td><td></td><td>Apply SAT template checkpoints before Gate 2</td></tr>
+    <tr><td>SBD-02</td><td>Secure SDLC &amp; Supply Chain Assurance</td><td>Security</td><td></td><td>Enforce SAST/DAST/SCA and signed artifact controls</td></tr>
+    <tr><td>SBD-03</td><td>Privacy by Design (DPIA/DSA Controls)</td><td>Governance</td><td></td><td>Link data protection controls to datasets and flows</td></tr>
+    <tr><td>SBD-04</td><td>Continuous Security Assurance</td><td>Governance</td><td></td><td>Operational control testing, evidence, and remediation tracking</td></tr>
+  """
+
+  match = re.search(
+    r'(<h[1-3][^>]*>\s*8d\.\s*Governance,\s*Security\s*&amp;\s*Operational\s*Patterns\s*</h[1-3]>.*?<tbody>)(.*?)(</tbody>)',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+  if not match:
+    return body_html
+
+  return body_html[:match.start()] + match.group(1) + match.group(2) + sbd_rows + match.group(3) + body_html[match.end():]
+
+
+def _ensure_secure_by_design_coverage_matrix(body_html: str) -> str:
+  """Insert Secure by Design control traceability matrix after Section 8d."""
+  if "Secure by Design Coverage Matrix" in body_html:
+    return body_html
+
+  matrix_block = """
+  <h3 id="section8e" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8e. Secure by Design Coverage Matrix</h3>
+<p><em>Trace each Secure by Design control to selected patterns, architecture components, runtime connections, and NFR outcomes.</em></p>
+<table>
+  <thead><tr><th>SAT Control Ref</th><th>Secure by Design Control</th><th>Pattern ID</th><th>Mapped Components (Section 10)</th><th>Mapped Connections (Section 11)</th><th>NFR Coverage</th><th>Evidence / Gate</th></tr></thead>
+  <tbody>
+    <tr><td>SAT-01</td><td>Threat modelling and abuse-case analysis completed</td><td>SBD-01</td><td>Threat Modelling &amp; Security Design Review; Validation Processor</td><td>Threat Modelling &amp; Security Design Review -> Policy Enforcement &amp; Management</td><td>NFR4, NFR6</td><td>Gate 2 design review sign-off</td></tr>
+    <tr><td>SAT-02</td><td>Identity and access controls designed with least privilege</td><td>SEC-01</td><td>Identity &amp; Access Management (IAM); Validation Processor</td><td>Validation Processor -> Identity &amp; Access Management (IAM)</td><td>NFR4</td><td>Role model + access review evidence</td></tr>
+    <tr><td>SAT-03</td><td>Encryption and key management enforced end-to-end</td><td>SEC-01</td><td>Encryption at Rest &amp; Transit; Curated Database; Raw Landing Bucket</td><td>Curated Database -> Encryption at Rest &amp; Transit</td><td>NFR4, NFR5</td><td>KMS/Key Vault policy and config checks</td></tr>
+    <tr><td>SAT-04</td><td>Secrets and credentials managed centrally</td><td>SEC-01</td><td>Secret Management; Validation Processor</td><td>Validation Processor -> Secret Management</td><td>NFR4</td><td>Secrets rotation and retrieval audit logs</td></tr>
+    <tr><td>SAT-05</td><td>Secure SDLC and software supply chain controls active</td><td>SBD-02</td><td>Secure CI/CD Assurance; Validation Processor</td><td>Validation Processor -> Secure CI/CD Assurance</td><td>NFR4, NFR8</td><td>Pipeline security gate reports</td></tr>
+    <tr><td>SAT-06</td><td>Vulnerability and patch management lifecycle implemented</td><td>SBD-02</td><td>Vulnerability &amp; Patch Management</td><td>Policy Enforcement &amp; Management -> Validation Processor</td><td>NFR4, NFR8</td><td>Scan reports and remediation SLA tracking</td></tr>
+    <tr><td>SAT-07</td><td>Privacy-by-design, DPIA/DSA and minimisation controls applied</td><td>SBD-03, DPIA-01</td><td>Privacy by Design Controls; Data Lineage &amp; Governance; Curated Database</td><td>Data Lineage &amp; Governance -> Curated Database</td><td>NFR5, NFR6</td><td>DPIA/DSA approvals and retention policy evidence</td></tr>
+    <tr><td>SAT-08</td><td>Continuous assurance, logging, monitoring, and governance reporting</td><td>SBD-04, GOV-01, OPS-01</td><td>Audit Logging &amp; Compliance Monitoring; Monitoring and Alerts; Cost Optimization &amp; Usage Monitoring</td><td>Audit Logging &amp; Compliance Monitoring -> Monitoring and Alerts; Cost Optimization &amp; Usage Monitoring -> Monitoring and Alerts</td><td>NFR6, NFR7, NFR9</td><td>Monthly governance review and control attestations</td></tr>
+  </tbody>
+</table>
+"""
+
+  # Preferred insertion: immediately after Section 8d table.
+  section_8d_table_pattern = (
+    r'(<h[1-3][^>]*>\s*8d\.\s*Governance,\s*Security\s*&amp;\s*Operational\s*Patterns\s*</h[1-3]>.*?</table>)'
+  )
+  if re.search(section_8d_table_pattern, body_html, flags=re.DOTALL | re.IGNORECASE):
+    return re.sub(
+      section_8d_table_pattern,
+      r'\1\n' + matrix_block,
+      body_html,
+      count=1,
+      flags=re.DOTALL | re.IGNORECASE,
+    )
+
+  # Fallback: append to Section 8 block before Section 9 heading.
+  marker = re.search(r'<h[1-3][^>]*>\s*9\.\s*Context Entities\s*</h[1-3]>', body_html, flags=re.IGNORECASE)
+  if marker:
+    return body_html[:marker.start()] + matrix_block + "\n" + body_html[marker.start():]
+
+  return body_html
+
+
+def _ensure_architecture_components_with_security_governance(body_html: str) -> str:
+  """Ensure Architecture Components section includes Security and Governance layers."""
+  
+  architecture_components_html = """
+  <tr><td colspan="7"><strong>Core Infrastructure Components</strong></td></tr>
+  <tr><td>1</td><td>On-Prem Business App</td><td>Edge</td><td>On-Prem LoB Application</td><td>Both</td><td>Source business system producing surveillance/event data</td><td>FR1, NFR2</td></tr>
+  <tr><td>2</td><td>On-Prem SFTP Server</td><td>Edge</td><td>SFTP Gateway</td><td>Both</td><td>Controlled transfer point for inbound extracts from source systems</td><td>FR1, NFR4</td></tr>
+  <tr><td>3</td><td>AWS Transfer Endpoint</td><td>Network</td><td>AWS Transfer Family</td><td>AWS</td><td>Managed secure ingress endpoint for file transfers into cloud zones</td><td>FR1, NFR2, NFR4</td></tr>
+  <tr><td>4</td><td>Raw Landing Bucket</td><td>Data</td><td>Amazon S3</td><td>AWS</td><td>Raw intake zone for immutable landing and initial validation triggers</td><td>FR1, NFR5</td></tr>
+  <tr><td>5</td><td>Validation Processor</td><td>Application</td><td>AWS Lambda / Container Worker</td><td>Both</td><td>Validates, transforms, and routes incoming data to curated stores and queues</td><td>FR2, NFR1</td></tr>
+  <tr><td>6</td><td>Processing Queue</td><td>Platform</td><td>Amazon SQS / Azure Service Bus</td><td>Both</td><td>Asynchronous decoupling for resilient processing and retry behavior</td><td>FR2, NFR2, NFR3</td></tr>
+  <tr><td>7</td><td>Curated Database</td><td>Data</td><td>Amazon RDS / Azure SQL</td><td>Both</td><td>Stores validated and curated records for downstream analytics/reporting</td><td>FR3, NFR5</td></tr>
+  <tr><td>8</td><td>Monitoring and Alerts</td><td>Platform</td><td>CloudWatch / Azure Monitor</td><td>Both</td><td>Operational metrics, alerting, and incident trigger integration</td><td>NFR7, NFR8</td></tr>
+  <tr><td colspan="7"><strong>Security Layer Components</strong></td></tr>
+  <tr><td>9</td><td>Identity &amp; Access Management (IAM)</td><td>Security</td><td>AWS IAM / Azure Entra ID</td><td>Both</td><td>User authentication, authorization, and role-based access control across all layers</td><td>NFR4</td></tr>
+  <tr><td>10</td><td>Encryption at Rest &amp; Transit</td><td>Security</td><td>AWS KMS / Azure Key Vault</td><td>Both</td><td>Data encryption for storage and network communications</td><td>NFR4, NFR5</td></tr>
+  <tr><td>11</td><td>Secret Management</td><td>Security</td><td>AWS Secrets Manager / Azure Key Vault</td><td>Both</td><td>Secure storage and rotation of credentials, API keys, database passwords</td><td>NFR4</td></tr>
+  <tr><td>12</td><td>Network Security &amp; DDoS Protection</td><td>Security</td><td>AWS WAF, Shield / Azure DDoS Protection</td><td>Both</td><td>Web application firewall and distributed denial-of-service mitigation</td><td>NFR2, NFR4</td></tr>
+  <tr><td>13</td><td>Threat Detection &amp; Response</td><td>Security</td><td>AWS GuardDuty / Azure Defender</td><td>Both</td><td>Continuous monitoring for threats and automated incident response</td><td>NFR4</td></tr>
+  <tr><td colspan="7"><strong>Governance Layer Components</strong></td></tr>
+  <tr><td>14</td><td>Audit Logging &amp; Compliance Monitoring</td><td>Governance</td><td>AWS CloudTrail / Azure Activity Log</td><td>Both</td><td>Complete audit trail of all API calls, user actions, and configuration changes</td><td>NFR6</td></tr>
+  <tr><td>15</td><td>Policy Enforcement &amp; Management</td><td>Governance</td><td>AWS Config / Azure Policy</td><td>Both</td><td>Automated policy compliance checking and remediation across infrastructure</td><td>NFR6</td></tr>
+  <tr><td>16</td><td>Data Lineage &amp; Governance</td><td>Governance</td><td>AWS Glue / Azure Purview</td><td>Both</td><td>Track data provenance, ownership, and transformation lineage for governance</td><td>NFR5, NFR6</td></tr>
+  <tr><td>17</td><td>Cost Optimization &amp; Usage Monitoring</td><td>Governance</td><td>AWS Cost Explorer / Azure Cost Management</td><td>Both</td><td>Monitor spend, optimize resource utilization, and enforce cost controls</td><td>NFR9</td></tr>
+  <tr><td>18</td><td>Threat Modelling &amp; Security Design Review</td><td>Security</td><td>Secure by Design SAT, Architecture Review Checklist</td><td>Both</td><td>Identify trust boundaries, attack paths, and control gaps before implementation</td><td>NFR4, NFR6</td></tr>
+  <tr><td>19</td><td>Vulnerability &amp; Patch Management</td><td>Security</td><td>AWS Inspector / Azure Defender Vulnerability Management</td><td>Both</td><td>Continuously scan for vulnerabilities and enforce patch compliance</td><td>NFR4, NFR8</td></tr>
+  <tr><td>20</td><td>Secure CI/CD Assurance</td><td>Security</td><td>SAST, DAST, SCA, Artifact Signing</td><td>Both</td><td>Block insecure code and dependencies from promotion across environments</td><td>NFR4, NFR8</td></tr>
+  <tr><td>21</td><td>Privacy by Design Controls</td><td>Governance</td><td>DPIA/DSA workflow, Data Classification, Retention Policies</td><td>Both</td><td>Embed lawful processing, minimisation, masking, and retention controls in design</td><td>NFR5, NFR6</td></tr>
+  """
+  
+  # Replace the old architecture components table rows with the new one including Security/Governance
+  body_html = re.sub(
+    r'(<h[1-3][^>]*>\s*10\.\s*Architecture Components\s*</h[1-3]>.*?<tbody>)(.*?)(</tbody>)',
+    r'\1' + architecture_components_html + r'\3',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+  
+  # Also update the valid layers description to include Security and Governance
+  body_html = re.sub(
+    r'Valid layers:\s*<strong>Edge, Network, Platform, Application, Data</strong>',
+    r'Valid layers: <strong>Edge, Network, Platform, Application, Data, Security, Governance</strong>',
+    body_html,
+    flags=re.IGNORECASE,
+  )
+  
+  return body_html
+
+
+def _ensure_context_entities_populated(body_html: str) -> str:
+  """Ensure Context Entities section includes required entities for C4 context diagram."""
+  context_entities_html = """
+    <tr><td>On-Prem Business App</td><td>System</td><td>Produces daily surveillance files via SFTP export</td><td>Out</td></tr>
+    <tr><td>On-Prem SFTP Server</td><td>System</td><td>Stages and relays files for secure cloud transfer</td><td>Both</td></tr>
+    <tr><td>UKHSA Intra Identity (Azure Entra ID)</td><td>Service</td><td>Provides SSO and MFA authentication for transfer users and support access</td><td>Both</td></tr>
+    <tr><td>Data Analyst Team</td><td>User</td><td>Consumes validated data outputs</td><td>In</td></tr>
+    <tr><td>Security Operations</td><td>Service</td><td>Reviews logs and alerts</td><td>In</td></tr>
+  """
+  
+  # Replace the context entities table rows
+  body_html = re.sub(
+    r'(<h[1-3][^>]*>\s*9\.\s*Context Entities\s*</h[1-3]>.*?<tbody>)(.*?)(</tbody>)',
+    r'\1' + context_entities_html + r'\3',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+  
+  return body_html
+
+
+def _ensure_secure_by_design_connections(body_html: str) -> str:
+  """Add security/governance design-time and runtime control paths to Section 11."""
+  if "Threat Modelling &amp; Security Design Review" in body_html and "Secure-by-design control path" in body_html:
+    return body_html
+
+  secure_connections_rows = """
+    <tr><td>Validation Processor</td><td>Identity &amp; Access Management (IAM)</td><td>Token validation / RBAC decision</td><td>OIDC/OAuth2, IAM role</td><td>Secure-by-design control path</td></tr>
+    <tr><td>Validation Processor</td><td>Secret Management</td><td>Retrieve runtime secrets</td><td>TLS + IAM auth</td><td>No embedded credentials in code/config</td></tr>
+    <tr><td>Curated Database</td><td>Encryption at Rest &amp; Transit</td><td>Data encryption enforcement</td><td>KMS/Key Vault policy</td><td>Protect data in motion and at rest</td></tr>
+    <tr><td>Validation Processor</td><td>Threat Detection &amp; Response</td><td>Security telemetry and alerting</td><td>GuardDuty/Defender integration</td><td>Detect anomalous behavior and respond</td></tr>
+    <tr><td>Validation Processor</td><td>Secure CI/CD Assurance</td><td>Deployment gate checks</td><td>Pipeline policy checks</td><td>Only compliant builds promoted to higher environments</td></tr>
+    <tr><td>Threat Modelling &amp; Security Design Review</td><td>Policy Enforcement &amp; Management</td><td>Design controls to policy mapping</td><td>Control evidence linkage</td><td>Architecture decisions traceable to controls</td></tr>
+    <tr><td>Policy Enforcement &amp; Management</td><td>Validation Processor</td><td>Configuration and policy compliance checks</td><td>Policy API / config scan</td><td>Continuous assurance</td></tr>
+    <tr><td>Audit Logging &amp; Compliance Monitoring</td><td>Monitoring and Alerts</td><td>Control evidence and compliance telemetry</td><td>Log forwarding</td><td>Support audits and governance reporting</td></tr>
+    <tr><td>Data Lineage &amp; Governance</td><td>Curated Database</td><td>Lineage capture and classification tags</td><td>Metadata sync</td><td>Improve traceability and accountability</td></tr>
+    <tr><td>Cost Optimization &amp; Usage Monitoring</td><td>Monitoring and Alerts</td><td>Budget/cost anomaly alerts</td><td>Cost Explorer / Cost Management API</td><td>Operational governance and optimization</td></tr>
+  """
+
+  match = re.search(
+    r'(<h[1-3][^>]*>\s*11\.\s*Architecture Connections\s*</h[1-3]>.*?<tbody>)(.*?)(</tbody>)',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+  if not match:
+    return body_html
+
+  section_rows = match.group(2)
+  if re.search(r'Identity\s*&amp;\s*Access\s*Management|Threat\s*Detection\s*&amp;\s*Response|Policy\s*Enforcement\s*&amp;\s*Management', section_rows, flags=re.IGNORECASE):
+    return body_html
+
+  return body_html[:match.start()] + match.group(1) + section_rows + secure_connections_rows + match.group(3) + body_html[match.end():]
+        
+def _ensure_roadmaps_and_use_case_details(body_html: str) -> str:
+  """Ensure HLD page includes Roadmaps and Use case details sections between 1 and 6."""
+
+  gate_roadmap_rows = """
+      <tr><td>Gate 1: Discovery to Alpha (Implementation foundation)</td><td>Weeks 0-12 (Q1)</td><td>Discovery complete, architecture baseline agreed, and DEV environment established</td><td>Cost linkage: establish baseline assumptions for Section 17 (compute, storage, security setup, delivery effort)</td></tr>
+      <tr><td>Gate 2: Alpha to Private Beta (Initial implementation)</td><td>Weeks 13-24 (Q2)</td><td>Core service implemented across DEV and TEST with limited PRIVATE-BETA environment access</td><td>Cost linkage: validate run-rate assumptions for integration, test automation, monitoring, and support cover</td></tr>
+      <tr><td>Gate 3: Private Beta to Public Beta (Scale implementation)</td><td>Weeks 25-36 (Q3)</td><td>PRE-PROD and PUBLIC-BETA environments operational with expanded onboarding and resilience tests</td><td>Cost linkage: refresh Section 17 estimates for scaling, data transfer, observability, and operational readiness</td></tr>
+      <tr><td>Gate 4: Public Beta to Live (Production implementation)</td><td>Weeks 37-48 (Q4)</td><td>PROD and DR environments approved for live service with full operational handover</td><td>Cost linkage: confirm business-as-usual costs across production support, resilience controls, and compliance operations</td></tr>
+      <tr><td>Gate 5: Live to Decommission (Exit implementation)</td><td>Post-live retirement window</td><td>Service retirement executed with ARCHIVE/DECOM environments and data/service closure controls</td><td>Cost linkage: capture decommission and archive costs, license termination impacts, and end-of-life transition effort</td></tr>
+"""
+
+  # Remove previously injected blocks so we can reposition safely/idempotently.
+  body_html = re.sub(
+    r'<!-- SECTION 13C: ROADMAPS -->.*?</div>\s*<!-- SECTION 13D: USE CASE DETAILS -->.*?</div>',
+    '',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+
+  # Remove appended styled duplicates introduced by earlier insertion logic.
+  body_html = re.sub(
+    r'<div[^>]*>\s*<h2[^>]*id="section5a"[^>]*>.*?</h2>.*?</div>',
+    '',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+  body_html = re.sub(
+    r'<div[^>]*>\s*<h2[^>]*>\s*5a\.\s*Roadmaps\s*</h2>.*?</div>',
+    '',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+  body_html = re.sub(
+    r'<div[^>]*>\s*<h2[^>]*id="section5b"[^>]*>.*?</h2>.*?</div>',
+    '',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+  body_html = re.sub(
+    r'<div[^>]*>\s*<h2[^>]*>\s*5b\.\s*Use case details\s*</h2>.*?</div>',
+    '',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+
+  # If a roadmap section already exists in Confluence-native storage HTML, normalize
+  # its table rows so Gate 1-5 are always present, regardless of section numbering.
+  body_html = re.sub(
+    r'(<h[1-3][^>]*>\s*(?:\d+[a-z]?\.?\s*)?Roadmaps\s*</h[1-3]>.*?<tbody>)(.*?)(</tbody>)',
+    r'\1' + gate_roadmap_rows + r'\3',
+    body_html,
+    flags=re.DOTALL | re.IGNORECASE,
+  )
+
+  # Skip insertion if sections already exist, regardless of numbering (e.g., 6/19).
+  has_roadmaps = bool(
+    re.search(r'<h[1-3][^>]*>\s*(?:\d+[a-z]?\.?\s*)?Roadmaps\s*</h[1-3]>', body_html, flags=re.IGNORECASE)
+  )
+  has_use_case = bool(
+    re.search(r'<h[1-3][^>]*>\s*(?:\d+[a-z]?\.?\s*)?Use\s+case\s+details\s*</h[1-3]>', body_html, flags=re.IGNORECASE)
+  )
+  if has_roadmaps and has_use_case:
+    return body_html
+
+  new_sections = """
+<!-- SECTION 5A: ROADMAPS -->
+<div style="background-color: #fff7ed; border-left: 5px solid #ea580c; padding: 15px; margin: 20px 0; border-radius: 4px;">
+  <h2 id="section5a" style="color: #c2410c; margin-top: 0;">5a. Roadmaps</h2>
+  <p><em>Capture full lifecycle delivery milestones with timeline, environment progression, and linked cost assumptions.</em></p>
+  <table>
+    <thead>
+      <tr><th>Milestone</th><th>Timeline</th><th>Outcome</th><th>Dependencies / Risks</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Gate 1: Discovery to Alpha (Implementation foundation)</td><td>Weeks 0-12 (Q1)</td><td>Discovery complete, architecture baseline agreed, and DEV environment established</td><td>Cost linkage: establish baseline assumptions for Section 17 (compute, storage, security setup, delivery effort)</td></tr>
+      <tr><td>Gate 2: Alpha to Private Beta (Initial implementation)</td><td>Weeks 13-24 (Q2)</td><td>Core service implemented across DEV and TEST with limited PRIVATE-BETA environment access</td><td>Cost linkage: validate run-rate assumptions for integration, test automation, monitoring, and support cover</td></tr>
+      <tr><td>Gate 3: Private Beta to Public Beta (Scale implementation)</td><td>Weeks 25-36 (Q3)</td><td>PRE-PROD and PUBLIC-BETA environments operational with expanded onboarding and resilience tests</td><td>Cost linkage: refresh Section 17 estimates for scaling, data transfer, observability, and operational readiness</td></tr>
+      <tr><td>Gate 4: Public Beta to Live (Production implementation)</td><td>Weeks 37-48 (Q4)</td><td>PROD and DR environments approved for live service with full operational handover</td><td>Cost linkage: confirm business-as-usual costs across production support, resilience controls, and compliance operations</td></tr>
+      <tr><td>Gate 5: Live to Decommission (Exit implementation)</td><td>Post-live retirement window</td><td>Service retirement executed with ARCHIVE/DECOM environments and data/service closure controls</td><td>Cost linkage: capture decommission and archive costs, license termination impacts, and end-of-life transition effort</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Lifecycle costing rule:</strong> each gate above must update Section 17 with revised build/run assumptions for the environments introduced at that stage.</p>
+</div>
+
+<!-- SECTION 5B: USE CASE DETAILS -->
+<div style="background-color: #f0fdf4; border-left: 5px solid #16a34a; padding: 15px; margin: 20px 0; border-radius: 4px;">
+  <h2 id="section5b" style="color: #15803d; margin-top: 0;">5b. Use case details</h2>
+  <p><em>Describe key scenarios so architecture decisions remain tied to user and business outcomes.</em></p>
+  <table>
+    <thead>
+      <tr><th>Use Case</th><th>Primary Actor</th><th>Trigger</th><th>Main Flow</th><th>Success Criteria</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Inbound file ingestion</td><td>Business system</td><td>Scheduled data drop</td><td>Upload -> validate -> queue -> curate</td><td>File processed without data loss</td></tr>
+      <tr><td>Operational monitoring</td><td>Support analyst</td><td>Alert raised</td><td>Detect -> triage -> resolve -> close</td><td>Incident resolved within SLA</td></tr>
+      <tr><td>Data consumption</td><td>Reporting user</td><td>Dashboard refresh</td><td>Query curated dataset -> render insight</td><td>Trusted and timely reporting output</td></tr>
+    </tbody>
+  </table>
+</div>
+"""
+
+  marker = "<!-- SECTION 7: HLD OPTIONS -->"
+  if marker in body_html:
+    return body_html.replace(marker, new_sections + "\n" + marker, 1)
+
+  # For synced Confluence storage HTML (no SECTION comments), avoid appending at end.
+  h2_marker = re.search(r'<h2[^>]*>\s*7\.\s*Architecture Decision\s*&ndash;\s*HLD Options\s*</h2>', body_html, flags=re.IGNORECASE)
+  if h2_marker:
+    return body_html[:h2_marker.start()] + new_sections + "\n" + body_html[h2_marker.start():]
   return body_html
 
 
@@ -776,10 +1942,39 @@ def main() -> None:
     synced_template = load_synced_template()
     if synced_template:
       body_html = _update_questionnaire_plan_link(synced_template, plan_link)
+      body_html = _ensure_network_segmentation_section(body_html)
+      body_html = _ensure_approved_patterns_link(body_html)
+      body_html = _ensure_secure_by_design_link(body_html)
+      body_html = _ensure_secure_by_design_pattern_rows(body_html)
+      body_html = _ensure_secure_by_design_coverage_matrix(body_html)
+      body_html = _ensure_architecture_components_with_security_governance(body_html)
+      body_html = _ensure_context_entities_populated(body_html)
+      body_html = _ensure_secure_by_design_connections(body_html)
+      body_html = _ensure_roadmaps_and_use_case_details(body_html)
     else:
       body_html = build_main_html(plan_link)
+      body_html = _ensure_secure_by_design_link(body_html)
+      body_html = _ensure_secure_by_design_pattern_rows(body_html)
+      body_html = _ensure_secure_by_design_coverage_matrix(body_html)
+      body_html = _ensure_architecture_components_with_security_governance(body_html)
+      body_html = _ensure_context_entities_populated(body_html)
+      body_html = _ensure_secure_by_design_connections(body_html)
+      body_html = _ensure_approved_patterns_link(body_html)
+      body_html = _ensure_roadmaps_and_use_case_details(body_html)
 
     result = update_page_body(session, base_url, page_id, page["version"]["number"], page["title"], body_html)
+
+    patterns_page_title = os.getenv("CONFLUENCE_APPROVED_PATTERNS_PAGE_TITLE", "Architecture Patterns Reference").strip()
+    if patterns_page_title:
+      print(f"Upserting child page: {patterns_page_title}...")
+      upsert_child_page(
+        session,
+        base_url,
+        space_key,
+        page_id,
+        patterns_page_title,
+        build_approved_patterns_page_html(),
+      )
 
     # Re-sync after update to keep local template aligned with latest live page.
     updated_body = result.get("body", {}).get("storage", {}).get("value")

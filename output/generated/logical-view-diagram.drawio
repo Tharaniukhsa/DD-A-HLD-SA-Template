@@ -1,75 +1,179 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile>
-  <diagram name="Solution Architecture">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <diagram name="C4 Container Diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2200" pageHeight="1000" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="lbl-edge" value="Edge" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="20" width="100" height="50" as="geometry" />
+        <mxCell id="c4-l2-title" value="C4 Container Diagram (Level 2) - Logical View" style="fontSize=16;fontStyle=1;align=center;" parent="1" vertex="1">
+          <mxGeometry x="250" y="20" width="1300" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-network" value="Network" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="100" width="100" height="50" as="geometry" />
+        <mxCell id="c4-boundary" value="" style="rounded=0;whiteSpace=wrap;fontSize=14;dashed=1;dashPattern=1 4;strokeColor=#1a1a1a;strokeWidth=2;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="300" y="100" width="1000" height="640" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-platform" value="Platform" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="180" width="100" height="50" as="geometry" />
+        <mxCell id="c4-boundary-label" value="Target Data Solution" style="fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="312" y="110" width="500" height="24" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-application" value="Application" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="260" width="100" height="50" as="geometry" />
+        <mxCell id="c4-container-on-prem-business-app-0" value="On-Prem Business App&#10;[On-Prem LoB Application]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="340" y="170" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="lbl-data" value="Data" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;fontStyle=1;fontSize=11;strokeColor=#999999;" parent="1" vertex="1">
-          <mxGeometry x="10" y="340" width="100" height="50" as="geometry" />
+        <mxCell id="c4-container-on-prem-sftp-server-1" value="On-Prem SFTP Server&#10;[SFTP Gateway]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="615" y="170" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-on-prem-business-app" value="On-Prem Business App&#10;(On-Prem Server)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="20" width="160" height="50" as="geometry" />
+        <mxCell id="c4-container-aws-transfer-endpoint-2" value="AWS Transfer Endpoint&#10;[AWS Transfer Family]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#d5e8d4;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="890" y="170" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-on-prem-sftp-server" value="On-Prem SFTP Server&#10;(SFTP)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="20" width="160" height="50" as="geometry" />
+        <mxCell id="c4-container-raw-landing-bucket-3" value="Raw Landing Bucket&#10;[Amazon S3]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="340" y="310" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-private-connectivity" value="Private Connectivity&#10;(VPN)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="100" width="160" height="50" as="geometry" />
+        <mxCell id="c4-container-validation-processor-4" value="Validation Processor&#10;[AWS Lambda / Container Worker]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#f8cecc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="615" y="310" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-aws-transfer-endpoint" value="AWS Transfer Endpoint&#10;(Transfer Family)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="100" width="160" height="50" as="geometry" />
+        <mxCell id="c4-container-processing-queue-5" value="Processing Queue&#10;[Amazon SQS / Azure Service Bus]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#fff2cc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="890" y="310" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-processing-queue" value="Processing Queue&#10;(SQS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c4-container-curated-database-6" value="Curated Database&#10;[Amazon RDS / Azure SQL]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="340" y="450" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-monitoring-and-alerts" value="Monitoring and Alerts&#10;(CloudWatch)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff2cc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="180" width="160" height="50" as="geometry" />
+        <mxCell id="c4-container-monitoring-and-alerts-7" value="Monitoring and Alerts&#10;[CloudWatch / Azure Monitor]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#fff2cc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="615" y="450" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-validation-processor" value="Validation Processor&#10;(Lambda)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="260" width="160" height="50" as="geometry" />
+        <mxCell id="c4-container-data-analyst-team-8" value="Data Analyst Team&#10;[User]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="890" y="450" width="240" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="c-raw-landing-bucket" value="Raw Landing Bucket&#10;(S3)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="160" y="340" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="c-curated-database" value="Curated Database&#10;(RDS)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="360" y="340" width="160" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="e-0" value="Daily file export" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-on-prem-business-app" target="c-on-prem-sftp-server" edge="1">
+        <mxCell id="c4-container-edge-0" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-on-prem-business-app-0" target="c4-container-on-prem-sftp-server-1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-1" value="Secure file transfer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-on-prem-sftp-server" target="c-aws-transfer-endpoint" edge="1">
+        <mxCell id="c4-container-edge-1" value="2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-on-prem-sftp-server-1" target="c4-container-aws-transfer-endpoint-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-2" value="Store uploaded file" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-aws-transfer-endpoint" target="c-raw-landing-bucket" edge="1">
+        <mxCell id="c4-container-edge-2" value="3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-aws-transfer-endpoint-2" target="c4-container-raw-landing-bucket-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-3" value="Object-created trigger" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-raw-landing-bucket" target="c-validation-processor" edge="1">
+        <mxCell id="c4-container-edge-3" value="4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-raw-landing-bucket-3" target="c4-container-validation-processor-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-4" value="Publish process event" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-validation-processor" target="c-processing-queue" edge="1">
+        <mxCell id="c4-container-edge-4" value="5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-validation-processor-4" target="c4-container-processing-queue-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-5" value="Insert validated records" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-validation-processor" target="c-curated-database" edge="1">
+        <mxCell id="c4-container-edge-5" value="6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-validation-processor-4" target="c4-container-curated-database-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-6" value="Error and duration metrics" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-monitoring-and-alerts" target="c-validation-processor" edge="1">
+        <mxCell id="c4-container-edge-6" value="7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-monitoring-and-alerts-7" target="c4-container-validation-processor-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-7" value="Queue depth monitoring" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="c-monitoring-and-alerts" target="c-processing-queue" edge="1">
+        <mxCell id="c4-container-edge-7" value="8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-monitoring-and-alerts-7" target="c4-container-processing-queue-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-on-prem-business-app-0" value="On-Prem Business App&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="170" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-on-prem-sftp-server-1" value="On-Prem SFTP Server&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="265" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-ukhsa-intra-identity-azure-entra-id-2" value="UKHSA Intra Identity (Azure Entra ID)&#10;[Service]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="360" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-data-analyst-team-3" value="Data Analyst Team&#10;[User]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1290" y="455" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-security-operations-4" value="Security Operations&#10;[Service]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1290" y="550" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-edge-8" value="Produces daily surveillance files via SFTP export" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="c4-external-on-prem-business-app-0" target="c4-container-on-prem-sftp-server-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-edge-9" value="Stages and relays files for secure cloud transfer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-on-prem-sftp-server-1" target="c4-container-aws-transfer-endpoint-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-edge-10" value="Provides SSO and MFA authentication for transfer users and support access" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-ukhsa-intra-identity-azure-entra-id-2" target="c4-container-aws-transfer-endpoint-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-edge-11" value="Consumes validated data outputs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="c4-container-curated-database-6" target="c4-external-data-analyst-team-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-edge-12" value="Reviews logs and alerts" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="c4-container-monitoring-and-alerts-7" target="c4-external-security-operations-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-explanation-panel" value="" style="rounded=1;fillColor=#F8FAFC;strokeColor=#9AA5B1;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry x="1850" y="100" width="280" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-explanation-title" value="Data Flows" style="fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=center;" parent="1" vertex="1">
+          <mxGeometry x="1860" y="110" width="260" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-1" value="Step 1: On-Prem Business App → On-Prem SFTP Server (Outbound)&#10;Daily file export" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="145" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-2" value="Step 2: On-Prem SFTP Server → AWS Transfer Endpoint (Outbound)&#10;Secure file transfer" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="217" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-3" value="Step 3: AWS Transfer Endpoint → Raw Landing Bucket (Outbound)&#10;Store uploaded file" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="289" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-4" value="Step 4: Raw Landing Bucket → Validation Processor (Outbound)&#10;Object-created trigger" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="361" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-5" value="Step 5: Validation Processor → Processing Queue (Outbound)&#10;Publish process event" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="433" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-6" value="Step 6: Validation Processor → Curated Database (Outbound)&#10;Insert validated records" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="505" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-7" value="Step 7: Monitoring and Alerts → Validation Processor (Outbound)&#10;Error and duration metrics" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="577" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-desc-8" value="Step 8: Monitoring and Alerts → Processing Queue (Outbound)&#10;Queue depth monitoring" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1858" y="649" width="264" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-title" value="Legend:" style="fontSize=10;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="320" y="760" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-box-0" value="" style="rounded=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6b7280;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="410" y="760" width="18" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-text-0" value="Edge/Network" style="fontSize=9;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="432" y="759" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-box-1" value="" style="rounded=0;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#6b7280;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="560" y="760" width="18" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-text-1" value="Platform" style="fontSize=9;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="582" y="759" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-box-2" value="" style="rounded=0;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#6b7280;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="690" y="760" width="18" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-text-2" value="Application" style="fontSize=9;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="712" y="759" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-box-3" value="" style="rounded=0;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#6b7280;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="840" y="760" width="18" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-text-3" value="Data" style="fontSize=9;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="862" y="759" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-box-4" value="" style="rounded=0;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#6b7280;strokeWidth=1;" parent="1" vertex="1">
+          <mxGeometry x="950" y="760" width="18" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-text-4" value="Internal" style="fontSize=9;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="972" y="759" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-arrows" value="Arrow colours:  Blue (→) = Outbound (one-way)     Green (↔) = Bi-directional" style="fontSize=9;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="320" y="785" width="700" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-legend-swatch-blue" value="" style="endArrow=classic;startArrow=none;strokeColor=#2563EB;strokeWidth=2;" parent="1" source="" target="" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+          <mxPoint x="321" y="793" as="sourcePoint" />
+          <mxPoint x="351" y="793" as="targetPoint" />
+        </mxCell>
+        <mxCell id="c4-legend-swatch-green" value="" style="endArrow=classic;startArrow=none;strokeColor=#059669;strokeWidth=2;" parent="1" source="" target="" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+          <mxPoint x="600" y="793" as="sourcePoint" />
+          <mxPoint x="630" y="793" as="targetPoint" />
         </mxCell>
       </root>
     </mxGraphModel>

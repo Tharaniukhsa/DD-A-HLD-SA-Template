@@ -1,42 +1,276 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile>
-  <diagram name="Data Flow Diagram">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <diagram name="Data Flow Diagram (Level 2)">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1700" pageHeight="1000" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="n-on-prem-business-app-0" value="On-Prem Business App" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="40" y="120" width="140" height="50" as="geometry" />
+        <mxCell id="dfd-l2-title" value="Data Flow Diagram (Level 2)" style="fontSize=16;fontStyle=1;align=center;" parent="1" vertex="1">
+          <mxGeometry x="220" y="20" width="980" height="36" as="geometry" />
         </mxCell>
-        <mxCell id="n-on-prem-sftp-server-1" value="On-Prem SFTP Server" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="240" y="120" width="140" height="50" as="geometry" />
+        <mxCell id="dfd-l2-boundary" value="Level 2 Process Decomposition" style="rounded=0;whiteSpace=wrap;dashed=1;dashPattern=1 4;strokeColor=#6B7280;strokeWidth=2;fillColor=none;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="320" y="90" width="700" height="720" as="geometry" />
         </mxCell>
-        <mxCell id="df-e-0" value="Daily surveillance extract&#10;[CSV]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-on-prem-business-app-0" target="n-on-prem-sftp-server-1" edge="1">
+        <mxCell id="dfd-ext-external-source-0" value="External Source" style="rounded=0;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#F3F4F6;strokeColor=#4B5563;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="130" width="220" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-ext-on-prem-business-app-1" value="On-Prem Business App" style="rounded=0;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#F3F4F6;strokeColor=#4B5563;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="225" width="220" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-ext-on-prem-sftp-server-2" value="On-Prem SFTP Server" style="rounded=0;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#F3F4F6;strokeColor=#4B5563;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="320" width="220" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-ext-on-premises-dc-3" value="On-Premises DC" style="rounded=0;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#F3F4F6;strokeColor=#4B5563;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="415" width="220" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-ext-source-system-4" value="Source System" style="rounded=0;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#F3F4F6;strokeColor=#4B5563;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="510" width="220" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-ext-user-5" value="User" style="rounded=0;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#F3F4F6;strokeColor=#4B5563;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="605" width="220" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-api-gateway-export-0" value="API Gateway (Export)" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="140" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-aws-console-cli-1" value="AWS Console / CLI" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="140" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-aws-datasync-2" value="AWS DataSync" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="255" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-aws-lambda-event-consumer-3" value="AWS Lambda (Event Consumer)" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="255" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-aws-transfer-endpoint-4" value="AWS Transfer Endpoint" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="370" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-aws-transfer-family-sftp-5" value="AWS Transfer Family (SFTP)" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="370" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-aws-vpc-6" value="AWS VPC" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="485" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-amazon-athena-7" value="Amazon Athena" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="485" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-amazon-aurora-postgresql-8" value="Amazon Aurora PostgreSQL" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="600" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-amazon-kinesis-data-streams-9" value="Amazon Kinesis Data Streams" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="600" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-amazon-redshift-10" value="Amazon Redshift" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="715" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-amazon-s3-staging-11" value="Amazon S3 (Staging)" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="715" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-amazon-sagemaker-training-12" value="Amazon SageMaker Training" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="830" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-analyst-13" value="Analyst" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="830" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-application-14" value="Application" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="945" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-application-tier-15" value="Application Tier" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="945" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-azure-blob-storage-16" value="Azure Blob Storage" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1060" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-conform-layer-17" value="Conform Layer" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="1060" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-edap-conform-layer-18" value="EDAP Conform Layer" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1175" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-edap-datamart-layer-19" value="EDAP DataMart Layer" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="1175" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-edap-ingestion-layer-20" value="EDAP Ingestion Layer" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1290" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-edap-raw-layer-21" value="EDAP Raw Layer" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="1290" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-event-producer-22" value="Event Producer" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1405" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-glue-job-parquet-rrd-tag-23" value="Glue Job (Parquet + RRD Tag)" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="1405" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-internet-24" value="Internet" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1520" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-kinesis-data-firehose-25" value="Kinesis Data Firehose" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="1520" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-power-bi-gateway-ec2-26" value="Power BI Gateway (EC2)" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1635" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-s3-training-dataset-27" value="S3 Training Dataset" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="1635" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-step-functions-i2r-28" value="Step Functions (I2R)" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1750" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-stream-producer-29" value="Stream Producer" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="710" y="1750" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-proc-validation-processor-30" value="Validation Processor" style="ellipse;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1865" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-store-curated-database-0" value="Curated Database" style="shape=partialRectangle;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#FEF3C7;strokeColor=#B45309;fontSize=10;fontStyle=1;top=0;left=0;right=0;bottom=1;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="130" width="240" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-store-external-database-1" value="External Database" style="shape=partialRectangle;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#FEF3C7;strokeColor=#B45309;fontSize=10;fontStyle=1;top=0;left=0;right=0;bottom=1;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="225" width="240" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-store-raw-landing-bucket-2" value="Raw Landing Bucket" style="shape=partialRectangle;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#FEF3C7;strokeColor=#B45309;fontSize=10;fontStyle=1;top=0;left=0;right=0;bottom=1;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="320" width="240" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-store-source-data-store-3" value="Source Data Store" style="shape=partialRectangle;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#FEF3C7;strokeColor=#B45309;fontSize=10;fontStyle=1;top=0;left=0;right=0;bottom=1;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="415" width="240" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-store-source-database-4" value="Source Database" style="shape=partialRectangle;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#FEF3C7;strokeColor=#B45309;fontSize=10;fontStyle=1;top=0;left=0;right=0;bottom=1;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="510" width="240" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-store-target-data-store-5" value="Target Data Store" style="shape=partialRectangle;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#FEF3C7;strokeColor=#B45309;fontSize=10;fontStyle=1;top=0;left=0;right=0;bottom=1;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="605" width="240" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-0" value="F1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-ext-on-prem-business-app-1" target="dfd-ext-on-prem-sftp-server-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="n-aws-transfer-endpoint-2" value="AWS Transfer Endpoint" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="440" y="120" width="140" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="df-e-1" value="Uploaded extract file&#10;[CSV]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-on-prem-sftp-server-1" target="n-aws-transfer-endpoint-2" edge="1">
+        <mxCell id="df-l2-e-1" value="F2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-ext-on-prem-sftp-server-2" target="dfd-proc-aws-transfer-endpoint-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="n-raw-landing-bucket-3" value="Raw Landing Bucket" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="640" y="120" width="140" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="df-e-2" value="Raw intake object&#10;[CSV]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-aws-transfer-endpoint-2" target="n-raw-landing-bucket-3" edge="1">
+        <mxCell id="df-l2-e-2" value="F3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-aws-transfer-endpoint-4" target="dfd-store-raw-landing-bucket-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="n-validation-processor-4" value="Validation Processor" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="840" y="120" width="140" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="df-e-3" value="Validation event with file path&#10;[JSON event]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-raw-landing-bucket-3" target="n-validation-processor-4" edge="1">
+        <mxCell id="df-l2-e-3" value="F4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-store-raw-landing-bucket-2" target="dfd-proc-validation-processor-30" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="n-curated-database-5" value="Curated Database" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="1040" y="120" width="140" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="df-e-4" value="Validated records&#10;[Tabular rows]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="n-validation-processor-4" target="n-curated-database-5" edge="1">
+        <mxCell id="df-l2-e-4" value="F5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-validation-processor-30" target="dfd-store-curated-database-0" edge="1">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-5" value="DF-EDAP-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-ext-source-system-4" target="dfd-proc-aws-transfer-family-sftp-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-6" value="DF-EDAP-02" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-aws-transfer-family-sftp-5" target="dfd-proc-edap-ingestion-layer-20" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-7" value="DF-EDAP-03" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-edap-ingestion-layer-20" target="dfd-proc-step-functions-i2r-28" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-8" value="DF-EDAP-06" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-ext-source-system-4" target="dfd-proc-kinesis-data-firehose-25" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-9" value="DF-EDAP-07" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-kinesis-data-firehose-25" target="dfd-proc-edap-raw-layer-21" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-10" value="DF-EDAP-08" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-azure-blob-storage-16" target="dfd-proc-aws-datasync-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-11" value="DF-EDAP-09" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-aws-datasync-2" target="dfd-proc-edap-ingestion-layer-20" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-12" value="DF-EDAP-10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-store-external-database-1" target="dfd-proc-edap-ingestion-layer-20" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-13" value="DF-EDAP-11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-edap-ingestion-layer-20" target="dfd-proc-glue-job-parquet-rrd-tag-23" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-14" value="DF-EDAP-12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-glue-job-parquet-rrd-tag-23" target="dfd-proc-edap-raw-layer-21" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-15" value="DF-EDAP-13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-edap-raw-layer-21" target="dfd-proc-edap-conform-layer-18" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-16" value="DF-EDAP-14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-edap-conform-layer-18" target="dfd-proc-amazon-athena-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-17" value="DF-EDAP-15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-edap-datamart-layer-19" target="dfd-proc-power-bi-gateway-ec2-26" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-18" value="DF-EDAP-16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-edap-datamart-layer-19" target="dfd-proc-api-gateway-export-0" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-19" value="DF-INF-02-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-ext-on-premises-dc-3" target="dfd-proc-aws-vpc-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-20" value="DF-INF-05-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-ext-user-5" target="dfd-proc-aws-console-cli-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-21" value="DF-1B-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-ext-external-source-0" target="dfd-proc-amazon-s3-staging-11" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-22" value="DF-1C-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-store-source-database-4" target="dfd-proc-amazon-aurora-postgresql-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-23" value="DF-1D-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-stream-producer-29" target="dfd-proc-amazon-kinesis-data-streams-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-24" value="DF-2A-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-store-source-data-store-3" target="dfd-store-target-data-store-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-25" value="DF-2C-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-s3-training-dataset-27" target="dfd-proc-amazon-sagemaker-training-12" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-26" value="DF-2D-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-analyst-13" target="dfd-proc-amazon-athena-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-27" value="DF-3A-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-application-14" target="dfd-proc-amazon-aurora-postgresql-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-28" value="DF-3B-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-conform-layer-17" target="dfd-proc-amazon-redshift-10" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-29" value="DF-4A-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-event-producer-22" target="dfd-proc-aws-lambda-event-consumer-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df-l2-e-30" value="DF-NET-02-01" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.25;entryX=0;entryY=0.45;fontSize=11;fontStyle=1;fontColor=#111827;labelBackgroundColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="dfd-proc-internet-24" target="dfd-proc-application-tier-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-panel" value="" style="rounded=1;fillColor=#F8FAFC;strokeColor=#9AA5B1;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry x="1360" y="100" width="300" height="740" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-panel-title" value="L2 Data Flows" style="fontSize=12;fontStyle=1;align=center;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1370" y="108" width="280" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-0" value="F1. On-Prem Business App -&gt; On-Prem SFTP Server (One-way)\nDaily surveillance extract [CSV]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="138" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-1" value="F2. On-Prem SFTP Server -&gt; AWS Transfer Endpoint (One-way)\nUploaded extract file [CSV]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="208" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-2" value="F3. AWS Transfer Endpoint -&gt; Raw Landing Bucket (One-way)\nRaw intake object [CSV]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="278" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-3" value="F4. Raw Landing Bucket -&gt; Validation Processor (One-way)\nValidation event with file path [JSON event]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="348" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-4" value="F5. Validation Processor -&gt; Curated Database (One-way)\nValidated records [Tabular rows]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="418" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-5" value="DF-EDAP-01. Source System -&gt; AWS Transfer Family (SFTP) (One-way)\nSource files (any format) [SFTP / TLS]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="488" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-6" value="DF-EDAP-02. AWS Transfer Family (SFTP) -&gt; EDAP Ingestion Layer (One-way)\nRaw source files [S3 PutObject (SSE-KMS)]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="558" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-7" value="DF-EDAP-03. EDAP Ingestion Layer -&gt; Step Functions (I2R) (One-way)\nEventBridge notification (S3 object created) [EventBridge]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="628" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-8" value="DF-EDAP-06. Source System -&gt; Kinesis Data Firehose (One-way)\nStreamed events / records [Kinesis PUT / EventBridge]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="698" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-flow-9" value="DF-EDAP-07. Kinesis Data Firehose -&gt; EDAP Raw Layer (One-way)\nParquet records with RRD tags [S3 PutObject (SSE-KMS)]" style="fontSize=9;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="768" width="284" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd-l2-key" value="Direction key: Blue = One-way, Green = Bi-directional" style="fontSize=9;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1368" y="816" width="284" height="18" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

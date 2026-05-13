@@ -1,26 +1,137 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile>
   <diagram name="LLD Security Access">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="3050" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="act-platform-operator-0" value="Platform Operator" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="act-on-prem-business-app-0" value="On-Prem Business App" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="60" y="80" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="tgt-api-gateway-0" value="API Gateway" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="tgt-on-prem-sftp-server-0" value="On-Prem SFTP Server" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="560" y="80" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="sedge-0" value="Control Plane | Entra ID + MFA | RBAC | Key Vault | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-platform-operator-0" target="tgt-api-gateway-0" edge="1">
+        <mxCell id="sedge-0" value="Data Plane | SFTP, service account | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-on-prem-business-app-0" target="tgt-on-prem-sftp-server-0" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="act-application-service-1" value="Application Service" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="act-on-prem-sftp-server-1" value="On-Prem SFTP Server" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="60" y="180" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="tgt-primary-data-store-1" value="Primary Data Store" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+        <mxCell id="tgt-aws-transfer-endpoint-1" value="AWS Transfer Endpoint" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
           <mxGeometry x="560" y="180" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="sedge-1" value="Data Plane | Managed Identity | Least Privilege Role | Key Vault | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-application-service-1" target="tgt-primary-data-store-1" edge="1">
+        <mxCell id="sedge-1" value="Data Plane | SFTP over VPN, key auth | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-on-prem-sftp-server-1" target="tgt-aws-transfer-endpoint-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-aws-transfer-endpoint-2" value="AWS Transfer Endpoint" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="280" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-raw-landing-bucket-2" value="Raw Landing Bucket" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="280" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-2" value="Data Plane | AWS internal | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-aws-transfer-endpoint-2" target="tgt-raw-landing-bucket-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-raw-landing-bucket-3" value="Raw Landing Bucket" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="380" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-validation-processor-3" value="Validation Processor" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="380" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-3" value="Data Plane | IAM role | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-raw-landing-bucket-3" target="tgt-validation-processor-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-validation-processor-4" value="Validation Processor" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="480" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-processing-queue-4" value="Processing Queue" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="480" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-4" value="Data Plane | IAM role | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-validation-processor-4" target="tgt-processing-queue-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-curated-database-5" value="Curated Database" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="580" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-5" value="Data Plane | TLS, DB auth | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-validation-processor-4" target="tgt-curated-database-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-monitoring-and-alerts-5" value="Monitoring and Alerts" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="580" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-6" value="Data Plane | CloudWatch | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-monitoring-and-alerts-5" target="tgt-validation-processor-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-7" value="Data Plane | CloudWatch | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-monitoring-and-alerts-5" target="tgt-processing-queue-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-identity-access-management-iam-6" value="Identity &amp; Access Management (IAM)" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="680" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-8" value="Data Plane | OIDC/OAuth2, IAM role | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-validation-processor-4" target="tgt-identity-access-management-iam-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-secret-management-7" value="Secret Management" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="780" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-9" value="Data Plane | TLS + IAM auth | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-validation-processor-4" target="tgt-secret-management-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-curated-database-6" value="Curated Database" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="680" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-encryption-at-rest-transit-8" value="Encryption at Rest &amp; Transit" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="880" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-10" value="Data Plane | KMS/Key Vault policy | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-curated-database-6" target="tgt-encryption-at-rest-transit-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-threat-detection-response-9" value="Threat Detection &amp; Response" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="980" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-11" value="Data Plane | GuardDuty/Defender integration | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-validation-processor-4" target="tgt-threat-detection-response-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-secure-ci-cd-assurance-10" value="Secure CI/CD Assurance" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1080" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-12" value="Data Plane | Pipeline policy checks | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-validation-processor-4" target="tgt-secure-ci-cd-assurance-10" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-threat-modelling-security-design-review-7" value="Threat Modelling &amp; Security Design Review" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="780" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-policy-enforcement-management-11" value="Policy Enforcement &amp; Management" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1180" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-13" value="Data Plane | Control evidence linkage | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-threat-modelling-security-design-review-7" target="tgt-policy-enforcement-management-11" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-policy-enforcement-management-8" value="Policy Enforcement &amp; Management" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="880" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-14" value="Data Plane | Policy API / config scan | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-policy-enforcement-management-8" target="tgt-validation-processor-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-audit-logging-compliance-monitoring-9" value="Audit Logging &amp; Compliance Monitoring" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="980" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt-monitoring-and-alerts-12" value="Monitoring and Alerts" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1280" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-15" value="Data Plane | Log forwarding | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-audit-logging-compliance-monitoring-9" target="tgt-monitoring-and-alerts-12" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-data-lineage-governance-10" value="Data Lineage &amp; Governance" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="1080" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-16" value="Data Plane | Metadata sync | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-data-lineage-governance-10" target="tgt-curated-database-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="act-cost-optimization-usage-monitoring-11" value="Cost Optimization &amp; Usage Monitoring" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="1180" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sedge-17" value="Data Plane | Cost Explorer / Cost Management API | RBAC | Managed Secret Store | TLS 1.2+" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="act-cost-optimization-usage-monitoring-11" target="tgt-monitoring-and-alerts-12" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

@@ -1,30 +1,994 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile>
   <diagram name="LLD Network Connections">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="3050" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="net-internet-user-0" value="Internet / User" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="40" y="120" width="180" height="56" as="geometry" />
+        <mxCell id="net-on-prem-business-app-0" value="&lt;b&gt;On-Prem Business App&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="80" width="200" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="net-api-gateway-1" value="API Gateway" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="300" y="120" width="180" height="56" as="geometry" />
+        <mxCell id="net-on-prem-sftp-server-0" value="&lt;b&gt;On-Prem SFTP Server&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="80" width="200" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="nedge-0" value="HTTPS | 443 | Public Internet | OIDC + MFA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="net-internet-user-0" target="net-api-gateway-1" edge="1">
+        <mxCell id="nedge-0" value="Daily file export | SFTP, service account&lt;br/&gt;SFTP, service account" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-on-prem-business-app-0" target="net-on-prem-sftp-server-0" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="net-application-service-2" value="Application Service" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="560" y="120" width="180" height="56" as="geometry" />
+        <mxCell id="net-on-prem-sftp-server-1" value="&lt;b&gt;On-Prem SFTP Server&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#FFF3CD;strokeColor=#D97706;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="160" width="200" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="nedge-1" value="HTTPS | 443 | Private Link / VNet | mTLS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="net-api-gateway-1" target="net-application-service-2" edge="1">
+        <mxCell id="net-aws-transfer-endpoint-1" value="&lt;b&gt;AWS Transfer Endpoint&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#FFF3CD;strokeColor=#D97706;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="160" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-1" value="Secure file transfer | SFTP over VPN, key auth&lt;br/&gt;SFTP over VPN, key auth" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#D97706;strokeWidth=2.5;dashed=1;dashPattern=8 4;endArrow=block;endFill=1;fontSize=10;fontStyle=1;labelBackgroundColor=#FFF3CD;" parent="1" source="net-on-prem-sftp-server-1" target="net-aws-transfer-endpoint-1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="80" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-transfer-endpoint-2" value="&lt;b&gt;AWS Transfer Endpoint&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-raw-landing-bucket-2" value="&lt;b&gt;Raw Landing Bucket&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-2" value="Store uploaded file | AWS internal&lt;br/&gt;AWS internal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-transfer-endpoint-2" target="net-raw-landing-bucket-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="net-primary-data-store-3" value="Primary Data Store" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="820" y="120" width="180" height="56" as="geometry" />
+        <mxCell id="net-raw-landing-bucket-3" value="&lt;b&gt;Raw Landing Bucket&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="320" width="200" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="nedge-2" value="TCP | 1433 | Private Subnet | Managed Identity" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;fontSize=10;" parent="1" source="net-application-service-2" target="net-primary-data-store-3" edge="1">
+        <mxCell id="net-validation-processor-3" value="&lt;b&gt;Validation Processor&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="320" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-3" value="Object-created trigger | IAM role&lt;br/&gt;IAM role" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-raw-landing-bucket-3" target="net-validation-processor-3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="120" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-validation-processor-4" value="&lt;b&gt;Validation Processor&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-processing-queue-4" value="&lt;b&gt;Processing Queue&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-4" value="Publish process event | IAM role&lt;br/&gt;IAM role" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-validation-processor-4" target="net-processing-queue-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-curated-database-5" value="&lt;b&gt;Curated Database&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-5" value="Insert validated records | TLS, DB auth&lt;br/&gt;TLS, DB auth" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#5E35B1;strokeWidth=2;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#EDE7F6;" parent="1" source="net-validation-processor-4" target="net-curated-database-5" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="160" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-monitoring-and-alerts-5" value="&lt;b&gt;Monitoring and Alerts&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-6" value="Error and duration metrics | CloudWatch&lt;br/&gt;CloudWatch" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-monitoring-and-alerts-5" target="net-validation-processor-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-7" value="Queue depth monitoring | CloudWatch&lt;br/&gt;CloudWatch" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-monitoring-and-alerts-5" target="net-processing-queue-4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="200" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-identity-access-management-iam-6" value="&lt;b&gt;Identity &amp; Access Management (IAM)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-8" value="Token validation / RBAC decision | OIDC/OAuth2, IAM role&lt;br/&gt;OIDC/OAuth2, IAM role" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-validation-processor-4" target="net-identity-access-management-iam-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-secret-management-7" value="&lt;b&gt;Secret Management&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-9" value="Retrieve runtime secrets | TLS + IAM auth&lt;br/&gt;TLS + IAM auth" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#5E35B1;strokeWidth=2;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#EDE7F6;" parent="1" source="net-validation-processor-4" target="net-secret-management-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="240" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-curated-database-6" value="&lt;b&gt;Curated Database&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-encryption-at-rest-transit-8" value="&lt;b&gt;Encryption at Rest &amp; Transit&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-10" value="Data encryption enforcement | KMS/Key Vault policy&lt;br/&gt;KMS/Key Vault policy" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-curated-database-6" target="net-encryption-at-rest-transit-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-threat-detection-response-9" value="&lt;b&gt;Threat Detection &amp; Response&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="800" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-11" value="Security telemetry and alerting | GuardDuty/Defender integration&lt;br/&gt;GuardDuty/Defender integration" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-validation-processor-4" target="net-threat-detection-response-9" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="280" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-secure-ci-cd-assurance-10" value="&lt;b&gt;Secure CI/CD Assurance&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="880" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-12" value="Deployment gate checks | Pipeline policy checks&lt;br/&gt;Pipeline policy checks" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-validation-processor-4" target="net-secure-ci-cd-assurance-10" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-threat-modelling-security-design-review-7" value="&lt;b&gt;Threat Modelling &amp; Security Design Review&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-policy-enforcement-management-11" value="&lt;b&gt;Policy Enforcement &amp; Management&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="960" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-13" value="Design controls to policy mapping | Control evidence linkage&lt;br/&gt;Control evidence linkage" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-threat-modelling-security-design-review-7" target="net-policy-enforcement-management-11" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="320" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-policy-enforcement-management-8" value="&lt;b&gt;Policy Enforcement &amp; Management&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-14" value="Configuration and policy compliance checks | Policy API / config scan&lt;br/&gt;Policy API / config scan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-policy-enforcement-management-8" target="net-validation-processor-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-audit-logging-compliance-monitoring-9" value="&lt;b&gt;Audit Logging &amp; Compliance Monitoring&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="800" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-monitoring-and-alerts-12" value="&lt;b&gt;Monitoring and Alerts&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1040" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-15" value="Control evidence and compliance telemetry | Log forwarding&lt;br/&gt;Log forwarding" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-audit-logging-compliance-monitoring-9" target="net-monitoring-and-alerts-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="360" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-data-lineage-governance-10" value="&lt;b&gt;Data Lineage &amp; Governance&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="880" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-16" value="Lineage capture and classification tags | Metadata sync&lt;br/&gt;Metadata sync" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-data-lineage-governance-10" target="net-curated-database-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-cost-optimization-usage-monitoring-11" value="&lt;b&gt;Cost Optimization &amp; Usage Monitoring&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="960" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-17" value="Budget/cost anomaly alerts | Cost Explorer / Cost Management API&lt;br/&gt;Cost Explorer / Cost Management API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-cost-optimization-usage-monitoring-11" target="net-monitoring-and-alerts-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="400" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-source-system-12" value="&lt;b&gt;Source System&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1040" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-network-load-balancer-13" value="&lt;b&gt;Network Load Balancer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1120" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-18" value="SFTP :22 (via Elastic IP) | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-source-system-12" target="net-network-load-balancer-13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-network-load-balancer-13" value="&lt;b&gt;Network Load Balancer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1120" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-transfer-family-sftp-14" value="&lt;b&gt;AWS Transfer Family (SFTP)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1200" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-19" value="routes to private NIC | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-network-load-balancer-13" target="net-aws-transfer-family-sftp-14" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="440" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-transfer-family-sftp-14" value="&lt;b&gt;AWS Transfer Family (SFTP)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1200" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-edap-ingestion-layer-15" value="&lt;b&gt;EDAP Ingestion Layer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1280" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-20" value="S3 PutObject → Staging | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-transfer-family-sftp-14" target="net-edap-ingestion-layer-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-edap-ingestion-layer-15" value="&lt;b&gt;EDAP Ingestion Layer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1280" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-antivirus-cloud-storage-security-16" value="&lt;b&gt;Antivirus (Cloud Storage Security)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1360" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-21" value="EventBridge: object created | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-edap-ingestion-layer-15" target="net-antivirus-cloud-storage-security-16" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="480" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-antivirus-cloud-storage-security-16" value="&lt;b&gt;Antivirus (Cloud Storage Security)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1360" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-22" value="move to Cleared / Quarantine | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-antivirus-cloud-storage-security-16" target="net-edap-ingestion-layer-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-step-functions-i2r-17" value="&lt;b&gt;Step Functions (I2R)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1440" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-23" value="EventBridge: Cleared object | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-edap-ingestion-layer-15" target="net-step-functions-i2r-17" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="520" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-kinesis-data-firehose-18" value="&lt;b&gt;Kinesis Data Firehose&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1520" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-24" value="Direct PUT / EventBridge rule | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-source-system-12" target="net-kinesis-data-firehose-18" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-kinesis-data-firehose-17" value="&lt;b&gt;Kinesis Data Firehose&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1440" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-lambda-rrd-parquet-transform-19" value="&lt;b&gt;Lambda (RRD + Parquet Transform)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1600" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-25" value="record transformation | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-kinesis-data-firehose-17" target="net-lambda-rrd-parquet-transform-19" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="560" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-lambda-rrd-parquet-transform-18" value="&lt;b&gt;Lambda (RRD + Parquet Transform)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1520" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-edap-raw-layer-20" value="&lt;b&gt;EDAP Raw Layer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1680" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-26" value="Parquet + Snappy (SSE-KMS) | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-lambda-rrd-parquet-transform-18" target="net-edap-raw-layer-20" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-s3-processing-failed-21" value="&lt;b&gt;S3 processing-failed&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1760" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-27" value="failed records | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-lambda-rrd-parquet-transform-18" target="net-s3-processing-failed-21" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-azure-blob-storage-19" value="&lt;b&gt;Azure Blob Storage&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1600" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-datasync-agent-azure-hosted-22" value="&lt;b&gt;DataSync Agent (Azure-hosted)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1840" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-28" value="local read | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-azure-blob-storage-19" target="net-datasync-agent-azure-hosted-22" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-datasync-agent-azure-hosted-20" value="&lt;b&gt;DataSync Agent (Azure-hosted)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1680" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-datasync-23" value="&lt;b&gt;AWS DataSync&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1920" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-29" value="HTTPS outbound to DataSync endpoints | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#5E35B1;strokeWidth=2;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#EDE7F6;" parent="1" source="net-datasync-agent-azure-hosted-20" target="net-aws-datasync-23" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="640" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-datasync-21" value="&lt;b&gt;AWS DataSync&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1760" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-30" value="scheduled sync → Staging | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-datasync-21" target="net-edap-ingestion-layer-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-external-database-22" value="&lt;b&gt;External Database&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1840" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-dms-24" value="&lt;b&gt;AWS DMS&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2000" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-31" value="replication task (full-load / CDC) | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-external-database-22" target="net-aws-dms-24" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="680" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-dms-23" value="&lt;b&gt;AWS DMS&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1920" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-32" value="S3 target → Staging | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-dms-23" target="net-edap-ingestion-layer-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-step-functions-i2r-workflow-25" value="&lt;b&gt;Step Functions (I2R Workflow)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2080" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-33" value="EventBridge: S3 Cleared object | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-edap-ingestion-layer-15" target="net-step-functions-i2r-workflow-25" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="720" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-step-functions-i2r-workflow-24" value="&lt;b&gt;Step Functions (I2R Workflow)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2000" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-glue-databrew-quality-26" value="&lt;b&gt;Glue DataBrew (Quality)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2160" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-34" value="data quality profile | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-step-functions-i2r-workflow-24" target="net-glue-databrew-quality-26" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-glue-job-parquet-rrd-tag-27" value="&lt;b&gt;Glue Job (Parquet + RRD Tag)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-35" value="transform to Parquet + tag | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-step-functions-i2r-workflow-24" target="net-glue-job-parquet-rrd-tag-27" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="760" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-glue-job-parquet-rrd-tag-25" value="&lt;b&gt;Glue Job (Parquet + RRD Tag)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2080" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-36" value="write Parquet (Snappy, SSE-KMS) | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-glue-job-parquet-rrd-tag-25" target="net-edap-raw-layer-20" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-edap-raw-layer-26" value="&lt;b&gt;EDAP Raw Layer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2160" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-lake-formation-28" value="&lt;b&gt;Lake Formation&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2320" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-37" value="register + TBAC grants | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-edap-raw-layer-26" target="net-lake-formation-28" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="800" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-edap-conform-layer-29" value="&lt;b&gt;EDAP Conform Layer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-38" value="R2C: Step Functions → Glue → Conform | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-edap-raw-layer-26" target="net-edap-conform-layer-29" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-sqs-lineage-queue-30" value="&lt;b&gt;SQS Lineage Queue&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-39" value="OpenLineage START/END messages | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-step-functions-i2r-workflow-24" target="net-sqs-lineage-queue-30" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="840" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-data-analyst-azure-ad-27" value="&lt;b&gt;Data Analyst (Azure AD)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-athena-31" value="&lt;b&gt;Amazon Athena&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-40" value="JDBC/ODBC + Azure AD federation + MFA | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-data-analyst-azure-ad-27" target="net-amazon-athena-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-athena-28" value="&lt;b&gt;Amazon Athena&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2320" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-41" value="Lake Formation TBAC → S3 Parquet | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-athena-28" target="net-edap-conform-layer-29" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="880" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-power-bi-gateway-ec2-29" value="&lt;b&gt;Power BI Gateway (EC2)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-redshift-datamart-32" value="&lt;b&gt;Amazon Redshift (DataMart)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-42" value="direct VPC connection (read-only) | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-power-bi-gateway-ec2-29" target="net-amazon-redshift-datamart-32" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-43" value="VPC Endpoint (Athena Interface) | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#388E3C;strokeWidth=2;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E8F5E9;" parent="1" source="net-power-bi-gateway-ec2-29" target="net-amazon-athena-31" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="920" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-api-gateway-export-30" value="&lt;b&gt;API Gateway (Export)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-44" value="Redshift Data API | EDAP&lt;br/&gt;IAM / SSE-KMS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-api-gateway-export-30" target="net-amazon-redshift-datamart-32" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-on-premises-data-centre-31" value="&lt;b&gt;On-Premises Data Centre&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-direct-connect-33" value="&lt;b&gt;AWS Direct Connect&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-45" value="dedicated private circuit (Virgin Media MPLS) | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-on-premises-data-centre-31" target="net-aws-direct-connect-33" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="960" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-direct-connect-32" value="&lt;b&gt;AWS Direct Connect&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-transit-gateway-34" value="&lt;b&gt;AWS Transit Gateway&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2800" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-46" value="private VIF → TGW attachment | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-direct-connect-32" target="net-aws-transit-gateway-34" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-transit-gateway-33" value="&lt;b&gt;AWS Transit Gateway&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-vpc-35" value="&lt;b&gt;AWS VPC&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2880" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-47" value="routes to workload VPCs | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-transit-gateway-33" target="net-aws-vpc-35" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1000" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-palo-alto-firewall-36" value="&lt;b&gt;Palo Alto Firewall&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="2960" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-48" value="N/S traffic inspection | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-on-premises-data-centre-31" target="net-palo-alto-firewall-36" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-internal-client-34" value="&lt;b&gt;Internal Client&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2800" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-route-53-resolver-37" value="&lt;b&gt;Route 53 Resolver&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3040" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-49" value="private DNS query | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-internal-client-34" target="net-route-53-resolver-37" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-route-53-resolver-35" value="&lt;b&gt;Route 53 Resolver&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2880" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-route-53-private-38" value="&lt;b&gt;Amazon Route 53 (Private)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3120" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-50" value="resolve *.aws.ukhsa.gov.uk | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-route-53-resolver-35" target="net-amazon-route-53-private-38" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-on-prem-dns-server-39" value="&lt;b&gt;On-Prem DNS Server&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3200" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-51" value="forward on-prem zone queries | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-route-53-resolver-35" target="net-on-prem-dns-server-39" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1080" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-external-client-36" value="&lt;b&gt;External Client&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#FCE4EC;strokeColor=#C62828;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="2960" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-route-53-public-40" value="&lt;b&gt;Amazon Route 53 (Public)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#FCE4EC;strokeColor=#C62828;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3280" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-52" value="public DNS resolution | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#C62828;strokeWidth=1.5;dashed=1;dashPattern=4 4;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#FCE4EC;" parent="1" source="net-external-client-36" target="net-amazon-route-53-public-40" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-microsoft-entra-id-37" value="&lt;b&gt;Microsoft Entra ID&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3040" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-iam-identity-center-41" value="&lt;b&gt;AWS IAM Identity Center&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3360" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-53" value="SAML 2.0 federation + SCIM provisioning | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-microsoft-entra-id-37" target="net-aws-iam-identity-center-41" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1120" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-saas-applications-42" value="&lt;b&gt;SaaS Applications&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3440" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-54" value="federated SSO (SAML/OIDC) | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-microsoft-entra-id-37" target="net-saas-applications-42" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-entra-id-pim-38" value="&lt;b&gt;Entra ID PIM&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3120" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-55" value="JIT role activation (time-bound) | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-entra-id-pim-38" target="net-aws-iam-identity-center-41" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1160" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-hr-system-integration-39" value="&lt;b&gt;HR System Integration&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3200" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-microsoft-entra-id-43" value="&lt;b&gt;Microsoft Entra ID&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3520" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-56" value="Joiner/Mover/Leaver automation | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-hr-system-integration-39" target="net-microsoft-entra-id-43" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-on-premises-ad-44" value="&lt;b&gt;On-Premises AD&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3600" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-57" value="Entra ID Connect sync | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-microsoft-entra-id-37" target="net-on-premises-ad-44" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1200" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-workload-api-40" value="&lt;b&gt;Workload API&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3280" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-azure-apim-45" value="&lt;b&gt;Azure APIM&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3680" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-58" value="all external APIs published via APIM | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-workload-api-40" target="net-azure-apim-45" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-cloud-workloads-41" value="&lt;b&gt;Cloud Workloads&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3360" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-microsoft-sentinel-siem-46" value="&lt;b&gt;Microsoft Sentinel (SIEM)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3760" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-59" value="security logs + alerts forwarded | UKHSA-Infrastructure&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-cloud-workloads-41" target="net-microsoft-sentinel-siem-46" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1240" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-external-source-42" value="&lt;b&gt;External Source&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3440" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-60" value="SFTP push | UKHSA-Data Ingestion&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-external-source-42" target="net-aws-transfer-family-sftp-14" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-s3-staging-47" value="&lt;b&gt;Amazon S3 (Staging)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3840" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-61" value="S3 PutObject | UKHSA-Data Ingestion&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-transfer-family-sftp-14" target="net-amazon-s3-staging-47" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1280" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-amazon-s3-staging-43" value="&lt;b&gt;Amazon S3 (Staging)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3520" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-etl-48" value="&lt;b&gt;AWS Glue (ETL)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="3920" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-62" value="EventBridge trigger | UKHSA-Data Ingestion&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-s3-staging-43" target="net-aws-glue-etl-48" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-source-database-44" value="&lt;b&gt;Source Database&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3600" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-dms-replication-task-49" value="&lt;b&gt;AWS DMS Replication Task&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4000" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-63" value="CDC / full-load replication | UKHSA-Data Ingestion&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-source-database-44" target="net-aws-dms-replication-task-49" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1320" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-dms-replication-task-45" value="&lt;b&gt;AWS DMS Replication Task&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3680" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-aurora-postgresql-50" value="&lt;b&gt;Amazon Aurora PostgreSQL&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4080" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-64" value="replicated data | UKHSA-Data Ingestion&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-dms-replication-task-45" target="net-amazon-aurora-postgresql-50" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-stream-producer-46" value="&lt;b&gt;Stream Producer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3760" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-kinesis-data-streams-51" value="&lt;b&gt;Amazon Kinesis Data Streams&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4160" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-65" value="PutRecord (real-time) | UKHSA-Data Ingestion&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-stream-producer-46" target="net-amazon-kinesis-data-streams-51" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1360" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-amazon-kinesis-data-streams-47" value="&lt;b&gt;Amazon Kinesis Data Streams&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3840" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-lambda-consumer-52" value="&lt;b&gt;AWS Lambda (Consumer)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-66" value="stream trigger | UKHSA-Data Ingestion&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-kinesis-data-streams-47" target="net-aws-lambda-consumer-52" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-eventbridge-scheduler-48" value="&lt;b&gt;EventBridge Scheduler&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="3920" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-step-functions-53" value="&lt;b&gt;AWS Step Functions&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4320" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-67" value="scheduled trigger | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-eventbridge-scheduler-48" target="net-aws-step-functions-53" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1400" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-step-functions-49" value="&lt;b&gt;AWS Step Functions&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4000" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-batch-etl-54" value="&lt;b&gt;AWS Glue (Batch ETL)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-68" value="execute ETL job | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-step-functions-49" target="net-aws-glue-batch-etl-54" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-batch-etl-50" value="&lt;b&gt;AWS Glue (Batch ETL)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4080" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-target-data-store-55" value="&lt;b&gt;Target Data Store&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-69" value="write transformed data | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-glue-batch-etl-50" target="net-target-data-store-55" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1440" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-amazon-emr-cluster-56" value="&lt;b&gt;Amazon EMR Cluster&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-70" value="launch transient cluster | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-eventbridge-scheduler-48" target="net-amazon-emr-cluster-56" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-emr-cluster-51" value="&lt;b&gt;Amazon EMR Cluster&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4160" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-s3-57" value="&lt;b&gt;Amazon S3&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-71" value="read/write training data | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-emr-cluster-51" target="net-amazon-s3-57" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1480" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-analyst-52" value="&lt;b&gt;Analyst&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-72" value="SQL query (Workgroup) | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-analyst-52" target="net-amazon-athena-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-data-catalog-58" value="&lt;b&gt;AWS Glue Data Catalog&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-73" value="schema resolution | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-athena-28" target="net-aws-glue-data-catalog-58" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1520" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="nedge-74" value="read Parquet via Lake Formation | UKHSA-Data Processing&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-athena-28" target="net-amazon-s3-57" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-application-layer-53" value="&lt;b&gt;Application Layer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4320" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-75" value="JDBC/HTTPS (private subnet) | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#5E35B1;strokeWidth=2;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#EDE7F6;" parent="1" source="net-application-layer-53" target="net-amazon-aurora-postgresql-50" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1560" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-application-bi-tool-54" value="&lt;b&gt;Application / BI Tool&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-redshift-59" value="&lt;b&gt;Amazon Redshift&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4800" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-76" value="JDBC (private VPC) | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-application-bi-tool-54" target="net-amazon-redshift-59" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-quicksight-55" value="&lt;b&gt;Amazon QuickSight&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-77" value="VPC connection | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-quicksight-55" target="net-amazon-redshift-59" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-ingestion-pipeline-56" value="&lt;b&gt;Ingestion Pipeline&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-s3-data-lake-60" value="&lt;b&gt;Amazon S3 (Data Lake)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4880" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-78" value="write Bronze (raw) | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-ingestion-pipeline-56" target="net-amazon-s3-data-lake-60" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-etl-pipeline-57" value="&lt;b&gt;ETL Pipeline&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-79" value="write Silver (conformed) | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-etl-pipeline-57" target="net-amazon-s3-data-lake-60" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1640" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-transform-pipeline-58" value="&lt;b&gt;Transform Pipeline&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-80" value="write Gold (curated) | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-transform-pipeline-58" target="net-amazon-s3-data-lake-60" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-data-catalog-59" value="&lt;b&gt;AWS Glue Data Catalog&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4800" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-lake-formation-61" value="&lt;b&gt;AWS Lake Formation&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="4960" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-81" value="schema + TBAC registration | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-glue-data-catalog-59" target="net-aws-lake-formation-61" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1680" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-metrics-producer-60" value="&lt;b&gt;Metrics Producer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4880" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-timestream-62" value="&lt;b&gt;Amazon Timestream&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5040" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-82" value="write time-series records | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-metrics-producer-60" target="net-amazon-timestream-62" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-dynamodb-63" value="&lt;b&gt;Amazon DynamoDB&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5120" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-83" value="document read/write (VPC endpoint) | UKHSA-Data Storage&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#388E3C;strokeWidth=2;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E8F5E9;" parent="1" source="net-application-layer-53" target="net-amazon-dynamodb-63" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1720" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-event-producer-61" value="&lt;b&gt;Event Producer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="4960" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-eventbridge-64" value="&lt;b&gt;Amazon EventBridge&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5200" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-84" value="PutEvents | UKHSA-Data Integration&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-event-producer-61" target="net-amazon-eventbridge-64" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-eventbridge-62" value="&lt;b&gt;Amazon EventBridge&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5040" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-sqs-65" value="&lt;b&gt;Amazon SQS&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5280" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-85" value="route to queue (ADR-004) | UKHSA-Data Integration&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-eventbridge-62" target="net-amazon-sqs-65" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1760" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-amazon-sqs-63" value="&lt;b&gt;Amazon SQS&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5120" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-lambda-event-consumer-66" value="&lt;b&gt;AWS Lambda (Event Consumer)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5360" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-86" value="trigger Lambda | UKHSA-Data Integration&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-sqs-63" target="net-aws-lambda-event-consumer-66" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-eventbridge-trigger-64" value="&lt;b&gt;EventBridge Trigger&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5200" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-87" value="start execution | UKHSA-Data Integration&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-eventbridge-trigger-64" target="net-aws-step-functions-53" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1800" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-downstream-services-67" value="&lt;b&gt;Downstream Services&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5440" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-88" value="orchestrate multi-step workflow | UKHSA-Data Integration&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-step-functions-49" target="net-downstream-services-67" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-primary-s3-bucket-65" value="&lt;b&gt;Primary S3 Bucket&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5280" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-s3-cross-region-replication-crr-68" value="&lt;b&gt;S3 Cross-Region Replication (CRR)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5520" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-89" value="auto-replicate to DR region | UKHSA-Data Integration&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-primary-s3-bucket-65" target="net-s3-cross-region-replication-crr-68" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1840" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-primary-rds-66" value="&lt;b&gt;Primary RDS&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5360" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-rds-read-replica-69" value="&lt;b&gt;RDS Read Replica&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5600" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-90" value="async replication | UKHSA-Data Integration&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-primary-rds-66" target="net-rds-read-replica-69" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-crawler-67" value="&lt;b&gt;AWS Glue Crawler&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5440" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-91" value="register schema | UKHSA-Data Governance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-glue-crawler-67" target="net-aws-glue-data-catalog-58" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1880" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-glue-databrew-70" value="&lt;b&gt;AWS Glue DataBrew&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5680" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-92" value="quality profile job | UKHSA-Data Governance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-ingestion-pipeline-56" target="net-aws-glue-databrew-70" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-databrew-68" value="&lt;b&gt;AWS Glue DataBrew&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5520" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-93" value="quality failure alert | UKHSA-Data Governance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-glue-databrew-68" target="net-amazon-eventbridge-64" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1920" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-all-pipeline-steps-69" value="&lt;b&gt;All Pipeline Steps&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5600" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-cloudtrail-71" value="&lt;b&gt;AWS CloudTrail&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5760" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-94" value="API audit events | UKHSA-Data Governance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-all-pipeline-steps-69" target="net-aws-cloudtrail-71" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-glue-step-functions-jobs-70" value="&lt;b&gt;Glue/Step Functions Jobs&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5680" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-95" value="OpenLineage START/END messages | UKHSA-Data Governance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-glue-step-functions-jobs-70" target="net-sqs-lineage-queue-30" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="1960" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-all-data-stores-71" value="&lt;b&gt;All Data Stores&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5760" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-kms-cmk-72" value="&lt;b&gt;AWS KMS (CMK)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5840" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-96" value="SSE-KMS encryption at rest | UKHSA-Security &amp; Compliance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-all-data-stores-71" target="net-aws-kms-cmk-72" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-all-services-72" value="&lt;b&gt;All Services&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5840" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-acm-73" value="&lt;b&gt;AWS ACM&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="5920" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-97" value="TLS 1.2+ certificates | UKHSA-Security &amp; Compliance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#5E35B1;strokeWidth=2;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#EDE7F6;" parent="1" source="net-all-services-72" target="net-aws-acm-73" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2000" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-private-subnet-resources-73" value="&lt;b&gt;Private Subnet Resources&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#FCE4EC;strokeColor=#C62828;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="5920" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-vpc-endpoints-74" value="&lt;b&gt;VPC Endpoints&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#FCE4EC;strokeColor=#C62828;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6000" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-98" value="private API access (no internet) | UKHSA-Security &amp; Compliance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#C62828;strokeWidth=1.5;dashed=1;dashPattern=4 4;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#FCE4EC;" parent="1" source="net-private-subnet-resources-73" target="net-vpc-endpoints-74" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-internet-74" value="&lt;b&gt;Internet&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6000" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-waf-75" value="&lt;b&gt;AWS WAF&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6080" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-99" value="filtered ingress | UKHSA-Security &amp; Compliance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-internet-74" target="net-aws-waf-75" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-waf-75" value="&lt;b&gt;AWS WAF&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6080" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-application-load-balancer-76" value="&lt;b&gt;Application Load Balancer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6160" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-100" value="inspected traffic | UKHSA-Security &amp; Compliance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-waf-75" target="net-application-load-balancer-76" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-raw-pii-data-76" value="&lt;b&gt;Raw PII Data&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6160" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-glue-databrew-masking-77" value="&lt;b&gt;AWS Glue DataBrew (Masking)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-101" value="apply masking transforms | UKHSA-Security &amp; Compliance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-raw-pii-data-76" target="net-aws-glue-databrew-masking-77" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2080" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-glue-databrew-masking-77" value="&lt;b&gt;AWS Glue DataBrew (Masking)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6240" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-masked-data-store-78" value="&lt;b&gt;Masked Data Store&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6320" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-102" value="write masked output | UKHSA-Security &amp; Compliance&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-glue-databrew-masking-77" target="net-masked-data-store-78" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-all-workloads-78" value="&lt;b&gt;All Workloads&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6320" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-cloudwatch-logs-79" value="&lt;b&gt;Amazon CloudWatch Logs&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-103" value="log streams forwarded | UKHSA-Monitoring &amp; Observability&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-all-workloads-78" target="net-amazon-cloudwatch-logs-79" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2120" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-all-api-calls-79" value="&lt;b&gt;All API Calls&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6400" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-104" value="management + data events | UKHSA-Monitoring &amp; Observability&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-all-api-calls-79" target="net-aws-cloudtrail-71" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-cloudwatch-logs-80" value="&lt;b&gt;Amazon CloudWatch Logs&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-105" value="forward to SIEM | UKHSA-Monitoring &amp; Observability&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-cloudwatch-logs-80" target="net-microsoft-sentinel-siem-46" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2160" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-amazon-cloudwatch-alarms-81" value="&lt;b&gt;Amazon CloudWatch Alarms&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-sns-alerts-80" value="&lt;b&gt;Amazon SNS (Alerts)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6480" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-106" value="alarm state change notification | UKHSA-Monitoring &amp; Observability&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-cloudwatch-alarms-81" target="net-amazon-sns-alerts-80" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-sns-alerts-82" value="&lt;b&gt;Amazon SNS (Alerts)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-ops-team-pagerduty-81" value="&lt;b&gt;Ops Team / PagerDuty&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6560" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-107" value="alert notification | UKHSA-Monitoring &amp; Observability&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-sns-alerts-82" target="net-ops-team-pagerduty-81" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2200" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-aws-cost-explorer-83" value="&lt;b&gt;AWS Cost Explorer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-finance-team-82" value="&lt;b&gt;Finance Team&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6640" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-108" value="cost allocation report (tagged by team/project) | UKHSA-Monitoring &amp; Observability&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-cost-explorer-83" target="net-finance-team-82" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-aws-budgets-84" value="&lt;b&gt;AWS Budgets&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6800" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-109" value="budget threshold alert | UKHSA-Monitoring &amp; Observability&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-aws-budgets-84" target="net-amazon-sns-alerts-80" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2240" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-application-load-balancer-85" value="&lt;b&gt;Application Load Balancer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6880" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="net-application-tier-83" value="&lt;b&gt;Application Tier&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="560" y="6720" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-110" value="to private subnet | UKHSA-Networking&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-application-load-balancer-85" target="net-application-tier-83" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="net-amazon-route-53-86" value="&lt;b&gt;Amazon Route 53&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;align=center;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="6960" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="nedge-111" value="DNS A/ALIAS record | UKHSA-Networking&lt;br/&gt;IAM / KMS (UKHSA mandatory)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#1565C0;strokeWidth=1.5;dashed=0;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#E3F2FD;" parent="1" source="net-amazon-route-53-86" target="net-application-load-balancer-76" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="2280" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="net-legend-bg" value="" style="rounded=1;fillColor=#F8FAFC;strokeColor=#9AA5B1;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry x="40" y="7080" width="720" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="net-legend-title" value="&lt;b&gt;Network Path Legend&lt;/b&gt;" style="text;html=1;fontSize=11;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="52" y="7090" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="net-legend-vpn" value="━ ━  VPN (IPSec, Site-to-Site)" style="rounded=1;fillColor=#FFF3CD;strokeColor=#D97706;strokeWidth=1.5;fontSize=10;align=left;verticalAlign=middle;html=1;" parent="1" vertex="1">
+          <mxGeometry x="52" y="7116" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="net-legend-expressroute" value="━━━  ExpressRoute / Direct Connect" style="rounded=1;fillColor=#E0F2F1;strokeColor=#00796B;strokeWidth=1.5;fontSize=10;align=left;verticalAlign=middle;html=1;" parent="1" vertex="1">
+          <mxGeometry x="282" y="7116" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="net-legend-tls" value="━━━  HTTPS / TLS" style="rounded=1;fillColor=#EDE7F6;strokeColor=#5E35B1;strokeWidth=1.5;fontSize=10;align=left;verticalAlign=middle;html=1;" parent="1" vertex="1">
+          <mxGeometry x="512" y="7116" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="net-legend-privatelink" value="━━━  Private Link / VPC Endpoint" style="rounded=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=1.5;fontSize=10;align=left;verticalAlign=middle;html=1;" parent="1" vertex="1">
+          <mxGeometry x="52" y="7146" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="net-legend-internet" value="- -   Internet / Public" style="rounded=1;fillColor=#FCE4EC;strokeColor=#C62828;strokeWidth=1.5;fontSize=10;align=left;verticalAlign=middle;html=1;" parent="1" vertex="1">
+          <mxGeometry x="282" y="7146" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="net-legend-internal" value="━━━  Internal Network" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=1.5;fontSize=10;align=left;verticalAlign=middle;html=1;" parent="1" vertex="1">
+          <mxGeometry x="512" y="7146" width="220" height="24" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

@@ -28,6 +28,6 @@ resource "aws_kms_key" "data_key" {
   description = "KMS key for data solution"
 }
 
-# Components discovered: 0
-# Datasets discovered: 0
+# Components discovered: 9
+# Datasets discovered: 3
 # Data lake pattern present: false

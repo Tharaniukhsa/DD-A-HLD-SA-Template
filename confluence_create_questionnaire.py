@@ -163,9 +163,142 @@ def create_page(session, base_url, space_key, title, body_html, parent_id):
 QUESTIONNAIRE_HTML = """
 <p><strong>Solution Architecture Questionnaire for Data-Centric Systems</strong></p>
 
-<p>This questionnaire captures all necessary information to auto-generate your Solution Architecture diagrams. Fill in each section, then run <code>confluence_update_diagrams.py</code> to generate diagrams automatically.</p>
+<p>This questionnaire captures all necessary information to auto-generate your Solution Architecture diagrams. Fill in each section, then run the sync script to generate diagrams automatically.</p>
 
-<p><strong>Reference:</strong> Download UKHSA Cloud Strategy & Approved patterns.md from the main Solution Architecture page for detailed pattern descriptions and rationale.</p>
+<p><strong>Reference:</strong> See the <a href="https://ukhsa.atlassian.net/wiki/spaces/CDA/pages/520783944/Architecture+Patterns+Reference">Architecture Patterns Reference</a> page for full descriptions, rationale, and ADRs for every pattern.</p>
+
+<h2>&#128196; Contents</h2>
+
+<ac:structured-macro ac:name="toc">
+  <ac:parameter ac:name="printable">true</ac:parameter>
+  <ac:parameter ac:name="style">disc</ac:parameter>
+  <ac:parameter ac:name="maxLevel">2</ac:parameter>
+  <ac:parameter ac:name="minLevel">2</ac:parameter>
+  <ac:parameter ac:name="type">list</ac:parameter>
+</ac:structured-macro>
+
+<hr />
+
+<h2>&#9654; How to Use This Page</h2>
+
+<ac:structured-macro ac:name="info">
+<ac:rich-text-body>
+<p><strong>Three steps to get your diagrams generated automatically:</strong></p>
+<ol>
+  <li><strong>Fill in Section 1</strong> (Business Context) — solution name, data domain, sensitivity level.</li>
+  <li><strong>Tick the patterns</strong> in Sections 2&#8211;11 that apply to your workload. For each ticked pattern, add the requested detail in the <em>Details</em> column.</li>
+  <li><strong>Run the sync script</strong> from your local workspace:<br/>
+  <code>python confluence_sync_questionnaire_to_main.py</code><br/>
+  This reads your answers, merges them into the main SA page, and auto-generates all HLD + LLD diagrams.</li>
+</ol>
+<p>&#128276; <strong>You do not need to edit the main SA page or the LLD page directly.</strong> Everything flows from this questionnaire.</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<hr />
+
+<h2>&#9889; Fast-Fill Guidance</h2>
+
+<p><em>Use the table below to quickly identify which patterns to tick based on your project type. Find your scenario, then go to the relevant sections and tick those patterns.</em></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Project Type / Scenario</th>
+      <th>Mandatory Patterns (always tick)</th>
+      <th>Likely Additional Patterns</th>
+      <th>Skip / Not Applicable</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>New analytics / data pipeline on AWS</strong><br/><em>e.g., disease surveillance feed, lab data ingestion</em></td>
+      <td>INF-01, INF-05, 3C (Data Lake), 6A, 6B, 6C, 7A, 7B, 8A</td>
+      <td>1B or 1C or 1D (pick ingestion type), 2A (ETL), 5A (catalogue), 5C (lineage)</td>
+      <td>TSA-NET-02 (only if public-facing), 3B (only if reporting warehouse needed)</td>
+    </tr>
+    <tr>
+      <td><strong>Public-facing API or web application</strong><br/><em>e.g., data portal, UKHSA public dashboard</em></td>
+      <td>INF-01, INF-03, INF-04, INF-05, TSA-NET-02, 6A, 6B, 6C, 7A, 7B, 8A, 8B</td>
+      <td>1A (API ingestion), TSA-NET-01 (multi-VPC), TSA-IDN-01 (JIT for admins)</td>
+      <td>1D (streaming — only if real-time needed), 3D (time-series — only if metrics)</td>
+    </tr>
+    <tr>
+      <td><strong>Hybrid workload (on-prem + cloud)</strong><br/><em>e.g., migrating legacy system to HALO LZ</em></td>
+      <td>INF-01, INF-02, INF-04, INF-05, 6A, 6B, 6C, 8A</td>
+      <td>1C (DB replication / DMS), TSA-NET-01 (Transit Gateway), INF-03 (Zero Trust access)</td>
+      <td>1A (direct API — only if new API), TSA-NET-02 (only if public endpoint)</td>
+    </tr>
+    <tr>
+      <td><strong>ML / data science platform</strong><br/><em>e.g., SageMaker training, EMR Spark jobs</em></td>
+      <td>INF-01, INF-05, 3C (Data Lake), 2C (Spark/ML), 6A, 6B, 6C, 6D (if PII), 5A, 7A, 8A</td>
+      <td>2D (federated query), 1B or 1C (data source), INF-06 (EDAP platform)</td>
+      <td>TSA-NET-02 (unless model serving is public), 3B (unless BI output needed)</td>
+    </tr>
+    <tr>
+      <td><strong>Real-time / streaming system</strong><br/><em>e.g., IoT sensors, live monitoring, alerting</em></td>
+      <td>INF-01, INF-05, 1D (streaming), 2B (real-time processing), 3D (time-series), 6A, 6B, 6C, 7A, 7B, 8A</td>
+      <td>4A (event-driven), TSA-NET-01, INF-04 (DNS)</td>
+      <td>1B (batch — not applicable for real-time), 3B (warehouse — unless historical also needed)</td>
+    </tr>
+    <tr>
+      <td><strong>Identity / access management change</strong><br/><em>e.g., new SCIM group, JIT role, JML process</em></td>
+      <td>INF-05, TSA-IDN-01, TSA-IDN-02, 6A, 6B</td>
+      <td>INF-03 (Zero Trust), INF-06 (if platform access), 7A (audit logging)</td>
+      <td>Most data patterns — unless data access permissions are also changing</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>&#128270; Pattern Quick-Reference</h2>
+
+<p><em>Not sure what a pattern does? Use this at-a-glance summary before filling in the sections below.</em></p>
+
+<table>
+  <thead><tr><th>Pattern ID</th><th>Name</th><th>One-Line Summary</th><th>Key AWS / Azure Service</th></tr></thead>
+  <tbody>
+    <tr><td>INF-01</td><td>Strategic Landing Zone</td><td>All workloads must go to AWS HALO or Azure PHECloud LZ</td><td>Control Tower, AWS Organizations</td></tr>
+    <tr><td>INF-02</td><td>Hybrid Connectivity</td><td>On-prem ↔ cloud via Direct Connect / ExpressRoute only</td><td>AWS Direct Connect, Transit Gateway</td></tr>
+    <tr><td>INF-03</td><td>Zero Trust End-User Access</td><td>All user internet access via zScaler ZPA / ZIA</td><td>zScaler ZTE, AWS Verified Access</td></tr>
+    <tr><td>INF-04</td><td>Split-Horizon DNS</td><td>Consistent internal + external DNS via Route 53</td><td>Route 53 Resolver, Private Hosted Zones</td></tr>
+    <tr><td>INF-05</td><td>Federated Identity</td><td>Entra ID is the only IdP — no local IAM users permitted</td><td>Microsoft Entra ID, IAM Identity Center</td></tr>
+    <tr><td>INF-06</td><td>Approved Platforms</td><td>Use EDAP, Azure APIM, Sentinel, or AVD — no bespoke equivalents</td><td>EDAP, Azure APIM, Sentinel</td></tr>
+    <tr><td>TSA-NET-01</td><td>Hub-and-Spoke Networking</td><td>Multi-VPC routing via Transit Gateway / Virtual WAN</td><td>AWS Transit Gateway, Azure Virtual WAN</td></tr>
+    <tr><td>TSA-NET-02</td><td>Centralised Ingress</td><td>Public apps must use ALB + WAF as single ingress point</td><td>ALB, AWS WAF, Route 53</td></tr>
+    <tr><td>TSA-IDN-01</td><td>JIT / PIM Access</td><td>Elevated access is time-bound and approval-gated via PIM</td><td>Entra ID PIM, CloudTrail</td></tr>
+    <tr><td>TSA-IDN-02</td><td>Identity Lifecycle (JML)</td><td>Joiner/Mover/Leaver auto-provisions and deprovisions access</td><td>Entra ID Lifecycle Workflows, SCIM</td></tr>
+    <tr><td>1A</td><td>Direct API Ingestion</td><td>Real-time REST/webhook feeds into the platform</td><td>API Gateway, SQS, EventBridge</td></tr>
+    <tr><td>1B</td><td>Batch File Upload</td><td>Scheduled bulk file transfers (CSV, JSON, Parquet)</td><td>S3, Glue, AWS Transfer Family (SFTP)</td></tr>
+    <tr><td>1C</td><td>Database Replication</td><td>Continuous CDC sync from source DB to cloud</td><td>AWS DMS, Aurora PostgreSQL</td></tr>
+    <tr><td>1D</td><td>Streaming Ingestion</td><td>High-velocity event/sensor streams</td><td>Kinesis, MSK (Kafka)</td></tr>
+    <tr><td>2A</td><td>Batch ETL</td><td>Scheduled large-volume transformation jobs</td><td>Glue, Step Functions</td></tr>
+    <tr><td>2B</td><td>Real-Time Stream Processing</td><td>Live anomaly detection and event-driven transforms</td><td>Kinesis Data Analytics, Lambda</td></tr>
+    <tr><td>2C</td><td>Spark / ML Jobs</td><td>Transient EMR or SageMaker training runs</td><td>Amazon EMR, SageMaker</td></tr>
+    <tr><td>2D</td><td>Federated Query</td><td>Query data where it sits — no copy needed</td><td>Athena, Redshift Spectrum</td></tr>
+    <tr><td>3A</td><td>Transactional DB (OLTP)</td><td>ACID-compliant relational database for operational data</td><td>Aurora PostgreSQL, RDS</td></tr>
+    <tr><td>3B</td><td>Data Warehouse (OLAP)</td><td>Historical analytics and BI reporting</td><td>Redshift, QuickSight</td></tr>
+    <tr><td>3C</td><td>Data Lake (Bronze/Silver/Gold)</td><td>Centralised raw → conformed → curated S3 storage</td><td>S3, Glue Catalog, Lake Formation</td></tr>
+    <tr><td>3D</td><td>Time-Series DB</td><td>Per-second/minute metrics and surveillance data</td><td>Amazon Timestream</td></tr>
+    <tr><td>3E</td><td>Document Store</td><td>JSON / nested / schema-flexible data</td><td>DynamoDB, DocumentDB, OpenSearch</td></tr>
+    <tr><td>4A</td><td>Event-Driven Pipelines</td><td>Services communicate via events — no direct coupling</td><td>EventBridge, SQS, SNS, Lambda</td></tr>
+    <tr><td>4B</td><td>ETL Orchestration</td><td>Multi-step workflows with retries and branching</td><td>Step Functions, Apache Airflow (MWAA)</td></tr>
+    <tr><td>4C</td><td>Data Replication &amp; Sync</td><td>Cross-region / cross-AZ copies for HA and DR</td><td>S3 CRR, RDS Read Replicas</td></tr>
+    <tr><td>5A</td><td>Data Catalogue</td><td>Centralised metadata and discoverability</td><td>Glue Data Catalog, Lake Formation</td></tr>
+    <tr><td>5B</td><td>Data Quality</td><td>Automated quality gates before data is promoted</td><td>Glue DataBrew, EventBridge</td></tr>
+    <tr><td>5C</td><td>Data Lineage &amp; Audit</td><td>Full provenance trail for compliance and root-cause</td><td>CloudTrail, Lake Formation, OpenLineage</td></tr>
+    <tr><td>6A</td><td>Access Control</td><td>&#9888; MANDATORY — IAM + Lake Formation TBAC on all data</td><td>IAM, Lake Formation, S3 Object Lock</td></tr>
+    <tr><td>6B</td><td>Encryption &amp; Key Mgmt</td><td>&#9888; MANDATORY — KMS CMK at rest, TLS 1.2+ in transit</td><td>KMS, Secrets Manager, ACM</td></tr>
+    <tr><td>6C</td><td>Network Security</td><td>&#9888; MANDATORY — VPC private subnets, WAF, VPC Endpoints</td><td>VPC, Security Groups, WAF, PrivateLink</td></tr>
+    <tr><td>6D</td><td>Data Masking</td><td>Required if handling PII / PHI — de-identify before non-prod</td><td>Glue DataBrew, Lambda</td></tr>
+    <tr><td>7A</td><td>Centralised Logging</td><td>&#9888; MANDATORY — CloudWatch + CloudTrail → Sentinel</td><td>CloudWatch Logs, X-Ray, CloudTrail</td></tr>
+    <tr><td>7B</td><td>Performance Alerting</td><td>&#9888; MANDATORY — alarms on latency, errors, capacity</td><td>CloudWatch Alarms, SNS</td></tr>
+    <tr><td>7C</td><td>Cost Tracking</td><td>FinOps — tagged resources, budget alerts, rightsizing</td><td>Cost Explorer, Budgets, Compute Optimizer</td></tr>
+    <tr><td>8A</td><td>Backup &amp; PITR</td><td>&#9888; MANDATORY — centralised AWS Backup + S3 versioning</td><td>AWS Backup, RDS snapshots, S3 versioning</td></tr>
+    <tr><td>8B</td><td>Multi-Region DR</td><td>Required if RTO &lt; 4h or RPO &lt; 1h — Route 53 failover</td><td>Route 53, S3 CRR, RDS cross-region replica</td></tr>
+  </tbody>
+</table>
 
 <hr />
 
@@ -529,7 +662,101 @@ QUESTIONNAIRE_HTML = """
 
 <hr />
 
-<h2>10. Auto-Generated Diagrams (Placeholder)</h2>
+<h2>10. Infrastructure &amp; Platform Patterns</h2>
+
+<p><em>Select the UKHSA-approved infrastructure patterns that apply to this workload. These control landing zone placement, connectivity, identity, DNS, and platform choices.</em></p>
+
+<table>
+  <thead><tr><th>Pattern</th><th>When to Use</th><th>Selected?</th><th>Details (if selected)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Strategic Landing Zone Placement</strong><br/>(UKHSA-INF-01)</td>
+      <td>All new workloads — must deploy to AWS HALO or Azure PHECloud LZ</td>
+      <td>&#9744; Yes (mandatory)</td>
+      <td><em>Target LZ: AWS HALO / Azure PHECloud / Other (specify)</em></td>
+    </tr>
+    <tr>
+      <td><strong>Hybrid Cloud Connectivity</strong><br/>(UKHSA-INF-02)</td>
+      <td>Any workload needing on-premises connectivity (Direct Connect / ExpressRoute)</td>
+      <td>&#9744; Yes</td>
+      <td><em>On-prem systems accessed, estimated bandwidth</em></td>
+    </tr>
+    <tr>
+      <td><strong>Zero Trust End-User Access (zScaler)</strong><br/>(UKHSA-INF-03)</td>
+      <td>Any workload accessed by end users from internet or corporate devices</td>
+      <td>&#9744; Yes</td>
+      <td><em>User population, ZPA or ZIA required</em></td>
+    </tr>
+    <tr>
+      <td><strong>Split-Horizon DNS</strong><br/>(UKHSA-INF-04)</td>
+      <td>Any workload with a domain name — internal and external resolution required</td>
+      <td>&#9744; Yes</td>
+      <td><em>Desired hostname (e.g. api.myservice.aws.ukhsa.gov.uk)</em></td>
+    </tr>
+    <tr>
+      <td><strong>Federated Identity (Entra ID)</strong><br/>(UKHSA-INF-05)</td>
+      <td>All workloads requiring user authentication — no local IAM users permitted</td>
+      <td>&#9744; Yes (mandatory)</td>
+      <td><em>User roles required, JIT/PIM needed?, SCIM provisioning groups</em></td>
+    </tr>
+    <tr>
+      <td><strong>Approved Platform Portfolio</strong><br/>(UKHSA-INF-06)</td>
+      <td>Workload uses EDAP, Azure APIM, Sentinel, AVD, or other shared platforms</td>
+      <td>&#9744; Yes</td>
+      <td><em>Platform(s) used: EDAP / Azure APIM / Sentinel / AVD / Other</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>11. Target State Architecture Patterns</h2>
+
+<p><em>Select Target State patterns relevant to the networking and identity design of this workload.</em></p>
+
+<h3>11.1 Networking</h3>
+
+<table>
+  <thead><tr><th>Pattern</th><th>When to Use</th><th>Selected?</th><th>Details (if selected)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Hub-and-Spoke (Transit Gateway / Virtual WAN)</strong><br/>(TSA-NET-01)</td>
+      <td>Multi-VPC or multi-account workloads needing centralised routing</td>
+      <td>&#9744; Yes</td>
+      <td><em>Number of spoke VPCs, cross-account routing required?</em></td>
+    </tr>
+    <tr>
+      <td><strong>Centralised Ingress (ALB + WAF)</strong><br/>(TSA-NET-02)</td>
+      <td>Any public-facing application or API endpoint</td>
+      <td>&#9744; Yes</td>
+      <td><em>Public hostname, expected TPS, WAF rule sets needed</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>11.2 Identity</h3>
+
+<table>
+  <thead><tr><th>Pattern</th><th>When to Use</th><th>Selected?</th><th>Details (if selected)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>JIT / PIM Privileged Access</strong><br/>(TSA-IDN-01)</td>
+      <td>Any workload requiring elevated/admin access to cloud resources</td>
+      <td>&#9744; Yes</td>
+      <td><em>Roles needing JIT, approval workflow, max session duration</em></td>
+    </tr>
+    <tr>
+      <td><strong>Identity Lifecycle Management (JML)</strong><br/>(TSA-IDN-02)</td>
+      <td>Workloads where Joiner/Mover/Leaver process must auto-provision/deprovision access</td>
+      <td>&#9744; Yes</td>
+      <td><em>HR system integration, SCIM groups, deprovisioning SLA</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>12. Auto-Generated Diagrams (Placeholder)</h2>
 
 <p><em>After filling in the questionnaire above, run:</em></p>
 
@@ -548,13 +775,21 @@ QUESTIONNAIRE_HTML = """
 <h3>Approved Patterns Used</h3>
 <p><em>Auto-generated summary of which patterns were selected for this solution.</em></p>
 <table>
-  <thead><tr><th>Layer</th><th>Pattern(s) Selected</th><th>AWS Service(s)</th></tr></thead>
+  <thead><tr><th>Layer</th><th>Pattern(s) Selected</th><th>AWS / Azure Service(s)</th></tr></thead>
   <tbody>
+    <tr><td>Infrastructure — Landing Zone</td><td>UKHSA-INF-01</td><td></td></tr>
+    <tr><td>Infrastructure — Connectivity</td><td></td><td></td></tr>
+    <tr><td>Infrastructure — Zero Trust Access</td><td></td><td></td></tr>
+    <tr><td>Infrastructure — DNS</td><td></td><td></td></tr>
+    <tr><td>Infrastructure — Identity</td><td>UKHSA-INF-05</td><td></td></tr>
+    <tr><td>Infrastructure — Platform</td><td></td><td></td></tr>
+    <tr><td>Networking (TSA)</td><td></td><td></td></tr>
+    <tr><td>Identity (TSA)</td><td></td><td></td></tr>
     <tr><td>Ingestion</td><td></td><td></td></tr>
     <tr><td>Processing</td><td></td><td></td></tr>
     <tr><td>Storage</td><td></td><td></td></tr>
     <tr><td>Governance</td><td></td><td></td></tr>
-    <tr><td>Security</td><td></td><td></td></tr>
+    <tr><td>Security (mandatory)</td><td>6A, 6B, 6C</td><td>IAM, KMS, VPC, WAF</td></tr>
     <tr><td>Monitoring</td><td></td><td></td></tr>
     <tr><td>Resilience</td><td></td><td></td></tr>
   </tbody>
@@ -562,7 +797,7 @@ QUESTIONNAIRE_HTML = """
 
 <hr />
 
-<h2>11. Related Documents</h2>
+<h2>13. Related Documents</h2>
 
 <ul>
   <li><a href="#">Solution Architecture HLD</a> (main page)</li>

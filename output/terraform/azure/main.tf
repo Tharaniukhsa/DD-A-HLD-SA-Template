@@ -25,5 +25,5 @@ resource "azurerm_storage_account" "data_lake" {
   account_replication_type = "LRS"
 }
 
-# Components discovered: 0
-# Datasets discovered: 0
+# Components discovered: 9
+# Datasets discovered: 3
