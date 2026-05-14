@@ -1,0 +1,273 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile>
+  <diagram name="LLD Detailed Architecture">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="3050" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lld-title" value="Low-Level Service Design (Left-to-Right Segregated Flow)" style="text;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="20" y="20" width="1400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-boundary-title" value="Solution Boundary" style="text;fontSize=11;fontStyle=1;align=left;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="24" y="60" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-sol-boundary" value="" style="rounded=1;dashed=1;strokeWidth=2;strokeColor=#7C8795;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="12" y="58" width="1958" height="474" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-aws-cloud" value="" style="rounded=1;strokeWidth=2;strokeColor=#5B6777;fillColor=#F8FAFC;" parent="1" vertex="1">
+          <mxGeometry x="532" y="90" width="980" height="454" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-aws-cloud-title" value="AWS Cloud" style="text;fontSize=12;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="544" y="96" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-vpc-boundary" value="" style="rounded=1;strokeWidth=2;strokeColor=#2E7D32;fillColor=#F3FBF5;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="536" y="154" width="686" height="276" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-vpc-title" value="VPC Boundary" style="text;fontSize=11;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="546" y="160" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-azure-cloud" value="" style="rounded=1;strokeWidth=2;strokeColor=#0078D4;fillColor=#EBF5FB;dashed=0;" parent="1" vertex="1">
+          <mxGeometry x="238" y="90" width="230" height="454" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-azure-cloud-title" value="Azure Cloud (Microsoft Entra ID)" style="text;fontSize=11;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;fontColor=#0078D4;" parent="1" vertex="1">
+          <mxGeometry x="246" y="96" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-direct-connect-icon" value="AWS Direct Connect" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.direct_connect;fillColor=#4D72B8;strokeColor=#ffffff;fontSize=8;fontStyle=1;fontColor=#1E3A5F;html=1;align=center;verticalLabelPosition=bottom;labelPosition=center;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="477" y="268" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-direct-connect-arrow1" value="" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#0078D4;strokeWidth=2;endArrow=block;endFill=1;startArrow=block;startFill=1;dashed=0;" parent="1" source="lld-zone-azureid" target="lld-direct-connect-icon" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-direct-connect-arrow2" value="" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#4D72B8;strokeWidth=2;endArrow=block;endFill=1;startArrow=block;startFill=1;dashed=0;" parent="1" source="lld-direct-connect-icon" target="lld-zone-public" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-managed-services" value="" style="rounded=1;strokeWidth=2;strokeColor=#E65100;fillColor=#FFF3E0;dashed=0;" parent="1" vertex="1">
+          <mxGeometry x="1292" y="170" width="206" height="244" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-managed-services-title" value="&lt;b&gt;AWS Managed Services&lt;/b&gt;&lt;br/&gt;&lt;font color='#E65100' style='font-size:8px;'&gt;Accessed via VPC Endpoints&lt;/font&gt;" style="text;html=1;fontSize=9;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1296" y="174" width="198" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-vpc-endpoint-icon" value="VPC Endpoint" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.vpc_endpoints;fillColor=#8C4FFF;strokeColor=#ffffff;fontSize=8;fontStyle=1;fontColor=#6B21A8;html=1;align=center;verticalAlign=bottom;verticalLabelPosition=bottom;labelPosition=center;" parent="1" vertex="1">
+          <mxGeometry x="1228" y="268" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-vpc-endpoint-arrow" value="" style="edgeStyle=orthogonalEdgeStyle;dashed=1;dashPattern=6 3;strokeColor=#E65100;strokeWidth=2;endArrow=block;endFill=0;" parent="1" source="lld-zone-data" target="lld-vpc-endpoint-icon" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-vpc-endpoint-arrow2" value="" style="edgeStyle=orthogonalEdgeStyle;dashed=1;dashPattern=6 3;strokeColor=#E65100;strokeWidth=2;endArrow=block;endFill=0;" parent="1" source="lld-vpc-endpoint-icon" target="lld-managed-services" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-internet" value="" style="rounded=0;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=2.5;" parent="1" vertex="1">
+          <mxGeometry x="20" y="170" width="206" height="244" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-internet-title" value="External / On-Prem" style="text;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;backgroundColor=#E3F2FD;" parent="1" vertex="1">
+          <mxGeometry x="24" y="176" width="198" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-azureid" value="" style="rounded=0;fillColor=#E1F5FE;strokeColor=#01579B;strokeWidth=2.5;" parent="1" vertex="1">
+          <mxGeometry x="250" y="170" width="206" height="244" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-azureid-title" value="Azure Identity&#10;(Entra ID)" style="text;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;backgroundColor=#E1F5FE;" parent="1" vertex="1">
+          <mxGeometry x="254" y="176" width="198" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-public" value="" style="rounded=0;fillColor=#FFF8E1;strokeColor=#F57F17;strokeWidth=2.5;" parent="1" vertex="1">
+          <mxGeometry x="546" y="170" width="206" height="244" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-public-title" value="Public Subnet&#10;(Ingress)" style="text;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;backgroundColor=#FFF8E1;" parent="1" vertex="1">
+          <mxGeometry x="550" y="176" width="198" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-private" value="" style="rounded=0;fillColor=#E8F5E9;strokeColor=#1B5E20;strokeWidth=2.5;" parent="1" vertex="1">
+          <mxGeometry x="776" y="170" width="206" height="244" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-private-title" value="Private Subnet&#10;(App Layer)" style="text;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;backgroundColor=#E8F5E9;" parent="1" vertex="1">
+          <mxGeometry x="780" y="176" width="198" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-data" value="" style="rounded=0;fillColor=#F3E5F5;strokeColor=#4A148C;strokeWidth=2.5;" parent="1" vertex="1">
+          <mxGeometry x="1006" y="170" width="206" height="244" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-zone-data-title" value="Data Subnet&#10;(Storage)" style="text;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;backgroundColor=#F3E5F5;" parent="1" vertex="1">
+          <mxGeometry x="1010" y="176" width="198" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-internet-user" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#F57F17;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="564" y="226" width="170" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-internet-user-icon-panel" value="" style="rounded=0;fillColor=#FFF8E1;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="565" y="227" width="168" height="97" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-internet-user-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;fillColor=#8C4FFF;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="625" y="251" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-internet-user-name-bg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="565" y="324" width="168" height="71" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-internet-user-text" value="&lt;b&gt;Internet / User&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="568" y="326" width="162" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-application-service" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#1B5E20;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="794" y="226" width="170" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-application-service-icon-panel" value="" style="rounded=0;fillColor=#E8F5E9;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="795" y="227" width="168" height="97" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-application-service-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ecs;fillColor=#ED7100;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="855" y="251" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-application-service-name-bg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="795" y="324" width="168" height="71" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-application-service-text" value="&lt;b&gt;Application Service&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="798" y="326" width="162" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-primary-data-store" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4A148C;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="1024" y="226" width="170" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-primary-data-store-icon-panel" value="" style="rounded=0;fillColor=#F3E5F5;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1025" y="227" width="168" height="97" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-primary-data-store-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;fillColor=#4D72B8;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="1085" y="251" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-primary-data-store-name-bg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1025" y="324" width="168" height="71" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-primary-data-store-text" value="&lt;b&gt;Primary Data Store&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1028" y="326" width="162" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-api-gateway" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#E65100;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="1310" y="226" width="170" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-api-gateway-icon-panel" value="" style="rounded=0;fillColor=#FFF3E0;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1311" y="227" width="168" height="97" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-api-gateway-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.api_gateway;fillColor=#DD344C;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="1371" y="251" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-api-gateway-name-bg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1311" y="324" width="168" height="71" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp-api-gateway-text" value="&lt;b&gt;API Gateway&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1314" y="326" width="162" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-1" value="S1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;strokeWidth=2.4;strokeColor=#1D4ED8;endArrow=block;endFill=1;labelBackgroundColor=#FFF7ED;labelBorderColor=#FB923C;" parent="1" source="cmp-internet-user" target="cmp-api-gateway" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-2" value="S2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;strokeWidth=2.4;strokeColor=#1D4ED8;endArrow=block;endFill=1;labelBackgroundColor=#FFF7ED;labelBorderColor=#FB923C;" parent="1" source="cmp-application-service" target="cmp-primary-data-store" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="480" y="400" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-3" value="S3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;strokeWidth=2.4;strokeColor=#1D4ED8;endArrow=block;endFill=1;labelBackgroundColor=#FFF7ED;labelBorderColor=#FB923C;" parent="1" source="cmp-api-gateway" target="cmp-application-service" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="400" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lld-flow-index-bg" value="" style="rounded=1;fillColor=#FFF7ED;strokeColor=#FB923C;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry x="1528" y="84" width="380" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-flow-index-title" value="Step Index (Arrow Labels)" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="92" width="360" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-flow-index-text" value="&lt;b&gt;S1&lt;/b&gt;: Internet / User -&gt; API Gateway&lt;br/&gt;&lt;b&gt;S2&lt;/b&gt;: Application Service -&gt; Primary Data Store&lt;br/&gt;&lt;b&gt;S3&lt;/b&gt;: API Gateway -&gt; Application Service" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=9;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="112" width="360" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-auth-bg" value="" style="rounded=1;fillColor=#FFFEEB;strokeColor=#9AA5B1;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry x="1528" y="268" width="380" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-auth-title" value="Approved Identity Auth" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="276" width="360" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-auth-text" value="&lt;b&gt;1.&lt;/b&gt; Human access via Entra ID / AWS IAM Identity Center + MFA&lt;br/&gt;&lt;b&gt;2.&lt;/b&gt; OIDC/OAuth2 token validation at entry points&lt;br/&gt;&lt;b&gt;3.&lt;/b&gt; Service-to-service mTLS inside Private Subnet&lt;br/&gt;&lt;b&gt;4.&lt;/b&gt; Workload identity (IAM Role / Managed Identity) for data access&lt;br/&gt;&lt;b&gt;5.&lt;/b&gt; RBAC/least-privilege authorization for intra-service calls&lt;br/&gt;&lt;b&gt;Observed from table:&lt;/b&gt; OIDC + MFA, Managed Identity, mTLS" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=8;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="296" width="360" height="208" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-global-scope-bg" value="" style="rounded=1;fillColor=#ECFEFF;strokeColor=#0F766E;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry x="1528" y="528" width="400" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-global-scope-title" value="Global-Scope Services" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="536" width="380" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-global-scope-text" value="&lt;b&gt;1.&lt;/b&gt; API Gateway" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=8;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="556" width="380" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-aws-rules-bg" value="" style="rounded=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry x="1528" y="676" width="380" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-aws-rules-title" value="AWS Service Placement Rules" style="text;fontSize=10;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="684" width="360" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-aws-rules-text" value="&lt;b&gt;Global Services&lt;/b&gt; (no VPC boundary):&lt;br/&gt;&amp;#x25CF; S3, IAM, STS, CloudFront, Route53&lt;br/&gt;&amp;#x25CF; Accessible from any region/account&lt;br/&gt;&amp;#x25CF; Placed in: &lt;i&gt;AWS Managed Services&lt;/i&gt; zone&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Regional Managed Services&lt;/b&gt; (outside VPC):&lt;br/&gt;&amp;#x25CF; CloudWatch, KMS, Secrets Manager, DynamoDB&lt;br/&gt;&amp;#x25CF; SNS, SQS, CloudTrail (Audit Logging)&lt;br/&gt;&amp;#x25CF; Placed in: &lt;i&gt;AWS Managed Services&lt;/i&gt; zone&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Connectivity Rule&lt;/b&gt;:&lt;br/&gt;&amp;#x25CF; VPC resources access managed services&lt;br/&gt;&amp;#x25A0;  via &lt;b&gt;VPC Endpoints&lt;/b&gt; (no public internet)&lt;br/&gt;&amp;#x25A0;  Gateway Endpoint: S3, DynamoDB&lt;br/&gt;&amp;#x25A0;  Interface Endpoint: all others" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=8;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="1538" y="704" width="360" height="196" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-legend-bg" value="" style="rounded=1;fillColor=#E8EEF8;strokeColor=#9AA5B1;strokeWidth=1.2;" parent="1" vertex="1">
+          <mxGeometry x="20" y="454" width="1938" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lld-legend-text" value="Flow arrows are numbered. Each numbered step explains inbound path, request channel, auth, and outbound response path." style="text;fontSize=9;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="30" y="460" width="2990" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-boundary" value="" style="rounded=1;strokeWidth=3;strokeColor=#7C3AED;fillColor=#FAF5FF;dashed=1;dashPattern=10 4;" parent="1" vertex="1">
+          <mxGeometry x="8" y="494" width="772" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-zone" value="" style="rounded=1;fillColor=#F3E8FF;strokeColor=#7C3AED;strokeWidth=2.5;" parent="1" vertex="1">
+          <mxGeometry x="20" y="514" width="748" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-zone-title" value="&lt;b&gt;EDAP — Enterprise Data &amp;amp; Analytics Platform&lt;/b&gt;&lt;br/&gt;&lt;font style='font-size:8px;' color='#7C3AED'&gt;Separate Analytical Environment (UKHSA EDAP AWS Account)&lt;/font&gt;" style="text;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="24" y="520" width="740" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-aws-transfer-family-sftp" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7C3AED;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="44" y="574" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-aws-transfer-family-sftp-ip" value="" style="rounded=0;fillColor=#F3E8FF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="45" y="575" width="158" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-aws-transfer-family-sftp-lbl" value="&lt;b&gt;AWS Transfer Family&lt;br/&gt;(SFTP)&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=8;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="48" y="651" width="152" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-edap-ingestion-layer" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7C3AED;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="224" y="574" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-edap-ingestion-layer-ip" value="" style="rounded=0;fillColor=#F3E8FF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="225" y="575" width="158" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-edap-ingestion-layer-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bucket;fillColor=#7AA116;strokeColor=#FFFFFF;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="284" y="592" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-edap-ingestion-layer-lbl" value="&lt;b&gt;EDAP Ingestion Layer&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=8;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="228" y="651" width="152" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-antivirus-scanner" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7C3AED;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="404" y="574" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-antivirus-scanner-ip" value="" style="rounded=0;fillColor=#F3E8FF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="405" y="575" width="158" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-antivirus-scanner-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ecs;fillColor=#ED7100;strokeColor=#FFFFFF;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="464" y="592" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-antivirus-scanner-lbl" value="&lt;b&gt;Antivirus Scanner&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=8;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="408" y="651" width="152" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-step-functions-i2r" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7C3AED;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="584" y="574" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-step-functions-i2r-ip" value="" style="rounded=0;fillColor=#F3E8FF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="585" y="575" width="158" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-step-functions-i2r-lbl" value="&lt;b&gt;Step Functions (I2R)&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=8;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="588" y="651" width="152" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-eventbridge" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#7C3AED;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="44" y="734" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-eventbridge-ip" value="" style="rounded=0;fillColor=#F3E8FF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="45" y="735" width="158" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-cmp-eventbridge-lbl" value="&lt;b&gt;EventBridge&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=8;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="48" y="811" width="152" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-integration-arrow" value="EDAP Integration (HTTPS / S3 / Kinesis)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#7C3AED;strokeWidth=2.5;dashed=1;dashPattern=10 5;endArrow=block;endFill=1;fontSize=9;fontStyle=1;fontColor=#7C3AED;labelBackgroundColor=#FAF5FF;" parent="1" source="lld-sol-boundary" target="edap-boundary" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edap-note" value="&amp;#x26A0; EDAP is a separate AWS account managed by the UKHSA Data Platform team. Connect only via approved interfaces (S3 events, Kinesis Data Streams, REST API)." style="text;html=1;fontSize=8;align=left;verticalAlign=top;strokeColor=none;fillColor=none;fontStyle=2;" parent="1" vertex="1">
+          <mxGeometry x="20" y="900" width="748" height="26" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

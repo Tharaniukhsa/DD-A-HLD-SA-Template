@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import re
+import xml.etree.ElementTree as ET
 from io import BytesIO
 
 import certifi
@@ -14,24 +15,6 @@ from requests_negotiate_sspi import HttpNegotiateAuth
 load_dotenv()
 
 SECURE_BY_DESIGN_SAT_URL = "https://phecloud.sharepoint.com/:x:/r/sites/SecureByDesign/_layouts/15/Doc.aspx?sourcedoc=%7BDE70096D-47CA-4190-A8EB-710D5D15E178%7D&file=UKHSA%20Secure%20by%20Design%20-%20SAT%20-%20TEMPLATE%20v2.6.xlsx&action=default&mobileredirect=true"
-
-
-def get_auth_methods():
-    """Return tuple of (primary_auth, fallback_auth) to try Bearer first, then Basic."""
-    api_token = (os.getenv("CONFLUENCE_API_TOKEN") or "").strip()
-    user_email = (os.getenv("CONFLUENCE_USER_EMAIL") or "").strip()
-    
-    primary = ("Bearer", api_token) if api_token else HttpNegotiateAuth()
-    fallback = HTTPBasicAuth(user_email, api_token) if user_email and api_token else None
-    return (primary, fallback)
-
-
-def apply_auth(session: requests.Session, auth_result: tuple | object) -> None:
-    """Apply authentication to a session. Handles Bearer tokens or standard auth."""
-    if isinstance(auth_result, tuple) and auth_result[0] == "Bearer":
-        session.headers.update({"Authorization": f"Bearer {auth_result[1]}"})
-    else:
-        session.auth = auth_result
 
 
 def _make_request(session: requests.Session, method: str, url: str, **kwargs) -> requests.Response:
@@ -171,9 +154,19 @@ def upload_attachment(session: requests.Session, base_url: str, page_id: str, fi
             verify=verify,
             timeout=30,
           )
+          if resp.status_code not in (200, 201, 403, 409):
+            raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
+          if resp.status_code == 409:
+            # Version conflict: refresh attachment ID and retry once.
+            check2 = _make_request(session, "GET", url, params={"filename": filename},
+                                   headers={"Accept": "application/json"}, verify=verify, timeout=30)
+            existing2 = check2.json().get("results", []) if check2.status_code == 200 else []
+            upload_url = f"{url}/{existing2[0]['id']}/data" if existing2 else url
+            resp = session.post(upload_url, files=_make_files_payload(), headers=bearer_headers,
+                                auth=None, verify=verify, timeout=30)
+          if resp.status_code not in (200, 201, 403):
+            raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
           if resp.status_code != 403:
-            if resp.status_code not in (200, 201):
-              raise RuntimeError(f"Failed to upload attachment '{filename}': {resp.status_code} {resp.text}")
             return resp.json()
         except requests.RequestException:
           pass
@@ -256,40 +249,87 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <p><em>Single source of truth: complete this page during discovery workshops. The tables below drive automated diagram generation and Terraform delivery output.</em></p>
 
 <ac:structured-macro ac:name="tip">
-  <ac:parameter ac:name="title">Fast Fill Guidance</ac:parameter>
+  <ac:parameter ac:name="title">⚡ Fast-Fill Guidance — Which Sections to Complete First</ac:parameter>
   <ac:rich-text-body>
-    <ul>
-      <li>Write short, decision-ready content first. One sentence or one bullet per cell is enough for the first workshop pass.</li>
-      <li>For each section, capture the business problem, the architectural impact, and the decision or action needed.</li>
-      <li>Where useful, use named options, systems, teams, and measures rather than generic wording.</li>
-    </ul>
-  </ac:rich-text-body>
-</ac:structured-macro>
-
-<ac:structured-macro ac:name="note">
-  <ac:parameter ac:name="title">Quick Workflow Summary</ac:parameter>
-  <ac:rich-text-body>
-    <ol>
-      <li><strong>Discovery</strong> – fill in Sections 1–6 (Overview, Introduction, Background, Pain Points, Functional Requirements, Non-Functional Requirements) with the project team.</li>
-      <li><strong>Design</strong> – complete Sections 7–13 (HLD options, pattern selection, components, connections, data flows, datasets, relationships).</li>
-      <li><strong>Generate diagrams</strong> – run <code>confluence_update_diagrams.py</code> to auto-create all diagrams from the tables in Sections 9-13.</li>
-      <li><strong>Implementation pack</strong> – run <code>confluence_generate_implementation_pack.py</code> to output Terraform scaffolds and delivery summary from the completed HLD.</li>
-    </ol>
+    <p><strong>Use this guide to prioritise which sections to fill based on your project type:</strong></p>
+    <table>
+      <thead><tr><th>Project Type</th><th>Fill First</th><th>Mandatory Patterns (Section 8)</th><th>Skip / Later</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>New data pipeline / analytics on AWS</strong><br/><em>e.g. disease surveillance, lab data ingestion</em></td>
+          <td>Sections 1–6, then 9 (Context), 10 (Components), 11 (Connections), 13 (Data Flows)</td>
+          <td>INF-01, INF-05, 3C, 6A, 6B, 6C, 7A, 7B, 8a (Backup)<br/>+ pick ingestion: 1B or 1C or 1D</td>
+          <td>TSA-NET-02 unless public-facing; Section 17 (Cost) until option agreed</td>
+        </tr>
+        <tr>
+          <td><strong>Public-facing API or web application</strong><br/><em>e.g. data portal, UKHSA public dashboard</em></td>
+          <td>Sections 1–6, then 8 (Pattern Selection: TSA-NET-02, 6A–C), 10–11</td>
+          <td>INF-01, INF-04, INF-05, TSA-NET-02 (ALB+WAF), 6A, 6B, 6C, 7A, 7B, 8a</td>
+          <td>1D (streaming) unless real-time needed; 3D (time-series) unless metrics</td>
+        </tr>
+        <tr>
+          <td><strong>Hybrid / on-prem + cloud workload</strong><br/><em>e.g. HALO LZ migration, legacy system lift</em></td>
+          <td>Sections 1–4 (esp. As-Is in 3a/3b), then 8 (INF-02, INF-04), 10 (Components)</td>
+          <td>INF-01, INF-02 (Direct Connect/VPN), INF-04 (Split DNS), INF-05, 6A, 6B, 6C</td>
+          <td>TSA-NET-02 unless public endpoint; Sections 15–17 after design agreed</td>
+        </tr>
+        <tr>
+          <td><strong>ML / data science platform</strong><br/><em>e.g. SageMaker, EMR Spark, model training</em></td>
+          <td>Sections 1–6, then 8 (2C, 3C, 5A, 5C, INF-06), 13 (Data Flows)</td>
+          <td>INF-01, INF-05, 3C, 2C, 5A, 6A, 6B, 6C, 6D (if PII), 7A, 8a</td>
+          <td>TSA-NET-02 unless model API is public; 3B unless BI reporting also needed</td>
+        </tr>
+        <tr>
+          <td><strong>Real-time / streaming system</strong><br/><em>e.g. IoT, live alerting, event-driven pipeline</em></td>
+          <td>Sections 1–6, then 8 (1D, 2B, 3D, 4A), 10 (Components), 11 (Connections)</td>
+          <td>INF-01, INF-05, 1D, 2B, 3D, 6A, 6B, 6C, 7A, 7B, 8a</td>
+          <td>1B (batch) not needed; 3B only if historical reporting also required</td>
+        </tr>
+        <tr>
+          <td><strong>Lightweight / one-off data transfer</strong><br/><em>e.g. single on-prem extract to S3, one-time file migration</em></td>
+          <td>Sections 1–2 (Overview + Introduction), 9 (Context), 10 (Components), 11 (Connections)</td>
+          <td>INF-01, INF-02 (Direct Connect/VPN or SFTP), 6A, 6B, 6C</td>
+          <td>Sections 3–7 (Background, Pain Points, Requirements, HLD Options); Sections 12–19 unless data is sensitive or recurring</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>&#128204; <strong>INF-01 (Landing Zone) and INF-05 (Federated Identity via Entra ID) are mandatory for ALL workloads</strong> — they are applied automatically even if not explicitly selected in Section 8.</p>
+    <p>&#128204; <strong>6A (Access Control), 6B (Encryption), 6C (Network Security) and 7A (Centralised Logging) are also mandatory</strong> for all new data workloads under UKHSA Secure by Design policy.</p>
   </ac:rich-text-body>
 </ac:structured-macro>
 
 <ac:structured-macro ac:name="info">
-  <ac:parameter ac:name="title">How to Use This Page</ac:parameter>
+  <ac:parameter ac:name="title">▶ How to Use This Page — Step-by-Step</ac:parameter>
   <ac:rich-text-body>
+    <p><strong>Recommended approach: use the Data Solution Architecture Questionnaire to drive this page automatically.</strong></p>
     <ol>
-      <li><strong>Step 1 - Discovery inputs (Sections 1-6)</strong>: complete Section 1 Solution Overview, Section 2 Introduction, Section 3 Background, Section 4 Pain Points, Section 5 Functional Requirements, and Section 6 Non-Functional Requirements.</li>
-      <li><strong>Step 2 - Design decisions and data model (Sections 7-13)</strong>: complete Section 7 HLD Options, Section 8 Pattern Selection, Section 9 Context Entities, Section 10 Architecture Components, Section 11 Architecture Connections, Section 12 Data Flow Entries, and Section 13 Dataset Inventory.</li>
-      <li><strong>Step 3 - Section 14 (Auto-Generated Diagrams)</strong>: run <code>confluence_update_diagrams.py</code> after Sections 9-13 are populated. This creates the Context, C4 Logical, Architecture, Data Flow, and Dataset Relationship diagrams in Section 14.</li>
-      <li><strong>Step 4 - Section 15 (LLD Summary)</strong>: capture final design decisions, owners, and status updates agreed at HLD sign-off.</li>
-      <li><strong>Step 5 - Section 16 (Solution Option Cost Comparison)</strong>: record option-level cost inputs and recommendation rationale for governance approval.</li>
-      <li><strong>Step 6 - Section 17 (Implementation Handover)</strong>: complete handover scope, dependencies, plan links, and delivery readiness notes.</li>
-      <li><strong>Step 7 - Generate implementation pack</strong>: run <code>confluence_generate_implementation_pack.py</code> to generate Terraform scaffolds and delivery summary from the completed HLD content.</li>
+      <li><strong>Fill in the <a href="/wiki/spaces/CDA/pages/521438060/Data+Solution+Architecture+Questionnaire">Data Solution Architecture Questionnaire</a></strong> — tick patterns, add context, and run the sync script. It will populate Sections 9–14 of this page and regenerate all diagrams automatically.<br/>
+      <code>python confluence_sync_questionnaire_to_main.py</code></li>
+      <li><strong>Or fill this page directly — follow this sequence:</strong>
+        <ul>
+          <li><strong>Sections 1–2</strong> (Solution Overview + Introduction): front-sheet for governance, plain-English description, business outcomes, strategic alignment</li>
+          <li><strong>Sections 3–4</strong> (Background + Pain Points): as-is architecture snapshot and current pain points — drives the "why we're changing" narrative</li>
+          <li><strong>Sections 5–6</strong> (Functional + Non-Functional Requirements): what the solution must do and at what performance/security levels</li>
+          <li><strong>Section 7</strong> (HLD Options): 2–3 architectural options with pros/cons and evaluation criteria — needed for governance gate</li>
+          <li><strong>Section 8</strong> (Pattern Selection — 8a to 8f): select approved UKHSA patterns for ingestion, processing, storage, integration, governance/security, infrastructure (INF), and target state (TSA). <strong>INF-01 and INF-05 are always mandatory.</strong></li>
+          <li><strong>Section 9</strong> (Context Entities): external actors, systems, and partners — drives the Context View diagram</li>
+          <li><strong>Section 10</strong> (Architecture Components): every component with its layer, technology, and cloud — drives the Solution Architecture and Logical View diagrams</li>
+          <li><strong>Section 11</strong> (Architecture Connections): source → destination flows with protocol and auth — drives all connection diagrams</li>
+          <li><strong>Section 12</strong> (Data Flow Entries): each distinct data movement with source, destination, format, protocol, frequency, and sensitivity</li>
+          <li><strong>Section 13</strong> (Dataset Inventory): named datasets, source systems, volume, and retention — drives the Dataset Relationship diagram</li>
+          <li><strong>Section 13b</strong> (Network Segmentation Inputs): VPC/subnet CIDRs, connectivity type, and security group rules — drives the Network Segregation diagram</li>
+          <li><strong>Section 14</strong> (Auto-Generated Diagrams): run diagram generation once Sections 9–13b are complete</li>
+        </ul>
+      </li>
+      <li><strong>Run diagram generation</strong> after Sections 9–14 are populated:<br/>
+      <code>python confluence_update_diagrams.py</code><br/>
+      This generates: Solution Architecture, Data Flow, Dataset Relationship, Context View, Logical View, Authentication Flow, and Network Segregation diagrams.</li>
+      <li><strong>Complete Sections 15–16</strong> (LLD Summary + Cost Comparison) after HLD options are agreed at governance review.</li>
+      <li><strong>Complete Section 17</strong> (Implementation Handover) before handing over to the delivery team — then generate the implementation pack.</li>
+      <li><strong>Generate the implementation pack</strong> (Terraform scaffolds + delivery summary):<br/>
+      <code>python confluence_generate_implementation_pack.py</code></li>
     </ol>
+    <p>&#9888; <strong>Do not edit the Architecture Diagrams child page or the LLD page directly.</strong> They are fully generated from this page — any manual edits will be overwritten on the next run.</p>
   </ac:rich-text-body>
 </ac:structured-macro>
 
@@ -481,37 +521,37 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <p><em>Select the approved UKHSA patterns for the chosen HLD option. See the UKHSA Cloud Strategy & Approved patterns.md file for pattern reference.</em></p>
 <p><em>Secure by Design reference:</em> <a href=""" + html.escape(SECURE_BY_DESIGN_SAT_URL, quote=True) + """>UKHSA Secure by Design - SAT Template v2.6</a></p>
 
-  <h3 id="section8a" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8a. Ingestion Patterns</h3>
+  <h3 id="section8a" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8a. Data Ingestion Patterns</h3>
 <table>
   <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
   <tbody>
-    <tr><td>1A</td><td>Batch File Ingestion</td><td></td><td></td></tr>
-    <tr><td>1B</td><td>Real-Time Event Streaming</td><td></td><td></td></tr>
-    <tr><td>1C</td><td>API / Web Service Pull</td><td></td><td></td></tr>
-    <tr><td>1D</td><td>Database CDC (Change Data Capture)</td><td></td><td></td></tr>
+    <tr><td>1A</td><td>API / Web Service Pull</td><td></td><td>Pull from REST / GraphQL / SOAP APIs on schedule or event</td></tr>
+    <tr><td>1B</td><td>Batch File Upload</td><td></td><td>Bulk scheduled file transfers via SFTP / S3 upload</td></tr>
+    <tr><td>1C</td><td>Database Replication</td><td></td><td>DMS / CDC sync of on-prem or operational DB to cloud</td></tr>
+    <tr><td>1D</td><td>Streaming Ingestion</td><td></td><td>High-speed sensor data, metrics, IoT or event streams</td></tr>
   </tbody>
 </table>
 
-  <h3 id="section8b" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8b. Processing Patterns</h3>
+  <h3 id="section8b" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8b. Data Processing Patterns</h3>
 <table>
   <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
   <tbody>
-    <tr><td>2A</td><td>Batch ETL / ELT Pipeline</td><td></td><td></td></tr>
-    <tr><td>2B</td><td>Stream Processing</td><td></td><td></td></tr>
-    <tr><td>2C</td><td>Micro-Batch Processing</td><td></td><td></td></tr>
-    <tr><td>2D</td><td>Serverless Function Processing</td><td></td><td></td></tr>
+    <tr><td>2A</td><td>Batch ETL</td><td></td><td>Nightly / scheduled large-volume data transformation</td></tr>
+    <tr><td>2B</td><td>Real-time Stream Processing</td><td></td><td>Continuous event processing with sub-second latency</td></tr>
+    <tr><td>2C</td><td>Scheduled Spark / ML Jobs</td><td></td><td>ML model training or large-scale Spark processing</td></tr>
+    <tr><td>2D</td><td>Federated Query</td><td></td><td>Cross-dataset analysis without copying data (Athena / Redshift Spectrum)</td></tr>
   </tbody>
 </table>
 
-  <h3 id="section8c" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8c. Storage Patterns</h3>
+  <h3 id="section8c" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8c. Data Storage Patterns</h3>
 <table>
   <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
   <tbody>
-    <tr><td>3A</td><td>Data Lake (Object Store)</td><td></td><td></td></tr>
-    <tr><td>3B</td><td>Data Warehouse / Lakehouse</td><td></td><td></td></tr>
-    <tr><td>3C</td><td>Relational Database</td><td></td><td></td></tr>
-    <tr><td>3D</td><td>NoSQL / Document Store</td><td></td><td></td></tr>
-    <tr><td>3E</td><td>In-Memory / Cache Store</td><td></td><td></td></tr>
+    <tr><td>3A</td><td>Transactional Database (OLTP)</td><td></td><td>ACID transactions for operational systems (RDS / Aurora / Azure SQL)</td></tr>
+    <tr><td>3B</td><td>Data Warehouse (OLAP)</td><td></td><td>Historical reporting and complex analytical queries (Redshift / Synapse)</td></tr>
+    <tr><td>3C</td><td>Data Lake (Bronze / Silver / Gold)</td><td></td><td>Centralised raw, conformed, and curated storage (S3 / ADLS)</td></tr>
+    <tr><td>3D</td><td>Time-Series Database</td><td></td><td>Lab capacity, infection rates, or metrics per minute / second</td></tr>
+    <tr><td>3E</td><td>Document Store</td><td></td><td>Nested, variable-structure, or schema-flexible data (DynamoDB / CosmosDB)</td></tr>
   </tbody>
 </table>
 
@@ -519,18 +559,52 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <table>
   <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Layer</th><th>Selected? (Y/N)</th><th>Notes</th></tr></thead>
   <tbody>
-    <tr><td>5A</td><td>Data Cataloguing</td><td>Governance</td><td></td><td></td></tr>
-    <tr><td>5B</td><td>Data Lineage Tracking</td><td>Governance</td><td></td><td></td></tr>
-    <tr><td>5C</td><td>Data Quality Framework</td><td>Governance</td><td></td><td></td></tr>
-    <tr><td>6A</td><td>Encryption at Rest &amp; In Transit</td><td>Security</td><td></td><td></td></tr>
-    <tr><td>6B</td><td>Role-Based Access Control (RBAC)</td><td>Security</td><td></td><td></td></tr>
-    <tr><td>6C</td><td>Data Masking / Tokenisation</td><td>Security</td><td></td><td></td></tr>
-    <tr><td>6D</td><td>Audit Logging</td><td>Security</td><td></td><td></td></tr>
-    <tr><td>7A</td><td>Centralised Logging</td><td>Monitoring</td><td></td><td></td></tr>
-    <tr><td>7B</td><td>Metrics &amp; Alerting</td><td>Monitoring</td><td></td><td></td></tr>
-    <tr><td>7C</td><td>Distributed Tracing</td><td>Monitoring</td><td></td><td></td></tr>
-    <tr><td>8A</td><td>Multi-Region / Multi-AZ</td><td>Resilience</td><td></td><td></td></tr>
-    <tr><td>8B</td><td>Automated Backup &amp; Recovery</td><td>Resilience</td><td></td><td></td></tr>
+    <tr><td>4A</td><td>Event-Driven Pipelines</td><td>Integration</td><td></td><td>Loosely-coupled services reacting to data changes or domain events</td></tr>
+    <tr><td>4B</td><td>ETL Orchestration</td><td>Integration</td><td></td><td>Multi-step workflows with dependencies, retries, and branching</td></tr>
+    <tr><td>4C</td><td>Data Replication &amp; Sync</td><td>Integration</td><td></td><td>HA, compliance archiving, or multi-region data copies</td></tr>
+    <tr><td>5A</td><td>Centralised Data Catalogue</td><td>Governance</td><td></td><td>Discoverability, metadata management, and access control (Glue Catalog / Purview)</td></tr>
+    <tr><td>5B</td><td>Data Quality &amp; Validation</td><td>Governance</td><td></td><td>Automated quality checks before promoting data between layers</td></tr>
+    <tr><td>5C</td><td>Data Lineage &amp; Audit Trail</td><td>Governance</td><td></td><td>Regulatory compliance, root-cause analysis, and data provenance tracking</td></tr>
+    <tr><td>6A</td><td>Access Control</td><td>Security</td><td></td><td>Fine-grained identity-based access to all data assets (IAM / Lake Formation)</td></tr>
+    <tr><td>6B</td><td>Encryption &amp; Key Management</td><td>Security</td><td></td><td>Data at-rest and in-transit encryption with managed key lifecycle (KMS / Key Vault)</td></tr>
+    <tr><td>6C</td><td>Network Security &amp; Isolation</td><td>Security</td><td></td><td>Network controls preventing data exfiltration and lateral movement</td></tr>
+    <tr><td>6D</td><td>Data Masking &amp; Anonymisation</td><td>Security</td><td></td><td>PII / sensitive data de-identification for non-production and analytics use</td></tr>
+    <tr><td>7A</td><td>Centralised Logging</td><td>Monitoring</td><td></td><td>Unified audit trail, security investigation, and operational diagnostics</td></tr>
+    <tr><td>7B</td><td>Performance Monitoring &amp; Alerting</td><td>Monitoring</td><td></td><td>Proactive detection of degradation, capacity issues, or SLA breaches</td></tr>
+    <tr><td>7C</td><td>Cost Tracking &amp; Optimisation</td><td>Monitoring</td><td></td><td>FinOps — spend visibility, anomaly detection, and rightsizing</td></tr>
+    <tr><td>8A</td><td>High Availability (Multi-AZ)</td><td>Resilience</td><td></td><td>Active-active or active-standby within a region for zero RPO/RTO targets</td></tr>
+    <tr><td>8B</td><td>Disaster Recovery (Cross-Region)</td><td>Resilience</td><td></td><td>Warm / cold standby in a second region to meet BCDR requirements</td></tr>
+    <tr><td>8C</td><td>Backup &amp; Point-in-Time Recovery</td><td>Resilience</td><td></td><td>Automated backups with tested restore capability within agreed RTO</td></tr>
+    <tr><td>SBD-01</td><td>Threat Modelling &amp; Abuse Cases</td><td>Security</td><td></td><td>Apply SAT template checkpoints before Gate 2</td></tr>
+    <tr><td>SBD-02</td><td>Secure SDLC &amp; Supply Chain Assurance</td><td>Security</td><td></td><td>Enforce SAST / DAST / SCA and signed artifact controls</td></tr>
+    <tr><td>SBD-03</td><td>Privacy by Design (DPIA / DSA Controls)</td><td>Governance</td><td></td><td>Link data protection controls to datasets and flows</td></tr>
+    <tr><td>SBD-04</td><td>Continuous Security Assurance</td><td>Governance</td><td></td><td>Operational control testing, evidence, and remediation tracking</td></tr>
+  </tbody>
+</table>
+
+  <h3 id="section8e" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8e. Infrastructure &amp; Platform Patterns</h3>
+  <p><em>UKHSA-approved infrastructure patterns. INF-01 (Landing Zone) and INF-05 (Federated Identity) are mandatory for all cloud workloads.</em></p>
+<table>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
+  <tbody>
+    <tr><td>UKHSA-INF-01</td><td>UKHSA Cloud Landing Zone</td><td>Y</td><td><strong>Mandatory</strong> — all cloud workloads must deploy into an approved UKHSA LZ (AWS or Azure)</td></tr>
+    <tr><td>UKHSA-INF-02</td><td>Hybrid Cloud Connectivity</td><td></td><td>Secure AWS Direct Connect / Azure ExpressRoute with IPsec VPN backup</td></tr>
+    <tr><td>UKHSA-INF-03</td><td>Multi-Cloud Account Governance</td><td></td><td>AWS Organizations / Azure Management Groups with centralised policy enforcement</td></tr>
+    <tr><td>UKHSA-INF-04</td><td>Split-Horizon DNS</td><td></td><td>Route 53 as strategic DNS resolver with conditional forwarding to on-prem</td></tr>
+    <tr><td>UKHSA-INF-05</td><td>Federated Identity (Entra ID Golden Source)</td><td>Y</td><td><strong>Mandatory</strong> — Microsoft Entra ID as single IdP federated to AWS, SaaS, and all workloads</td></tr>
+    <tr><td>UKHSA-INF-06</td><td>Approved Platform Portfolio</td><td></td><td>Use UKHSA-approved platforms: EDAP (analytics), APIM (APIs), Sentinel (SIEM)</td></tr>
+  </tbody>
+</table>
+
+  <h3 id="section8f" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8f. Target State Architecture – Networking &amp; Identity</h3>
+  <p><em>UKHSA TSA patterns define the strategic target networking and identity architecture all new solutions should align to.</em></p>
+<table>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
+  <tbody>
+    <tr><td>TSA-NET-01</td><td>Zero-Trust Network Access (ZTNA)</td><td></td><td>Replace implicit trust with identity-verified, device-checked, context-aware access</td></tr>
+    <tr><td>TSA-NET-02</td><td>Centralised Ingress (ALB + WAF)</td><td></td><td>Single WAF-protected ingress point for all public-facing workloads</td></tr>
+    <tr><td>TSA-IDN-01</td><td>Passwordless Authentication</td><td></td><td>FIDO2 / Windows Hello / Certificate-based auth via Entra ID</td></tr>
+    <tr><td>TSA-IDN-02</td><td>Privileged Identity Management (PIM)</td><td></td><td>Just-in-time, time-limited elevation of privileged roles via Entra PIM</td></tr>
   </tbody>
 </table>
 
@@ -1639,7 +1713,7 @@ def _ensure_secure_by_design_coverage_matrix(body_html: str) -> str:
     return body_html
 
   matrix_block = """
-  <h3 id="section8e" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8e. Secure by Design Coverage Matrix</h3>
+  <h3 id="section8d-sbd" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">Secure by Design Coverage Matrix</h3>
 <p><em>Trace each Secure by Design control to selected patterns, architecture components, runtime connections, and NFR outcomes.</em></p>
 <table>
   <thead><tr><th>SAT Control Ref</th><th>Secure by Design Control</th><th>Pattern ID</th><th>Mapped Components (Section 10)</th><th>Mapped Connections (Section 11)</th><th>NFR Coverage</th><th>Evidence / Gate</th></tr></thead>
@@ -1800,25 +1874,25 @@ def _ensure_roadmaps_and_use_case_details(body_html: str) -> str:
 
   # Remove appended styled duplicates introduced by earlier insertion logic.
   body_html = re.sub(
-    r'<div[^>]*>\s*<h2[^>]*id="section5a"[^>]*>.*?</h2>.*?</div>',
+    r'<div[^>]*>\s*<h2[^>]*id="section(?:5|6)a"[^>]*>.*?</h2>.*?</div>',
     '',
     body_html,
     flags=re.DOTALL | re.IGNORECASE,
   )
   body_html = re.sub(
-    r'<div[^>]*>\s*<h2[^>]*>\s*5a\.\s*Roadmaps\s*</h2>.*?</div>',
+    r'<div[^>]*>\s*<h2[^>]*>\s*[56]a\.\s*Roadmaps\s*</h2>.*?</div>',
     '',
     body_html,
     flags=re.DOTALL | re.IGNORECASE,
   )
   body_html = re.sub(
-    r'<div[^>]*>\s*<h2[^>]*id="section5b"[^>]*>.*?</h2>.*?</div>',
+    r'<div[^>]*>\s*<h2[^>]*id="section(?:5|6)b"[^>]*>.*?</h2>.*?</div>',
     '',
     body_html,
     flags=re.DOTALL | re.IGNORECASE,
   )
   body_html = re.sub(
-    r'<div[^>]*>\s*<h2[^>]*>\s*5b\.\s*Use case details\s*</h2>.*?</div>',
+    r'<div[^>]*>\s*<h2[^>]*>\s*[56]b\.\s*Use case details\s*</h2>.*?</div>',
     '',
     body_html,
     flags=re.DOTALL | re.IGNORECASE,
@@ -1844,9 +1918,9 @@ def _ensure_roadmaps_and_use_case_details(body_html: str) -> str:
     return body_html
 
   new_sections = """
-<!-- SECTION 5A: ROADMAPS -->
+<!-- SECTION 6A: ROADMAPS -->
 <div style="background-color: #fff7ed; border-left: 5px solid #ea580c; padding: 15px; margin: 20px 0; border-radius: 4px;">
-  <h2 id="section5a" style="color: #c2410c; margin-top: 0;">5a. Roadmaps</h2>
+  <h2 id="section6a" style="color: #c2410c; margin-top: 0;">6a. Roadmaps</h2>
   <p><em>Capture full lifecycle delivery milestones with timeline, environment progression, and linked cost assumptions.</em></p>
   <table>
     <thead>
@@ -1863,9 +1937,9 @@ def _ensure_roadmaps_and_use_case_details(body_html: str) -> str:
   <p><strong>Lifecycle costing rule:</strong> each gate above must update Section 17 with revised build/run assumptions for the environments introduced at that stage.</p>
 </div>
 
-<!-- SECTION 5B: USE CASE DETAILS -->
+<!-- SECTION 6B: USE CASE DETAILS -->
 <div style="background-color: #f0fdf4; border-left: 5px solid #16a34a; padding: 15px; margin: 20px 0; border-radius: 4px;">
-  <h2 id="section5b" style="color: #15803d; margin-top: 0;">5b. Use case details</h2>
+  <h2 id="section6b" style="color: #15803d; margin-top: 0;">6b. Use case details</h2>
   <p><em>Describe key scenarios so architecture decisions remain tied to user and business outcomes.</em></p>
   <table>
     <thead>
@@ -1891,16 +1965,596 @@ def _ensure_roadmaps_and_use_case_details(body_html: str) -> str:
   return body_html
 
 
+_FAST_FILL_BODY = """\
+    <ac:structured-macro ac:name="expand">
+      <ac:parameter ac:name="title">Click to view project-type guidance table</ac:parameter>
+      <ac:rich-text-body>
+    <p><strong>Use this guide to prioritise which sections to fill based on your project type:</strong></p>
+    <table>
+      <thead><tr><th>Project Type</th><th>Fill First</th><th>Mandatory Patterns (Section 8)</th><th>Skip / Later</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>New data pipeline / analytics on AWS</strong><br/><em>e.g. disease surveillance, lab data ingestion</em></td>
+          <td>Sections 1\u20136, then 9 (Context), 10 (Components), 11 (Connections), 13 (Data Flows)</td>
+          <td>INF-01, INF-05, 3C, 6A, 6B, 6C, 7A, 7B, 8a (Backup)<br/>+ pick ingestion: 1B or 1C or 1D</td>
+          <td>TSA-NET-02 unless public-facing; Section 17 (Cost) until option agreed</td>
+        </tr>
+        <tr>
+          <td><strong>Public-facing API or web application</strong><br/><em>e.g. data portal, UKHSA public dashboard</em></td>
+          <td>Sections 1\u20136, then 8 (Pattern Selection: TSA-NET-02, 6A\u2013C), 10\u201311</td>
+          <td>INF-01, INF-04, INF-05, TSA-NET-02 (ALB+WAF), 6A, 6B, 6C, 7A, 7B, 8a</td>
+          <td>1D (streaming) unless real-time needed; 3D (time-series) unless metrics</td>
+        </tr>
+        <tr>
+          <td><strong>Hybrid / on-prem + cloud workload</strong><br/><em>e.g. HALO LZ migration, legacy system lift</em></td>
+          <td>Sections 1\u20134 (esp. As-Is in 3a/3b), then 8 (INF-02, INF-04), 10 (Components)</td>
+          <td>INF-01, INF-02 (Direct Connect/VPN), INF-04 (Split DNS), INF-05, 6A, 6B, 6C</td>
+          <td>TSA-NET-02 unless public endpoint; Sections 15\u201317 after design agreed</td>
+        </tr>
+        <tr>
+          <td><strong>ML / data science platform</strong><br/><em>e.g. SageMaker, EMR Spark, model training</em></td>
+          <td>Sections 1\u20136, then 8 (2C, 3C, 5A, 5C, INF-06), 13 (Data Flows)</td>
+          <td>INF-01, INF-05, 3C, 2C, 5A, 6A, 6B, 6C, 6D (if PII), 7A, 8a</td>
+          <td>TSA-NET-02 unless model API is public; 3B unless BI reporting also needed</td>
+        </tr>
+        <tr>
+          <td><strong>Real-time / streaming system</strong><br/><em>e.g. IoT, live alerting, event-driven pipeline</em></td>
+          <td>Sections 1\u20136, then 8 (1D, 2B, 3D, 4A), 10 (Components), 11 (Connections)</td>
+          <td>INF-01, INF-05, 1D, 2B, 3D, 6A, 6B, 6C, 7A, 7B, 8a</td>
+          <td>1B (batch) not needed; 3B only if historical reporting also required</td>
+        </tr>
+        <tr>
+          <td><strong>Lightweight / one-off data transfer</strong><br/><em>e.g. single on-prem extract to S3, one-time file migration</em></td>
+          <td>Sections 1\u20132 (Overview + Introduction), 9 (Context), 10 (Components), 11 (Connections)</td>
+          <td>INF-01, INF-02 (Direct Connect/VPN or SFTP), 6A, 6B, 6C</td>
+          <td>Sections 3\u20137 (Background, Pain Points, Requirements, HLD Options); Sections 12\u201319 unless data is sensitive or recurring</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>&#128204; <strong>INF-01 (Landing Zone) and INF-05 (Federated Identity via Entra ID) are mandatory for ALL workloads</strong> \u2014 they are applied automatically even if not explicitly selected in Section 8.</p>
+    <p>&#128204; <strong>6A (Access Control), 6B (Encryption), 6C (Network Security) and 7A (Centralised Logging) are also mandatory</strong> for all new data workloads under UKHSA Secure by Design policy.</p>
+      </ac:rich-text-body>
+    </ac:structured-macro>"""
+
+_HOW_TO_USE_BODY = """\
+    <ac:structured-macro ac:name="expand">
+      <ac:parameter ac:name="title">Click to view step-by-step instructions</ac:parameter>
+      <ac:rich-text-body>
+    <p><strong>Recommended approach: use the Data Solution Architecture Questionnaire to drive this page automatically.</strong></p>
+    <ol>
+      <li><strong>Fill in the <a href="/wiki/spaces/CDA/pages/521438060/Data+Solution+Architecture+Questionnaire">Data Solution Architecture Questionnaire</a></strong> \u2014 tick patterns, add context, and run the sync script. It will populate Sections 9\u201314 of this page and regenerate all diagrams automatically.<br/>
+      <code>python confluence_sync_questionnaire_to_main.py</code></li>
+      <li><strong>Or fill this page directly \u2014 follow this sequence:</strong>
+        <ul>
+          <li><strong>Sections 1\u20132</strong> (Solution Overview + Introduction): front-sheet for governance, plain-English description, business outcomes, strategic alignment</li>
+          <li><strong>Sections 3\u20134</strong> (Background + Pain Points): as-is architecture snapshot and current pain points \u2014 drives the \u201cwhy we\u2019re changing\u201d narrative</li>
+          <li><strong>Sections 5\u20136</strong> (Functional + Non-Functional Requirements): what the solution must do and at what performance/security levels</li>
+          <li><strong>Section 7</strong> (HLD Options): 2\u20133 architectural options with pros/cons and evaluation criteria \u2014 needed for governance gate</li>
+          <li><strong>Section 8</strong> (Pattern Selection \u2014 8a to 8f): select approved UKHSA patterns for ingestion, processing, storage, integration, governance/security, infrastructure (INF), and target state (TSA). <strong>INF-01 and INF-05 are always mandatory.</strong></li>
+          <li><strong>Section 9</strong> (Context Entities): external actors, systems, and partners \u2014 drives the Context View diagram</li>
+          <li><strong>Section 10</strong> (Architecture Components): every component with its layer, technology, and cloud \u2014 drives the Solution Architecture and Logical View diagrams</li>
+          <li><strong>Section 11</strong> (Architecture Connections): source \u2192 destination flows with protocol and auth \u2014 drives all connection diagrams</li>
+          <li><strong>Section 12</strong> (Network Segmentation): VPC/subnet CIDRs, connectivity type, security group rules \u2014 drives the Network Segregation diagram</li>
+          <li><strong>Section 13</strong> (Data Flows): numbered flows with sensitivity, format, and frequency</li>
+          <li><strong>Section 14</strong> (Dataset Inventory): named datasets and relationships \u2014 drives the Dataset Relationship diagram</li>
+        </ul>
+      </li>
+      <li><strong>Run diagram generation</strong> after Sections 9\u201314 are populated:<br/>
+      <code>python confluence_update_diagrams.py</code><br/>
+      This generates: Solution Architecture, Data Flow, Dataset Relationship, Context View, Logical View, Authentication Flow, and Network Segregation diagrams.</li>
+      <li><strong>Complete Sections 15\u201316</strong> (LLD Summary + Cost Comparison) after HLD options are agreed at governance review.</li>
+      <li><strong>Complete Sections 17\u201319</strong> (Implementation Handover, Cost Comparison, Roadmaps) before handing over to the delivery team.</li>
+      <li><strong>Generate the implementation pack</strong> (Terraform scaffolds + delivery summary):<br/>
+      <code>python confluence_generate_implementation_pack.py</code></li>
+    </ol>
+    <p>&#9888; <strong>Do not edit the Architecture Diagrams child page or the LLD page directly.</strong> They are fully generated from this page \u2014 any manual edits will be overwritten on the next run.</p>
+      </ac:rich-text-body>
+    </ac:structured-macro>"""
+
+
+def _replace_intro_panels(body_html: str) -> str:
+  """Always ensure tip (Fast-Fill) and info (How to Use) intro macros exist with current content."""
+
+  _FAST_FILL_MACRO = (
+    '<ac:structured-macro ac:name="tip">\n'
+    '  <ac:parameter ac:name="title">&#9889; Fast-Fill Guidance &#8212; Which Sections to Complete First</ac:parameter>\n'
+    '  <ac:rich-text-body>\n'
+    + _FAST_FILL_BODY + '\n'
+    '  </ac:rich-text-body>\n'
+    '</ac:structured-macro>'
+  )
+
+  _HOW_TO_USE_MACRO = (
+    '<ac:structured-macro ac:name="info">\n'
+    '  <ac:parameter ac:name="title">&#9654; How to Use This Page &#8212; Step-by-Step</ac:parameter>\n'
+    '  <ac:rich-text-body>\n'
+    + _HOW_TO_USE_BODY + '\n'
+    '  </ac:rich-text-body>\n'
+    '</ac:structured-macro>'
+  )
+
+  def _upsert_macro(html: str, macro_name: str, full_macro: str, title: str, new_body: str) -> str:
+    """Replace entire macro (including title) with current content, or insert if missing."""
+    open_tag = f'<ac:structured-macro ac:name="{macro_name}"'
+    # Prefer finding the specific macro by its title parameter to avoid replacing
+    # an unrelated macro of the same type (e.g. multiple info macros on one page).
+    title_param = f'<ac:parameter ac:name="title">{title}</ac:parameter>'
+    t_idx = html.find(title_param)
+    if t_idx != -1:
+      candidate = html.rfind(open_tag, 0, t_idx)
+      open_idx = candidate if candidate != -1 and (t_idx - candidate) < 500 else -1
+    else:
+      open_idx = -1
+    if open_idx == -1:
+      open_idx = html.find(open_tag)
+    if open_idx == -1:
+      # Macro missing — insert before Table of Contents or first h2
+      print(f"  Note: '{macro_name}' intro macro not found — inserting it now.")
+      for marker in ['<!-- TABLE OF CONTENTS', '<h2>\U0001f4d1', '<h2>&#128209;', '<h2 id="section1"']:
+        if marker in html:
+          return html.replace(marker, full_macro + '\n\n' + marker, 1)
+      return full_macro + '\n\n' + html
+
+    # Find the matching closing tag by counting nested structured-macros
+    depth = 0
+    i = open_idx
+    close_idx = -1
+    while i < len(html):
+      next_open  = html.find('<ac:structured-macro', i)
+      next_close = html.find('</ac:structured-macro>', i)
+      if next_close == -1:
+        break
+      if next_open != -1 and next_open < next_close:
+        depth += 1
+        i = next_open + len('<ac:structured-macro')
+      else:
+        depth -= 1
+        if depth == 0:
+          close_idx = next_close + len('</ac:structured-macro>')
+          break
+        i = next_close + len('</ac:structured-macro>')
+
+    if close_idx == -1:
+      return html  # malformed — leave untouched
+
+    replacement = (
+      f'<ac:structured-macro ac:name="{macro_name}">\n'
+      f'  <ac:parameter ac:name="title">{title}</ac:parameter>\n'
+      f'  <ac:rich-text-body>\n'
+      + new_body + '\n'
+      '  </ac:rich-text-body>\n'
+      '</ac:structured-macro>'
+    )
+    return html[:open_idx] + replacement + html[close_idx:]
+
+  body_html = _upsert_macro(body_html, "tip",  _FAST_FILL_MACRO,
+                             '&#9889; Fast-Fill Guidance &#8212; Which Sections to Complete First',
+                             _FAST_FILL_BODY)
+  body_html = _upsert_macro(body_html, "info", _HOW_TO_USE_MACRO,
+                             '&#9654; How to Use This Page &#8212; Step-by-Step',
+                             _HOW_TO_USE_BODY)
+  return body_html
+
+
+
+
+# ── Pattern Diagram Generation ─────────────────────────────────────────────
+
+def _pd_box(root, cid, label, x, y, w=180, h=50,
+            fill="#dae8fc", stroke="#6c8ebf"):
+    style = (f"rounded=1;whiteSpace=wrap;html=1;fillColor={fill};"
+             f"strokeColor={stroke};fontSize=10;fontStyle=1;")
+    c = ET.SubElement(root, "mxCell", id=cid, value=label,
+                      style=style, parent="1", vertex="1")
+    ET.SubElement(c, "mxGeometry", x=str(x), y=str(y),
+                  width=str(w), height=str(h), **{"as": "geometry"})
+
+
+def _pd_band(root, cid, label, x, y, w, h,
+             fill="#e8eaf6", stroke="#5c6bc0", font_color="#1a237e"):
+    style = (f"rounded=0;whiteSpace=wrap;html=1;fillColor={fill};"
+             f"strokeColor={stroke};fontSize=11;fontStyle=1;"
+             f"verticalAlign=top;fontColor={font_color};")
+    c = ET.SubElement(root, "mxCell", id=cid, value=label,
+                      style=style, parent="1", vertex="1")
+    ET.SubElement(c, "mxGeometry", x=str(x), y=str(y),
+                  width=str(w), height=str(h), **{"as": "geometry"})
+
+
+def _pd_arrow(root, cid, src, tgt, label=""):
+    style = ("rounded=0;orthogonalLoop=1;jettySize=auto;"
+             "exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+             "entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
+             "endArrow=block;endFill=1;")
+    c = ET.SubElement(root, "mxCell", id=cid, value=label,
+                      style=style, parent="1", source=src, target=tgt, edge="1")
+    ET.SubElement(c, "mxGeometry", relative="1", **{"as": "geometry"})
+
+
+def _pd_down_arrow(root, cid, src, tgt, label=""):
+    style = ("rounded=0;orthogonalLoop=1;jettySize=auto;"
+             "exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
+             "entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+             "endArrow=block;endFill=1;")
+    c = ET.SubElement(root, "mxCell", id=cid, value=label,
+                      style=style, parent="1", source=src, target=tgt, edge="1")
+    ET.SubElement(c, "mxGeometry", relative="1", **{"as": "geometry"})
+
+
+def _pd_title(root, cid, label, y, w=940):
+    style = ("text;html=1;align=center;verticalAlign=middle;"
+             "fillColor=#003366;strokeColor=none;fontColor=#ffffff;"
+             "fontStyle=1;fontSize=13;")
+    c = ET.SubElement(root, "mxCell", id=cid, value=label,
+                      style=style, parent="1", vertex="1")
+    ET.SubElement(c, "mxGeometry", x="10", y=str(y),
+                  width=str(w), height="36", **{"as": "geometry"})
+
+
+def _new_mxfile(diagram_name):
+    mxfile = ET.Element("mxfile")
+    diagram = ET.SubElement(mxfile, "diagram", name=diagram_name)
+    model = ET.SubElement(
+        diagram, "mxGraphModel",
+        dx="1422", dy="762", grid="1", gridSize="10",
+        guides="1", tooltips="1", connect="1", arrows="1",
+        fold="1", page="1", pageScale="1",
+        pageWidth="1169", pageHeight="827",
+        math="0", shadow="0",
+    )
+    root_el = ET.SubElement(model, "root")
+    ET.SubElement(root_el, "mxCell", id="0")
+    ET.SubElement(root_el, "mxCell", id="1", parent="0")
+    return mxfile, root_el
+
+
+def _xml_str(mxfile):
+    ET.indent(mxfile, space="  ")
+    return ET.tostring(mxfile, encoding="unicode", xml_declaration=True)
+
+
+def _gen_security_pattern_drawio() -> str:
+    """SEC-01: Zero Trust Security Baseline — 5 horizontal layers, top-down."""
+    mxfile, root = _new_mxfile("SEC-01 Zero Trust Security Baseline")
+    _pd_title(root, "title", "SEC-01: Zero Trust Security Baseline", 10)
+
+    layers = [
+        ("Identity & Access", "#e3f2fd", "#1565c0", [
+            ("Entra ID /\nIAM Identity Center", "#bbdefb", "#1565c0"),
+            ("MFA\nEnforced", "#bbdefb", "#1565c0"),
+            ("RBAC /\nLeast Privilege", "#bbdefb", "#1565c0"),
+            ("IAM Roles\n(Federated)", "#bbdefb", "#1565c0"),
+        ]),
+        ("Network Controls", "#fce4ec", "#880e4f", [
+            ("WAF /\nAWS Shield", "#f8bbd0", "#880e4f"),
+            ("VPC + SG\n+ NACL", "#f8bbd0", "#880e4f"),
+            ("zScaler\nZero Trust", "#f8bbd0", "#880e4f"),
+            ("Direct Connect\n(Private)", "#f8bbd0", "#880e4f"),
+        ]),
+        ("Secrets & Encryption", "#f3e5f5", "#4a148c", [
+            ("KMS CMK\nEncryption", "#e1bee7", "#4a148c"),
+            ("Secrets\nManager", "#e1bee7", "#4a148c"),
+            ("Service Control\nPolicies (SCPs)", "#e1bee7", "#4a148c"),
+            ("Certificate\nManager", "#e1bee7", "#4a148c"),
+        ]),
+        ("Monitoring & Audit", "#fff3e0", "#e65100", [
+            ("CloudTrail\nAudit Logs", "#ffe0b2", "#e65100"),
+            ("GuardDuty\nThreat Detection", "#ffe0b2", "#e65100"),
+            ("Security Hub\nDashboard", "#ffe0b2", "#e65100"),
+            ("CloudWatch\nAlarms", "#ffe0b2", "#e65100"),
+        ]),
+        ("Data Layer", "#e8f5e9", "#1b5e20", [
+            ("S3 (SSE-KMS)\nEncrypted", "#c8e6c9", "#1b5e20"),
+            ("RDS /Aurora\nEncrypted", "#c8e6c9", "#1b5e20"),
+            ("DynamoDB\nEncrypted", "#c8e6c9", "#1b5e20"),
+            ("Backup & DR\n(AWS Backup)", "#c8e6c9", "#1b5e20"),
+        ]),
+    ]
+
+    band_h, box_w, box_h = 110, 195, 55
+    gap_x, box_y_offset = 10, 35
+    y_start = 60
+    for li, (layer_name, band_fill, band_stroke, comps) in enumerate(layers):
+        y = y_start + li * (band_h + 10)
+        _pd_band(root, f"band{li}", layer_name, 10, y, 940, band_h,
+                 fill=band_fill, stroke=band_stroke, font_color=band_stroke)
+        for ci, (label, fill, stroke) in enumerate(comps):
+            x = gap_x + 15 + ci * (box_w + 15)
+            _pd_box(root, f"b{li}{ci}", label, x, y + box_y_offset,
+                    w=box_w, h=box_h, fill=fill, stroke=stroke)
+
+    return _xml_str(mxfile)
+
+
+def _gen_network_pattern_drawio() -> str:
+    """NET-01: Segmented VPC Network — 4 horizontal tiers with components."""
+    mxfile, root = _new_mxfile("NET-01 Segmented VPC Network Pattern")
+    _pd_title(root, "title", "NET-01: Segmented VPC Network Pattern", 10)
+
+    tiers = [
+        ("Internet / External", "#fff9c4", "#f9a825", [
+            ("Internet\nUsers", "#fff176", "#f9a825"),
+            ("Third-Party\nAPIs", "#fff176", "#f9a825"),
+            ("On-Premises DC\n(Direct Connect)", "#fff176", "#f9a825"),
+        ]),
+        ("Public Subnets (AZ-a / AZ-b)", "#fce4ec", "#c62828", [
+            ("CloudFront\n+ WAF", "#ef9a9a", "#c62828"),
+            ("Application\nLoad Balancer", "#ef9a9a", "#c62828"),
+            ("NAT Gateway\n(Outbound)", "#ef9a9a", "#c62828"),
+            ("Transfer Family\n(SFTP Ingest)", "#ef9a9a", "#c62828"),
+        ]),
+        ("Private App Subnets (AZ-a / AZ-b)", "#e8f5e9", "#1b5e20", [
+            ("API Gateway\n(Private)", "#a5d6a7", "#1b5e20"),
+            ("ECS Fargate /\nLambda", "#a5d6a7", "#1b5e20"),
+            ("EC2 /\nContainers", "#a5d6a7", "#1b5e20"),
+            ("Step Functions\nOrchestrator", "#a5d6a7", "#1b5e20"),
+        ]),
+        ("Private Data Subnets (AZ-a / AZ-b)", "#e3f2fd", "#0d47a1", [
+            ("RDS / Aurora\n(Multi-AZ)", "#90caf9", "#0d47a1"),
+            ("ElastiCache\n(Redis)", "#90caf9", "#0d47a1"),
+            ("S3 (via\nGateway EP)", "#90caf9", "#0d47a1"),
+            ("DynamoDB\n(Interface EP)", "#90caf9", "#0d47a1"),
+        ]),
+    ]
+
+    band_h, box_w, box_h = 110, 195, 55
+    y_start = 60
+    prev_band_id = None
+    for ti, (tier_name, band_fill, band_stroke, comps) in enumerate(tiers):
+        y = y_start + ti * (band_h + 10)
+        band_id = f"tier{ti}"
+        _pd_band(root, band_id, tier_name, 10, y, 940, band_h,
+                 fill=band_fill, stroke=band_stroke, font_color=band_stroke)
+        for ci, (label, fill, stroke) in enumerate(comps):
+            x = 15 + ci * (box_w + 20)
+            bid = f"t{ti}b{ci}"
+            _pd_box(root, bid, label, x, y + 35, w=box_w, h=box_h, fill=fill, stroke=stroke)
+            if ci == 0 and prev_band_id is not None:
+                _pd_down_arrow(root, f"arrow{ti}", f"t{ti-1}b0", bid)
+        prev_band_id = band_id
+
+    return _xml_str(mxfile)
+
+
+def _gen_governance_pattern_drawio() -> str:
+    """GOV-01: Governance Controls Flow — policy to compliance pipeline."""
+    mxfile, root = _new_mxfile("GOV-01 Governance Controls Pattern")
+    _pd_title(root, "title", "GOV-01: Governance Controls Pattern", 10)
+
+    # Main flow (horizontal, y=130)
+    main_flow = [
+        ("UKHSA\nPolicies",     "#bbdefb", "#1565c0", "m0"),
+        ("Control\nOwners",     "#c8e6c9", "#1b5e20", "m1"),
+        ("Evidence\nCollection","#ffe0b2", "#e65100", "m2"),
+        ("Risk\nRegister",      "#f8bbd0", "#880e4f", "m3"),
+        ("ARB\nReview",         "#e1bee7", "#4a148c", "m4"),
+        ("Compliance\nReport",  "#b2dfdb", "#004d40", "m5"),
+    ]
+    box_w, box_h, gap = 130, 60, 20
+    start_x = 20
+    y_main = 130
+    for i, (label, fill, stroke, cid) in enumerate(main_flow):
+        x = start_x + i * (box_w + gap)
+        _pd_box(root, cid, label, x, y_main, w=box_w, h=box_h, fill=fill, stroke=stroke)
+        if i > 0:
+            _pd_arrow(root, f"ma{i}", main_flow[i-1][3], cid)
+
+    # Supporting boxes below each (y=260)
+    support = [
+        ("Enterprise\nGuide Rails",   "#e3f2fd", "#1565c0", "m0"),
+        ("Delegated\nAdmin Model",     "#e8f5e9", "#1b5e20", "m1"),
+        ("Audit Trail\n(CloudTrail)",  "#fff3e0", "#e65100", "m2"),
+        ("Governance\nDomains",        "#fce4ec", "#880e4f", "m3"),
+        ("Architecture\nDecisions",    "#f3e5f5", "#4a148c", "m4"),
+        ("Quarterly\nCadence",         "#e0f2f1", "#004d40", "m5"),
+    ]
+    y_sup = 260
+    for i, (label, fill, stroke, parent_id) in enumerate(support):
+        x = start_x + i * (box_w + gap)
+        sid = f"s{i}"
+        _pd_box(root, sid, label, x, y_sup, w=box_w, h=box_h, fill=fill, stroke=stroke)
+        _pd_down_arrow(root, f"sa{i}", parent_id, sid)
+
+    # Bottom strip: mandatory note
+    _pd_band(root, "note", "Mandatory: All controls mapped to risk register and reviewed quarterly at ARB",
+             20, 380, 900, 36, fill="#fff9c4", stroke="#f9a825", font_color="#e65100")
+
+    return _xml_str(mxfile)
+
+
+def _gen_dpia_pattern_drawio() -> str:
+    """DPIA-01: DPIA + DSA Pattern — 3-phase gate flow."""
+    mxfile, root = _new_mxfile("DPIA-01 Privacy & Data Sharing Pattern")
+    _pd_title(root, "title", "DPIA-01: Privacy & Data Sharing (DPIA + DSA) Pattern", 10)
+
+    phases = [
+        ("DESIGN GATE", "#e3f2fd", "#1565c0", [
+            ("DPIA\nInitiated",         "#bbdefb", "#1565c0"),
+            ("DSA\nIdentified",         "#bbdefb", "#1565c0"),
+            ("Data Minimisation\nApplied", "#bbdefb", "#1565c0"),
+            ("Lawful Basis\nDocumented", "#bbdefb", "#1565c0"),
+        ]),
+        ("BUILD GATE", "#fce4ec", "#880e4f", [
+            ("DPIA\nApproved",          "#f8bbd0", "#880e4f"),
+            ("DSA\nSigned",             "#f8bbd0", "#880e4f"),
+            ("Retention Controls\nSet", "#f8bbd0", "#880e4f"),
+            ("Masking /\nTokenisation", "#f8bbd0", "#880e4f"),
+        ]),
+        ("OPERATE", "#e8f5e9", "#1b5e20", [
+            ("Annual DPIA\nReview",      "#c8e6c9", "#1b5e20"),
+            ("Data Events\nAudited",     "#c8e6c9", "#1b5e20"),
+            ("DPA Compliance\nConfirmed","#c8e6c9", "#1b5e20"),
+            ("Subject Access\nManaged",  "#c8e6c9", "#1b5e20"),
+        ]),
+    ]
+
+    phase_w, box_w, box_h = 300, 130, 55
+    y_header, y_boxes = 60, 120
+    for pi, (phase_name, band_fill, band_stroke, items) in enumerate(phases):
+        px = 15 + pi * (phase_w + 10)
+        _pd_band(root, f"ph{pi}", phase_name, px, y_header, phase_w, 40,
+                 fill=band_fill, stroke=band_stroke, font_color=band_stroke)
+        for ii, (label, fill, stroke) in enumerate(items):
+            iy = y_boxes + ii * (box_h + 10)
+            _pd_box(root, f"p{pi}i{ii}", label, px + 10, iy,
+                    w=box_w, h=box_h, fill=fill, stroke=stroke)
+        if pi > 0:
+            prev_mid = f"p{pi-1}i0"
+            curr_mid = f"p{pi}i0"
+            _pd_arrow(root, f"phar{pi}", prev_mid, curr_mid, "Gate →")
+
+    _pd_band(root, "note",
+             "Mandatory: DPIA must be completed before data flows go live. DSA required for cross-organisation sharing.",
+             15, 380, 920, 36, fill="#fff9c4", stroke="#f9a825", font_color="#e65100")
+
+    return _xml_str(mxfile)
+
+
+def _gen_edap_pattern_drawio() -> str:
+    """EDAP-01: EDAP Integration Pipeline — source to analytics flow."""
+    mxfile, root = _new_mxfile("EDAP-01 EDAP Integration Pattern")
+    _pd_title(root, "title", "EDAP-01: EDAP Analytics Platform Integration Pattern", 10)
+
+    stages = [
+        ("Source\nSystems",  "#fff9c4", "#f9a825", [
+            "SFTP Push\n(3rd Party)",
+            "REST API\n(Pull/ECS)",
+            "Stream\n(Kinesis)",
+            "Azure Blob\n(DataSync)",
+        ]),
+        ("Ingestion\nLayer",  "#fce4ec", "#c62828", [
+            "Transfer Family\n(SFTP Push)",
+            "ECS Fargate\n(Pull Tasks)",
+            "Kinesis Firehose\n(Streaming)",
+            "S3 Staging /\nCleared",
+        ]),
+        ("Raw\nLayer",       "#e8f5e9", "#1b5e20", [
+            "Step Functions\n(I2R Workflow)",
+            "Glue ETL\n(Parquet/Snappy)",
+            "RRD Tagging\n(Metadata)",
+            "Glue Catalog\n+ Lake Formation",
+        ]),
+        ("Conform\nLayer",   "#e3f2fd", "#0d47a1", [
+            "Step Functions\n(R2C Workflow)",
+            "Glue Transform\n+ DataBrew",
+            "Conform Tables\n(TBAC)",
+            "Redshift Spectrum\n(External)",
+        ]),
+        ("DataMart /\nExport", "#f3e5f5", "#4a148c", [
+            "Redshift RA3\n(DataMart)",
+            "Athena\n(Ad-hoc Query)",
+            "API Gateway\n(Export REST)",
+            "Export Store\n(S3 Parquet)",
+        ]),
+        ("Analytics\nAccess", "#e0f2f1", "#004d40", [
+            "Power BI\n(Gateway EC2)",
+            "SageMaker\n(Notebooks)",
+            "QuickSight\n(Enterprise)",
+            "WorkSpaces\n(Data Scientists)",
+        ]),
+    ]
+
+    stage_w, box_w, box_h, gap_y = 145, 125, 52, 8
+    x_start = 10
+    y_header, y_boxes = 58, 110
+    prev_stage_first = None
+    for si, (stage_name, band_fill, band_stroke, items) in enumerate(stages):
+        sx = x_start + si * (stage_w + 8)
+        _pd_band(root, f"stg{si}", stage_name, sx, y_header, stage_w, 40,
+                 fill=band_fill, stroke=band_stroke, font_color=band_stroke)
+        for ii, label in enumerate(items):
+            iy = y_boxes + ii * (box_h + gap_y)
+            bid = f"s{si}b{ii}"
+            fill = band_fill
+            _pd_box(root, bid, label, sx + 10, iy, w=box_w, h=box_h,
+                    fill=fill, stroke=band_stroke)
+        if prev_stage_first is not None:
+            _pd_arrow(root, f"stgar{si}", prev_stage_first, f"s{si}b0")
+        prev_stage_first = f"s{si}b0"
+
+    _pd_band(root, "note",
+             "EDAP Mandate: All new UKHSA analytical workloads must integrate with EDAP or justify non-EDAP pattern via ARB.",
+             10, 380, 940, 36, fill="#fff9c4", stroke="#f9a825", font_color="#e65100")
+
+    return _xml_str(mxfile)
+
+
+_PATTERN_DIAGRAMS = [
+    ("approved-pattern-security",   "Security Pattern (SEC-01)",            _gen_security_pattern_drawio),
+    ("approved-pattern-network",    "Network Segmentation Pattern (NET-01)", _gen_network_pattern_drawio),
+    ("approved-pattern-governance", "Governance Controls Pattern (GOV-01)",  _gen_governance_pattern_drawio),
+    ("approved-pattern-dpia-dsa",   "DPIA + DSA Pattern (DPIA-01)",          _gen_dpia_pattern_drawio),
+    ("approved-pattern-edap",       "EDAP Integration Pattern (EDAP-01)",    _gen_edap_pattern_drawio),
+]
+
+_PATTERN_DRAWIO_MACRO = (
+    '<ac:structured-macro ac:name="drawio" ac:schema-version="1">'
+    '<ac:parameter ac:name="border">true</ac:parameter>'
+    '<ac:parameter ac:name="viewerToolbar">true</ac:parameter>'
+    '<ac:parameter ac:name="simpleViewer">false</ac:parameter>'
+    '<ac:parameter ac:name="width">100%</ac:parameter>'
+    '<ac:parameter ac:name="height">560</ac:parameter>'
+    '<ac:parameter ac:name="zoom">110</ac:parameter>'
+    '<ac:parameter ac:name="editable">true</ac:parameter>'
+    '<ac:parameter ac:name="diagramDisplayName">{display_name}</ac:parameter>'
+    '<ac:parameter ac:name="diagramName">{filename}</ac:parameter>'
+    '<ac:parameter ac:name="pageId">{page_id}</ac:parameter>'
+    '</ac:structured-macro>'
+)
+
+
+def _replace_pattern_placeholder(html_body: str, diagram_key: str,
+                                  filename: str, display_name: str,
+                                  page_id: str) -> str:
+    """Replace [[DIAGRAM:diagram_key]] (and wrapping <p> tags) with the draw.io macro."""
+    macro = _PATTERN_DRAWIO_MACRO.format(
+        display_name=display_name, filename=filename, page_id=page_id,
+    )
+    token_re = re.compile(
+        r"\[\[\s*DIAGRAM\s*:\s*" + re.escape(diagram_key) + r"\s*\]\]",
+        re.IGNORECASE,
+    )
+    wrapped_re = re.compile(
+        r"<p[^>]*>\s*(?:<strong[^>]*>)?" + token_re.pattern + r"(?:</strong>)?\s*</p>",
+        re.IGNORECASE,
+    )
+    new_html, n = wrapped_re.subn(macro, html_body)
+    if n == 0:
+        new_html, _ = token_re.subn(macro, html_body)
+    return new_html
+
+
+def _upsert_pattern_diagrams(session: requests.Session, base_url: str,
+                              space_key: str, patterns_page_id: str,
+                              page_html: str) -> str:
+    """Generate pattern draw.io files, upload them, and replace placeholders in page_html."""
+    updated_html = page_html
+    for diagram_key, display_name, generator_fn in _PATTERN_DIAGRAMS:
+        filename = f"{diagram_key}.drawio"
+        print(f"  Generating pattern diagram: {filename} ...")
+        try:
+            xml_content = generator_fn()
+            upload_attachment(session, base_url, patterns_page_id,
+                              filename, xml_content.encode("utf-8"))
+            updated_html = _replace_pattern_placeholder(
+                updated_html, diagram_key, filename, display_name, patterns_page_id,
+            )
+            print(f"    Uploaded and placeholder replaced: {filename}")
+        except Exception as exc:
+            print(f"    Warning: could not generate/upload {filename}: {exc}")
+    return updated_html
+
+
 def main() -> None:
     base_url = os.getenv("CONFLUENCE_BASE_URL", "https://ukhsa.atlassian.net/wiki").rstrip("/")
     space_key = os.getenv("CONFLUENCE_SPACE_KEY", "CDA")
     configured_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "").strip()
     # Try the configured/default title first, then known page titles used by this template.
-    title_candidates = [
-        configured_title or "Solution Architecture",
+    title_candidates = list(dict.fromkeys([
+        configured_title or "High-level Design (HLD) Solution Architecture Template",
         "High-level Design (HLD) Solution Architecture Template",
         "Architecture Diagrams",
-    ]
+    ]))
 
     session = requests.Session()
     session.headers.update({"Accept": "application/json", "Content-Type": "application/json"})
@@ -1942,14 +2596,15 @@ def main() -> None:
     synced_template = load_synced_template()
     if synced_template:
       body_html = _update_questionnaire_plan_link(synced_template, plan_link)
-      body_html = _ensure_network_segmentation_section(body_html)
-      body_html = _ensure_approved_patterns_link(body_html)
+      body_html = _replace_intro_panels(body_html)
       body_html = _ensure_secure_by_design_link(body_html)
       body_html = _ensure_secure_by_design_pattern_rows(body_html)
       body_html = _ensure_secure_by_design_coverage_matrix(body_html)
       body_html = _ensure_architecture_components_with_security_governance(body_html)
       body_html = _ensure_context_entities_populated(body_html)
       body_html = _ensure_secure_by_design_connections(body_html)
+      body_html = _ensure_approved_patterns_link(body_html)
+      body_html = _ensure_network_segmentation_section(body_html)
       body_html = _ensure_roadmaps_and_use_case_details(body_html)
     else:
       body_html = build_main_html(plan_link)
@@ -1960,6 +2615,7 @@ def main() -> None:
       body_html = _ensure_context_entities_populated(body_html)
       body_html = _ensure_secure_by_design_connections(body_html)
       body_html = _ensure_approved_patterns_link(body_html)
+      body_html = _ensure_network_segmentation_section(body_html)
       body_html = _ensure_roadmaps_and_use_case_details(body_html)
 
     result = update_page_body(session, base_url, page_id, page["version"]["number"], page["title"], body_html)
@@ -1967,14 +2623,41 @@ def main() -> None:
     patterns_page_title = os.getenv("CONFLUENCE_APPROVED_PATTERNS_PAGE_TITLE", "Architecture Patterns Reference").strip()
     if patterns_page_title:
       print(f"Upserting child page: {patterns_page_title}...")
-      upsert_child_page(
+      patterns_html = build_approved_patterns_page_html()
+
+      # First pass: upsert to discover/create the page and get its ID.
+      patterns_result = upsert_child_page(
         session,
         base_url,
         space_key,
         page_id,
         patterns_page_title,
-        build_approved_patterns_page_html(),
+        patterns_html,
       )
+      patterns_page_id = str(patterns_result.get("id", ""))
+
+      if patterns_page_id:
+        print(f"  Patterns page ID: {patterns_page_id} — uploading diagrams...")
+        patterns_html_with_diagrams = _upsert_pattern_diagrams(
+          session, base_url, space_key, patterns_page_id, patterns_html,
+        )
+
+        # Second pass: re-fetch current version then update with draw.io macros.
+        try:
+          patterns_page_live = find_page_by_title(session, base_url, space_key, patterns_page_title)
+          patterns_version = patterns_page_live["version"]["number"]
+          patterns_title_live = patterns_page_live["title"]
+        except ValueError:
+          patterns_version = patterns_result.get("version", {}).get("number", 1)
+          patterns_title_live = patterns_page_title
+        update_page_body(
+          session, base_url, patterns_page_id,
+          patterns_version, patterns_title_live,
+          patterns_html_with_diagrams,
+        )
+        print(f"  Patterns page updated with {len(_PATTERN_DIAGRAMS)} diagrams.")
+      else:
+        print("  Warning: could not determine patterns page ID — diagrams not uploaded.")
 
     # Re-sync after update to keep local template aligned with latest live page.
     updated_body = result.get("body", {}).get("storage", {}).get("value")

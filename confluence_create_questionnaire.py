@@ -185,13 +185,20 @@ QUESTIONNAIRE_HTML = """
 <ac:rich-text-body>
 <p><strong>Three steps to get your diagrams generated automatically:</strong></p>
 <ol>
-  <li><strong>Fill in Section 1</strong> (Business Context) — solution name, data domain, sensitivity level.</li>
-  <li><strong>Tick the patterns</strong> in Sections 2&#8211;11 that apply to your workload. For each ticked pattern, add the requested detail in the <em>Details</em> column.</li>
+  <li><strong>Fill in Section 1</strong> (Business Context) — solution name, data domain, sensitivity level, and stakeholders.</li>
+  <li><strong>Work through Sections 2–11</strong> and tick every pattern that applies to your workload:
+    <ul>
+      <li><strong>Sections 2–9</strong> — Data layer patterns (ingestion, processing, storage, integration, governance, security, monitoring, resilience)</li>
+      <li><strong>Section 10</strong> — Infrastructure &amp; Platform patterns (INF-01 to INF-06)</li>
+      <li><strong>Section 11</strong> — Target State Architecture patterns (TSA-NET and TSA-IDN)</li>
+    </ul>
+    For each ticked pattern, fill in the <em>Details</em> column. Use the <strong>Fast-Fill Guidance</strong> and <strong>Pattern Quick-Reference</strong> below if you are unsure which to pick.
+  </li>
   <li><strong>Run the sync script</strong> from your local workspace:<br/>
   <code>python confluence_sync_questionnaire_to_main.py</code><br/>
-  This reads your answers, merges them into the main SA page, and auto-generates all HLD + LLD diagrams.</li>
+  This reads your answers, merges them into the main HLD SA page, and auto-generates all HLD + LLD diagrams on Confluence.</li>
 </ol>
-<p>&#128276; <strong>You do not need to edit the main SA page or the LLD page directly.</strong> Everything flows from this questionnaire.</p>
+<p>&#128276; <strong>You do not need to edit the main SA page or the LLD page directly.</strong> Everything flows from this questionnaire. INF-01 (Landing Zone) and INF-05 (Federated Identity) are always mandatory — they will be applied automatically even if not ticked.</p>
 </ac:rich-text-body>
 </ac:structured-macro>
 
@@ -213,39 +220,39 @@ QUESTIONNAIRE_HTML = """
   <tbody>
     <tr>
       <td><strong>New analytics / data pipeline on AWS</strong><br/><em>e.g., disease surveillance feed, lab data ingestion</em></td>
-      <td>INF-01, INF-05, 3C (Data Lake), 6A, 6B, 6C, 7A, 7B, 8A</td>
-      <td>1B or 1C or 1D (pick ingestion type), 2A (ETL), 5A (catalogue), 5C (lineage)</td>
-      <td>TSA-NET-02 (only if public-facing), 3B (only if reporting warehouse needed)</td>
+      <td>INF-01, INF-05, 3C (Data Lake), 6A, 6B, 6C, 7A, 7B, 8A (Backup)</td>
+      <td>1B or 1C or 1D (pick ingestion type), 2A (Batch ETL), 4B (orchestration), 5A (catalogue), 5C (lineage)</td>
+      <td>TSA-NET-02 — only if public-facing API or portal; 3B — only if BI warehouse needed</td>
     </tr>
     <tr>
       <td><strong>Public-facing API or web application</strong><br/><em>e.g., data portal, UKHSA public dashboard</em></td>
-      <td>INF-01, INF-03, INF-04, INF-05, TSA-NET-02, 6A, 6B, 6C, 7A, 7B, 8A, 8B</td>
-      <td>1A (API ingestion), TSA-NET-01 (multi-VPC), TSA-IDN-01 (JIT for admins)</td>
-      <td>1D (streaming — only if real-time needed), 3D (time-series — only if metrics)</td>
+      <td>INF-01, INF-04, INF-05, TSA-NET-02 (ALB + WAF), 6A, 6B, 6C, 7A, 7B, 8A, 8B</td>
+      <td>1A (API ingestion), TSA-NET-01 (Transit Gateway if multi-VPC), TSA-IDN-02 (PIM for admin access)</td>
+      <td>1D — only if real-time streaming also required; 3D — only if time-series metrics needed</td>
     </tr>
     <tr>
       <td><strong>Hybrid workload (on-prem + cloud)</strong><br/><em>e.g., migrating legacy system to HALO LZ</em></td>
-      <td>INF-01, INF-02, INF-04, INF-05, 6A, 6B, 6C, 8A</td>
-      <td>1C (DB replication / DMS), TSA-NET-01 (Transit Gateway), INF-03 (Zero Trust access)</td>
-      <td>1A (direct API — only if new API), TSA-NET-02 (only if public endpoint)</td>
+      <td>INF-01, INF-02 (Direct Connect / VPN), INF-04 (Split DNS), INF-05, 6A, 6B, 6C, 7A, 8A</td>
+      <td>1C (DB replication via DMS), TSA-NET-01 (Transit Gateway routing), 4C (data sync/replication)</td>
+      <td>TSA-NET-02 — only if there is a public-facing endpoint; 1A — only if a new API is being added</td>
     </tr>
     <tr>
       <td><strong>ML / data science platform</strong><br/><em>e.g., SageMaker training, EMR Spark jobs</em></td>
-      <td>INF-01, INF-05, 3C (Data Lake), 2C (Spark/ML), 6A, 6B, 6C, 6D (if PII), 5A, 7A, 8A</td>
-      <td>2D (federated query), 1B or 1C (data source), INF-06 (EDAP platform)</td>
-      <td>TSA-NET-02 (unless model serving is public), 3B (unless BI output needed)</td>
+      <td>INF-01, INF-05, 3C (Data Lake), 2C (Spark/ML jobs), 5A (catalogue), 6A, 6B, 6C, 6D (if PII), 7A, 8A</td>
+      <td>2D (federated query via Athena), 1B or 1C (data source), INF-06 (EDAP if analytics platform), 5C (lineage for model inputs)</td>
+      <td>TSA-NET-02 — only if model serving endpoint is public; 3B — only if BI / reporting output also required</td>
     </tr>
     <tr>
       <td><strong>Real-time / streaming system</strong><br/><em>e.g., IoT sensors, live monitoring, alerting</em></td>
-      <td>INF-01, INF-05, 1D (streaming), 2B (real-time processing), 3D (time-series), 6A, 6B, 6C, 7A, 7B, 8A</td>
-      <td>4A (event-driven), TSA-NET-01, INF-04 (DNS)</td>
-      <td>1B (batch — not applicable for real-time), 3B (warehouse — unless historical also needed)</td>
+      <td>INF-01, INF-05, 1D (streaming ingestion), 2B (real-time processing), 3D (time-series DB), 6A, 6B, 6C, 7A, 7B, 8A</td>
+      <td>4A (event-driven pipelines via EventBridge/SQS), TSA-NET-01 (if multi-VPC routing), INF-04 (split DNS)</td>
+      <td>1B (batch file upload — not needed for real-time); 3B (warehouse — only add if historical reporting also needed)</td>
     </tr>
     <tr>
-      <td><strong>Identity / access management change</strong><br/><em>e.g., new SCIM group, JIT role, JML process</em></td>
-      <td>INF-05, TSA-IDN-01, TSA-IDN-02, 6A, 6B</td>
-      <td>INF-03 (Zero Trust), INF-06 (if platform access), 7A (audit logging)</td>
-      <td>Most data patterns — unless data access permissions are also changing</td>
+      <td><strong>Identity / access management change</strong><br/><em>e.g., new SCIM group, PIM role, JML process</em></td>
+      <td>INF-05 (Entra ID as IdP), TSA-IDN-01 (Passwordless auth), TSA-IDN-02 (PIM / JIT elevation), 6A, 6B, 7A (audit logging)</td>
+      <td>TSA-NET-01 (if network segmentation is also changing), INF-06 (if platform access roles are changing), 5A (if data access catalogue entries affected)</td>
+      <td>Data layer patterns (1A–4C, 5A–8C) — unless data access permissions are also changing</td>
     </tr>
   </tbody>
 </table>
@@ -261,14 +268,14 @@ QUESTIONNAIRE_HTML = """
   <tbody>
     <tr><td>INF-01</td><td>Strategic Landing Zone</td><td>All workloads must go to AWS HALO or Azure PHECloud LZ</td><td>Control Tower, AWS Organizations</td></tr>
     <tr><td>INF-02</td><td>Hybrid Connectivity</td><td>On-prem ↔ cloud via Direct Connect / ExpressRoute only</td><td>AWS Direct Connect, Transit Gateway</td></tr>
-    <tr><td>INF-03</td><td>Zero Trust End-User Access</td><td>All user internet access via zScaler ZPA / ZIA</td><td>zScaler ZTE, AWS Verified Access</td></tr>
+    <tr><td>INF-03</td><td>Zero Trust Network Architecture</td><td>Replace implicit network trust with identity-verified, context-aware access (ZPA / ZIA)</td><td>zScaler ZPA/ZIA, AWS Verified Access</td></tr>
     <tr><td>INF-04</td><td>Split-Horizon DNS</td><td>Consistent internal + external DNS via Route 53</td><td>Route 53 Resolver, Private Hosted Zones</td></tr>
     <tr><td>INF-05</td><td>Federated Identity</td><td>Entra ID is the only IdP — no local IAM users permitted</td><td>Microsoft Entra ID, IAM Identity Center</td></tr>
     <tr><td>INF-06</td><td>Approved Platforms</td><td>Use EDAP, Azure APIM, Sentinel, or AVD — no bespoke equivalents</td><td>EDAP, Azure APIM, Sentinel</td></tr>
-    <tr><td>TSA-NET-01</td><td>Hub-and-Spoke Networking</td><td>Multi-VPC routing via Transit Gateway / Virtual WAN</td><td>AWS Transit Gateway, Azure Virtual WAN</td></tr>
-    <tr><td>TSA-NET-02</td><td>Centralised Ingress</td><td>Public apps must use ALB + WAF as single ingress point</td><td>ALB, AWS WAF, Route 53</td></tr>
-    <tr><td>TSA-IDN-01</td><td>JIT / PIM Access</td><td>Elevated access is time-bound and approval-gated via PIM</td><td>Entra ID PIM, CloudTrail</td></tr>
-    <tr><td>TSA-IDN-02</td><td>Identity Lifecycle (JML)</td><td>Joiner/Mover/Leaver auto-provisions and deprovisions access</td><td>Entra ID Lifecycle Workflows, SCIM</td></tr>
+    <tr><td>TSA-NET-01</td><td>Zero-Trust Network Access (ZTNA)</td><td>Replace implicit network trust with identity-verified, device-checked, context-aware access</td><td>AWS Transit Gateway, Azure Virtual WAN, Zscaler</td></tr>
+    <tr><td>TSA-NET-02</td><td>Centralised Ingress (ALB + WAF)</td><td>All public-facing workloads must use a single WAF-protected ALB ingress point</td><td>ALB, AWS WAF, Route 53</td></tr>
+    <tr><td>TSA-IDN-01</td><td>Passwordless Authentication</td><td>FIDO2 / Windows Hello / Certificate-based auth for all users — no passwords</td><td>Microsoft Entra ID, FIDO2, AWS IAM Identity Center</td></tr>
+    <tr><td>TSA-IDN-02</td><td>Privileged Identity Management (PIM)</td><td>Elevated access is time-bound, approval-gated, and audited via Entra PIM</td><td>Entra ID PIM, CloudTrail, AWS IAM Access Analyzer</td></tr>
     <tr><td>1A</td><td>Direct API Ingestion</td><td>Real-time REST/webhook feeds into the platform</td><td>API Gateway, SQS, EventBridge</td></tr>
     <tr><td>1B</td><td>Batch File Upload</td><td>Scheduled bulk file transfers (CSV, JSON, Parquet)</td><td>S3, Glue, AWS Transfer Family (SFTP)</td></tr>
     <tr><td>1C</td><td>Database Replication</td><td>Continuous CDC sync from source DB to cloud</td><td>AWS DMS, Aurora PostgreSQL</td></tr>
@@ -800,8 +807,8 @@ QUESTIONNAIRE_HTML = """
 <h2>13. Related Documents</h2>
 
 <ul>
-  <li><a href="#">Solution Architecture HLD</a> (main page)</li>
-  <li>UKHSA Cloud Strategy & Approved patterns.md (pattern reference - download from Solution Architecture page)</li>
+  <li><a href="#">High-level Design (HLD) Solution Architecture Template</a> (main page)</li>
+  <li>UKHSA Cloud Strategy & Approved patterns.md (pattern reference - download from the HLD page)</li>
   <li><a href="#">Low Level Design (LLD)</a> (for detailed component specs)</li>
   <li><a href="#">Architectural Decision Records</a> (ADRs for decisions)</li>
 </ul>
@@ -811,7 +818,7 @@ QUESTIONNAIRE_HTML = """
 def main():
     base_url = os.getenv("CONFLUENCE_BASE_URL", "https://ukhsa.atlassian.net/wiki").rstrip("/")
     space_key = os.getenv("CONFLUENCE_SPACE_KEY", "CDA")
-    main_page_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "Solution Architecture")
+    main_page_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "High-level Design (HLD) Solution Architecture Template")
 
     session = requests.Session()
     session.headers.update({"Accept": "application/json", "Content-Type": "application/json"})

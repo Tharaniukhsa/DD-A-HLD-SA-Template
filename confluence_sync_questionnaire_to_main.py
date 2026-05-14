@@ -13,6 +13,277 @@ from requests_negotiate_sspi import HttpNegotiateAuth
 
 load_dotenv()
 
+# ── Indicative monthly cost ranges (£) per pattern ────────────────────────────
+# Tuple order: (storage, compute, networking, monitoring, security, managed_services)
+_PATTERN_COSTS: dict[str, tuple[int, int, int, int, int, int]] = {
+    "1A":     (0,   20,  10,  5,   0,   0),   # API Pull (Lambda / API Gateway)
+    "1B":     (30,  30,  15,  5,   0,   0),   # Batch File Upload (S3 / Transfer Family)
+    "1C":     (20,  50,  25,  10,  0,   20),  # DB Replication (DMS / SCT)
+    "1D":     (20,  80,  35,  15,  0,   60),  # Streaming Ingestion (Kinesis / MSK)
+    "2A":     (0,   70,  0,   10,  0,   30),  # Batch ETL (Glue)
+    "2B":     (0,   120, 20,  20,  0,   40),  # Real-time Stream Processing (Flink / KDA)
+    "2C":     (0,   250, 10,  20,  0,   0),   # Spark / ML Jobs (EMR / SageMaker)
+    "2D":     (0,   25,  5,   5,   0,   10),  # Federated Query (Athena)
+    "3A":     (50,  80,  0,   10,  0,   20),  # OLTP (RDS / Aurora)
+    "3B":     (80,  150, 0,   15,  0,   40),  # Data Warehouse (Redshift)
+    "3C":     (60,  20,  10,  5,   0,   0),   # Data Lake (S3)
+    "3D":     (15,  30,  5,   10,  0,   20),  # Time-Series (Timestream)
+    "3E":     (20,  20,  5,   5,   0,   15),  # Document Store (DynamoDB)
+    "4A":     (0,   30,  5,   5,   0,   15),  # Event-Driven (SNS / SQS / EventBridge)
+    "4B":     (0,   20,  5,   5,   0,   10),  # ETL Orchestration (Step Functions)
+    "4C":     (30,  20,  20,  5,   0,   0),   # Data Replication & Sync
+    "5A":     (0,   0,   0,   10,  0,   25),  # Data Catalogue (Glue Catalog / Purview)
+    "5B":     (0,   15,  0,   5,   0,   0),   # Data Quality
+    "5C":     (0,   10,  0,   5,   0,   15),  # Data Lineage
+    "6A":     (0,   0,   0,   0,   15,  0),   # Access Control (IAM / Lake Formation)
+    "6B":     (0,   0,   0,   0,   25,  0),   # Encryption & KMS
+    "6C":     (0,   0,   15,  0,   20,  0),   # Network Security (WAF / GuardDuty)
+    "6D":     (0,   15,  0,   0,   20,  0),   # Data Masking / Anonymisation
+    "7A":     (15,  0,   0,   50,  0,   0),   # Centralised Logging (CloudWatch / S3)
+    "7B":     (0,   0,   0,   25,  0,   0),   # Performance Monitoring & Alerting
+    "7C":     (0,   0,   0,   10,  0,   0),   # Cost Tracking (Cost Explorer)
+    "8A":     (40,  70,  10,  0,   0,   0),   # High Availability (Multi-AZ)
+    "8B":     (80,  70,  45,  0,   0,   0),   # Disaster Recovery (Cross-Region)
+    "8C":     (25,  0,   0,   0,   0,   10),  # Backup & Point-in-Time Recovery
+    "SBD-01": (0,   0,   0,   0,   10,  0),   # Threat Modelling
+    "SBD-02": (0,   0,   0,   0,   10,  20),  # Secure SDLC
+    "SBD-03": (0,   0,   0,   0,   5,   0),   # Privacy by Design
+    "SBD-04": (5,   0,   0,   15,  10,  0),   # Security Telemetry
+}
+
+_INF_TSA_COSTS: dict[str, tuple[int, int, int, int, int, int]] = {
+    "UKHSA-INF-01": (0,  50, 30, 10, 0,  50),  # Landing Zone (Control Tower)
+    "UKHSA-INF-02": (0,  0,  80, 5,  0,  0),   # Connectivity (Transit Gateway)
+    "UKHSA-INF-03": (0,  20, 20, 5,  20, 0),   # Zero Trust Access
+    "UKHSA-INF-04": (0,  0,  5,  0,  0,  10),  # DNS (Route53 / Resolver)
+    "UKHSA-INF-05": (0,  0,  0,  5,  20, 30),  # Identity (IAM Identity Center / SSO)
+    "UKHSA-INF-06": (0,  100,10, 15, 0,  0),   # Platform (EKS / ECS)
+    "TSA-NET-01":   (0,  0,  30, 0,  0,  0),   # Network Segmentation
+    "TSA-NET-02":   (0,  0,  20, 0,  0,  0),   # Network Isolation
+    "TSA-IDN-01":   (0,  0,  0,  0,  20, 20),  # JIT / PIM Privileged Access
+    "TSA-IDN-02":   (0,  0,  0,  0,  15, 10),  # Identity Lifecycle (JML)
+}
+
+# Cost area names — order matches tuple positions above
+_COST_AREAS = [
+    "Storage",
+    "Compute / Processing",
+    "Data Transfer / Networking",
+    "Monitoring / Logging",
+    "Security / IAM",
+    "Managed Services / Licensing",
+]
+
+
+def _score_complexity(selected_patterns: list[str]) -> tuple[str, str, list[str]]:
+    """
+    Score workload complexity from selected patterns and return a recommended option.
+    Returns: (option_letter, tier_label, rationale_bullets)
+    Option A = Simple/Baseline, B = Standard/Cloud-Native, C = Advanced/Enterprise.
+    """
+    patterns = set(p.upper() for p in selected_patterns)
+    has_streaming = bool({"1D", "2B"} & patterns)
+    has_ml        = "2C" in patterns
+    has_full_gov  = len({"5A", "5B", "5C"} & patterns) >= 2
+    has_masking   = "6D" in patterns
+    has_dr        = "8B" in patterns
+    has_ha        = "8A" in patterns
+    has_dw_lake   = bool({"3B", "3C"} & patterns)
+
+    # Count data-layer patterns (1A–8C format)
+    data_pats = [p for p in patterns if re.match(r"^[1-8][A-D]$", p)]
+    n = len(data_pats)
+
+    score = n
+    if has_streaming: score += 4
+    if has_ml:        score += 4
+    if has_full_gov:  score += 3
+    if has_masking:   score += 2
+    if has_dr:        score += 3
+    if has_ha:        score += 2
+    if has_dw_lake:   score += 2
+
+    if score < 10:
+        option, label = "A", "Simple / Baseline"
+        bullets: list[str] = [
+            f"Low complexity: {n} data-layer pattern(s) selected.",
+            "No real-time streaming or advanced ML detected.",
+            "Standard batch or API workload — minimal managed services, lower operational overhead.",
+            "Lowest estimated build and run cost tier.",
+        ]
+    elif score < 20:
+        option, label = "B", "Standard / Cloud-Native"
+        bullets = [
+            f"Moderate complexity: {n} data-layer pattern(s) selected.",
+            "Balanced capability and cost — standard UKHSA cloud-native approach.",
+        ]
+        if has_streaming:
+            bullets.append("Streaming selected — Kinesis or MSK required; monitor ongoing cost.")
+        if has_ha:
+            bullets.append("High Availability (multi-AZ) selected — resilient deployment recommended.")
+        bullets.append("Best fit for most UKHSA operational and analytical workloads.")
+    else:
+        option, label = "C", "Advanced / Enterprise"
+        bullets = [
+            f"High complexity: {n} data-layer pattern(s) selected — complex workload.",
+        ]
+        if has_streaming and has_ml:
+            bullets.append("Real-time streaming + ML/Spark — advanced data pipeline required.")
+        if has_full_gov:
+            bullets.append("Full governance suite (catalogue, quality, lineage) selected.")
+        if has_dr:
+            bullets.append("Cross-region Disaster Recovery selected — highest resilience and cost tier.")
+        if has_masking:
+            bullets.append("Data masking / anonymisation required — additional security controls needed.")
+        bullets.append("Enterprise-scale workload — plan for higher build effort and operational investment.")
+
+    return option, label, bullets
+
+
+def _estimate_costs(selected_patterns: list[str]) -> dict[str, tuple[int, int, int]]:
+    """
+    Estimate indicative monthly costs (£) per area for Options A, B, C.
+    Option B = all selected patterns; A = minimal subset (no HA/DR/streaming/ML, scaled down);
+    C = all selected + HA+DR if not already selected, plus 20% enterprise overhead.
+    Returns: {area_name: (optA_£, optB_£, optC_£)}
+    """
+    patterns = set(p.upper() for p in selected_patterns)
+
+    # Sum costs for Option B (all selected patterns)
+    totals = [0] * 6
+    for pid in patterns:
+        costs = _PATTERN_COSTS.get(pid) or _INF_TSA_COSTS.get(pid)
+        if costs:
+            for i in range(6):
+                totals[i] += costs[i]
+
+    # Option A: remove HA, DR, ML, streaming costs then scale down to 65%
+    opt_a = list(totals)
+    for pid in ("8A", "8B", "2C", "2B", "1D"):
+        if pid in patterns:
+            c = _PATTERN_COSTS.get(pid, (0,) * 6)
+            for i in range(6):
+                opt_a[i] -= c[i]
+    opt_a = [max(int(v * 0.65), 0) for v in opt_a]
+
+    # Option C: add HA + DR if not already selected, then +20% enterprise overhead
+    opt_c = list(totals)
+    for pid in ("8A", "8B"):
+        if pid not in patterns:
+            c = _PATTERN_COSTS.get(pid, (0,) * 6)
+            for i in range(6):
+                opt_c[i] += c[i]
+    opt_c = [int(v * 1.20) for v in opt_c]
+
+    return {area: (opt_a[i], totals[i], opt_c[i]) for i, area in enumerate(_COST_AREAS)}
+
+
+def insert_hld_recommendation(
+    main_soup: BeautifulSoup,
+    option: str,
+    label: str,
+    bullets: list[str],
+) -> bool:
+    """
+    Insert an info callout with the auto-recommendation just before the
+    Section 7 option comparison table, replacing any previous recommendation.
+    Returns True if the insertion point was found and the panel was inserted.
+    """
+    bullet_items = "".join(f"<li>{b}</li>" for b in bullets)
+    rec_html = (
+        '<ac:structured-macro ac:name="info" ac:schema-version="1">'
+        f'<ac:parameter ac:name="title">&#128161; Auto-Recommendation: Option {option} \u2013 {label}</ac:parameter>'
+        "<ac:rich-text-body>"
+        f"<p><strong>Based on the patterns selected in the questionnaire, "
+        f"<u>Option {option} ({label})</u> is the recommended starting point.</strong></p>"
+        f"<ul>{bullet_items}</ul>"
+        "<p><em>Review the option table below, adjust to your project context, "
+        "and record your final decision in the Decision Status column.</em></p>"
+        "</ac:rich-text-body>"
+        "</ac:structured-macro>"
+    )
+
+    # Remove any previous auto-recommendation macro to avoid duplicates
+    for macro in main_soup.find_all("ac:structured-macro", attrs={"ac:name": "info"}):
+        title_param = macro.find("ac:parameter", attrs={"ac:name": "title"})
+        if title_param and "Auto-Recommendation" in (title_param.get_text() or ""):
+            macro.decompose()
+
+    # Insert before the first table after the Section 7 heading
+    for heading in main_soup.find_all(["h2"]):
+        if re.search(r"7\.\s*Architecture Decision", heading.get_text(), re.IGNORECASE):
+            nxt = heading.find_next_sibling()
+            while nxt and nxt.name not in {"table"}:
+                nxt = nxt.find_next_sibling()
+            if nxt:
+                rec_soup = BeautifulSoup(rec_html, "html.parser")
+                nxt.insert_before(rec_soup)
+                return True
+    return False
+
+
+def fill_cost_comparison(
+    main_soup: BeautifulSoup,
+    costs: dict[str, tuple[int, int, int]],
+    recommended_option: str,
+) -> int:
+    """
+    Fill the Solution Option Cost Comparison table with indicative costs.
+    Also marks the recommended option in the Option-Level Summary table.
+    Returns count of rows updated.
+    """
+    table = table_after_heading(main_soup, "Solution Option Cost Comparison")
+    if not table:
+        return 0
+
+    filled = 0
+    for tr in table.find_all("tr")[1:]:  # skip header
+        cells = tr.find_all(["td", "th"])
+        if len(cells) < 4:
+            continue
+        row_label = cells[0].get_text(" ", strip=True).lower()
+
+        if "total" in row_label:
+            total_a = sum(v[0] for v in costs.values())
+            total_b = sum(v[1] for v in costs.values())
+            total_c = sum(v[2] for v in costs.values())
+            for idx, val in enumerate([total_a, total_b, total_c], 1):
+                if idx < len(cells):
+                    strong = cells[idx].find("strong")
+                    target = strong if strong else cells[idx]
+                    target.string = f"\u00a3{val:,}"
+            filled += 1
+            continue
+
+        for area, (opt_a, opt_b, opt_c) in costs.items():
+            area_key = area.split(" /")[0].split(" ")[0].lower()
+            if area_key in row_label:
+                for idx, val in enumerate([opt_a, opt_b, opt_c], 1):
+                    if idx < len(cells):
+                        cells[idx].string = f"\u00a3{val:,}" if val > 0 else "< \u00a310"
+                filled += 1
+                break
+
+    # Fill Option-Level Summary (16a / recommended Preferred? column)
+    for heading in main_soup.find_all(["h3"]):
+        heading_text = heading.get_text(" ", strip=True).lower()
+        if "option-level" in heading_text or "comparison summary" in heading_text:
+            nxt = heading.find_next_sibling()
+            while nxt and nxt.name != "table":
+                nxt = nxt.find_next_sibling()
+            if nxt:
+                for tr in nxt.find_all("tr")[1:]:
+                    cells = tr.find_all(["td", "th"])
+                    if len(cells) >= 5:
+                        opt_label = cells[0].get_text(" ", strip=True)
+                        if recommended_option.upper() in opt_label.upper():
+                            cells[4].string = "Yes \u2013 Recommended"
+                        elif not cells[4].get_text(strip=True):
+                            cells[4].string = "No"
+            break
+
+    return filled
+
 
 def get_tls_verify():
     ca_bundle = (os.getenv("CONFLUENCE_CA_BUNDLE") or "").strip()
@@ -417,12 +688,24 @@ def sync_questionnaire_to_main(
     flows = extract_dataflows(q_soup)
     flows_count = write_dataflows_to_main(main_soup, flows)
 
+    # ── Section 7: Auto-recommend best HLD option based on selected patterns
+    option, label, bullets = _score_complexity(selected_patterns)
+    rec_inserted = insert_hld_recommendation(main_soup, option, label, bullets)
+    print(f"  HLD recommendation: Option {option} — {label} (inserted={rec_inserted})")
+
+    # ── Section 16/17: Auto-fill Cost Comparison table from pattern cost estimates
+    costs = _estimate_costs(selected_patterns)
+    costs_filled = fill_cost_comparison(main_soup, costs, option)
+    print(f"  Cost comparison: {costs_filled} row(s) filled (Option {option} recommended)")
+
     summary = {
         "overview_fields_updated": overview_count,
         "introduction_fields_updated": intro_count,
         "components_added": components_added,
         "dataflows_updated": flows_count,
         "patterns_selected": selected_patterns,
+        "hld_recommendation": f"Option {option} \u2013 {label}",
+        "cost_areas_filled": costs_filled,
     }
 
     return str(main_soup), summary, selected_patterns
@@ -466,7 +749,7 @@ def run_lld_sync_and_diagrams(
 def main() -> None:
     base_url = os.getenv("CONFLUENCE_BASE_URL", "https://ukhsa.atlassian.net/wiki").rstrip("/")
     space_key = os.getenv("CONFLUENCE_SPACE_KEY", "CDA")
-    main_page_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "Solution Architecture")
+    main_page_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "High-level Design (HLD) Solution Architecture Template")
     main_page_id = (os.getenv("CONFLUENCE_MAIN_PAGE_ID") or "520783944").strip()
     questionnaire_title = os.getenv("CONFLUENCE_QUESTIONNAIRE_PAGE_TITLE", "Data Solution Architecture Questionnaire")
     auto_generate = os.getenv("CONFLUENCE_AUTO_GENERATE_DIAGRAMS", "true").strip().lower() in {"1", "true", "yes"}

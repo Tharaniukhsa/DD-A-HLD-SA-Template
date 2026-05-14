@@ -739,7 +739,7 @@ def main() -> None:
     base_url = os.getenv("CONFLUENCE_BASE_URL", "https://ukhsa.atlassian.net/wiki").rstrip("/")
     space_key = os.getenv("CONFLUENCE_SPACE_KEY", "CDA")
     parent_page_id = os.getenv("CONFLUENCE_PARENT_PAGE_ID", "173314084")
-    main_page_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "Solution Architecture")
+    main_page_title = os.getenv("CONFLUENCE_MAIN_PAGE_TITLE", "High-level Design (HLD) Solution Architecture Template")
 
     session = requests.Session()
     session.headers.update({"Accept": "application/json", "Content-Type": "application/json"})

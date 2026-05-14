@@ -1,194 +1,170 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="Confluence" type="device" version="1.0">
   <diagram name="Authentication Flow Sequence">
-    <mxGraphModel dx="1600" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1600" math="0" shadow="0">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1300" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="user" value="User&#10;(Consumer)" style="rounded=1;fillColor=#FF9900;strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="60" y="60" width="150" height="54" as="geometry" />
+        <mxCell id="user" value="User&#10;(Consumer)" style="rounded=1;fillColor=#FF9900;strokeColor=#1F2937;strokeWidth=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="30" width="130" height="44" as="geometry" />
         </mxCell>
         <mxCell id="user-lifeline" value="" style="shape=line;strokeColor=#6B7280;dashed=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="134" y="130" width="2" height="1300" as="geometry" />
+          <mxGeometry x="104" y="82" width="2" height="1050" as="geometry" />
         </mxCell>
-        <mxCell id="webapp" value="Web App&#10;(Frontend)" style="rounded=1;fillColor=#4B9BFF;strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="250" y="60" width="150" height="54" as="geometry" />
-        </mxCell>
-        <mxCell id="webapp-lifeline" value="" style="shape=line;strokeColor=#6B7280;dashed=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="324" y="130" width="2" height="1300" as="geometry" />
-        </mxCell>
-        <mxCell id="api" value="API Gateway&#10;(Backend API)" style="rounded=1;fillColor=#FF9900;strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="440" y="60" width="150" height="54" as="geometry" />
+        <mxCell id="api" value="API Gateway&#10;(Backend API)" style="rounded=1;fillColor=#FF9900;strokeColor=#1F2937;strokeWidth=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="195" y="30" width="130" height="44" as="geometry" />
         </mxCell>
         <mxCell id="api-lifeline" value="" style="shape=line;strokeColor=#6B7280;dashed=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="514" y="130" width="2" height="1300" as="geometry" />
+          <mxGeometry x="259" y="82" width="2" height="1050" as="geometry" />
         </mxCell>
-        <mxCell id="azure-vnet" value="Azure Network&#10;(Identity Network)" style="rounded=1;fillColor=#0078D4;strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="630" y="60" width="150" height="54" as="geometry" />
+        <mxCell id="azure-vnet" value="Azure Network&#10;(Identity Network)" style="rounded=1;fillColor=#0078D4;strokeColor=#1F2937;strokeWidth=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="350" y="30" width="130" height="44" as="geometry" />
         </mxCell>
         <mxCell id="azure-vnet-lifeline" value="" style="shape=line;strokeColor=#6B7280;dashed=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="704" y="130" width="2" height="1300" as="geometry" />
+          <mxGeometry x="414" y="82" width="2" height="1050" as="geometry" />
         </mxCell>
-        <mxCell id="azure-identity" value="Azure Entra ID&#10;(SSO + MFA)" style="rounded=1;fillColor=#0078D4;strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="820" y="60" width="150" height="54" as="geometry" />
+        <mxCell id="azure-identity" value="Azure Entra ID&#10;(SSO + MFA)" style="rounded=1;fillColor=#0078D4;strokeColor=#1F2937;strokeWidth=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="505" y="30" width="130" height="44" as="geometry" />
         </mxCell>
         <mxCell id="azure-identity-lifeline" value="" style="shape=line;strokeColor=#6B7280;dashed=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="894" y="130" width="2" height="1300" as="geometry" />
+          <mxGeometry x="569" y="82" width="2" height="1050" as="geometry" />
         </mxCell>
-        <mxCell id="service" value="Service&#10;(Application)" style="rounded=1;fillColor=#4B9BFF;strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="1010" y="60" width="150" height="54" as="geometry" />
+        <mxCell id="service" value="Service&#10;(Application)" style="rounded=1;fillColor=#4B9BFF;strokeColor=#1F2937;strokeWidth=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="660" y="30" width="130" height="44" as="geometry" />
         </mxCell>
         <mxCell id="service-lifeline" value="" style="shape=line;strokeColor=#6B7280;dashed=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="1084" y="130" width="2" height="1300" as="geometry" />
+          <mxGeometry x="724" y="82" width="2" height="1050" as="geometry" />
         </mxCell>
-        <mxCell id="db" value="Database&#10;(Data Store)" style="rounded=1;fillColor=#2262FF;strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="1200" y="60" width="150" height="54" as="geometry" />
+        <mxCell id="db" value="Database&#10;(Data Store)" style="rounded=1;fillColor=#2262FF;strokeColor=#1F2937;strokeWidth=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="815" y="30" width="130" height="44" as="geometry" />
         </mxCell>
         <mxCell id="db-lifeline" value="" style="shape=line;strokeColor=#6B7280;dashed=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="1274" y="130" width="2" height="1300" as="geometry" />
+          <mxGeometry x="879" y="82" width="2" height="1050" as="geometry" />
         </mxCell>
         <mxCell id="msg-0-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="132" y="187" width="6" height="6" as="geometry" />
+          <mxGeometry x="102" y="137" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-0-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="187" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="137" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-0" value="1. Login request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-0-src" target="msg-0-tgt" edge="1">
+        <mxCell id="flow-0" value="1. Login request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-0-src" target="msg-0-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-1-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="282" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="199" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-1-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="282" width="6" height="6" as="geometry" />
+          <mxGeometry x="412" y="199" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-1" value="2. Forward to API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-1-src" target="msg-1-tgt" edge="1">
+        <mxCell id="flow-1" value="2. Identity request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-1-src" target="msg-1-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-2-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="377" width="6" height="6" as="geometry" />
+          <mxGeometry x="412" y="261" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-2-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="702" y="377" width="6" height="6" as="geometry" />
+          <mxGeometry x="567" y="261" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-2" value="3. Identity request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-2-src" target="msg-2-tgt" edge="1">
+        <mxCell id="flow-2" value="3. SSO + MFA challenge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-2-src" target="msg-2-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-3-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="702" y="472" width="6" height="6" as="geometry" />
+          <mxGeometry x="567" y="323" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-3-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="892" y="472" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="323" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-3" value="4. SSO + MFA challenge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-3-src" target="msg-3-tgt" edge="1">
+        <mxCell id="flow-3" value="4. Federated token issued" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=9;fontStyle=1;dashed=1;" parent="1" source="msg-3-src" target="msg-3-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-4-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="892" y="567" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="385" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-4-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="567" width="6" height="6" as="geometry" />
+          <mxGeometry x="102" y="385" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-4" value="5. Federated token issued" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;dashed=1;" parent="1" source="msg-4-src" target="msg-4-tgt" edge="1">
+        <mxCell id="flow-4" value="5. Token returned" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=9;fontStyle=1;dashed=1;" parent="1" source="msg-4-src" target="msg-4-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-5-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="662" width="6" height="6" as="geometry" />
+          <mxGeometry x="102" y="447" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-5-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="662" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="447" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-5" value="6. Token returned" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;dashed=1;" parent="1" source="msg-5-src" target="msg-5-tgt" edge="1">
+        <mxCell id="flow-5" value="6. API call + token" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-5-src" target="msg-5-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-6-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="757" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="509" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-6-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1082" y="757" width="6" height="6" as="geometry" />
+          <mxGeometry x="722" y="509" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-6" value="7. API call + token" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-6-src" target="msg-6-tgt" edge="1">
+        <mxCell id="flow-6" value="7. Route request to service" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-6-src" target="msg-6-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-7-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1082" y="852" width="6" height="6" as="geometry" />
+          <mxGeometry x="722" y="571" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-7-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1272" y="852" width="6" height="6" as="geometry" />
+          <mxGeometry x="877" y="571" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-7" value="8. Query with auth context" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-7-src" target="msg-7-tgt" edge="1">
+        <mxCell id="flow-7" value="8. Query with auth context" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-7-src" target="msg-7-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-8-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1082" y="947" width="6" height="6" as="geometry" />
+          <mxGeometry x="722" y="633" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-8-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="947" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="633" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-8" value="9. Token validation failed / expired" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#B91C1C;fontSize=10;fontStyle=1;dashed=1;" parent="1" source="msg-8-src" target="msg-8-tgt" edge="1">
+        <mxCell id="flow-8" value="9. Token validation failed / expired" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#B91C1C;fontSize=9;fontStyle=1;dashed=1;" parent="1" source="msg-8-src" target="msg-8-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-9-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="1042" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="695" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-9-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="1042" width="6" height="6" as="geometry" />
+          <mxGeometry x="102" y="695" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-9" value="10. 401 Unauthorized - reauthenticate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#B91C1C;fontSize=10;fontStyle=1;dashed=1;" parent="1" source="msg-9-src" target="msg-9-tgt" edge="1">
+        <mxCell id="flow-9" value="10. 401 Unauthorized - reauthenticate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#B91C1C;fontSize=9;fontStyle=1;dashed=1;" parent="1" source="msg-9-src" target="msg-9-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-10-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="1137" width="6" height="6" as="geometry" />
+          <mxGeometry x="102" y="757" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-10-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="132" y="1137" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="757" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-10" value="11. Prompt for sign-in again" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#B91C1C;fontSize=10;fontStyle=1;dashed=1;" parent="1" source="msg-10-src" target="msg-10-tgt" edge="1">
+        <mxCell id="flow-10" value="11. Re-enter credentials" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-10-src" target="msg-10-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-11-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="132" y="1232" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="819" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-11-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="1232" width="6" height="6" as="geometry" />
+          <mxGeometry x="567" y="819" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-11" value="12. Re-enter credentials" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-11-src" target="msg-11-tgt" edge="1">
+        <mxCell id="flow-11" value="12. New token request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-11-src" target="msg-11-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-12-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="322" y="1327" width="6" height="6" as="geometry" />
+          <mxGeometry x="567" y="881" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-12-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="1327" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="881" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-12" value="13. Reinitiate authentication flow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-12-src" target="msg-12-tgt" edge="1">
+        <mxCell id="flow-12" value="13. New token issued" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=9;fontStyle=1;dashed=1;" parent="1" source="msg-12-src" target="msg-12-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="msg-13-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="1422" width="6" height="6" as="geometry" />
+          <mxGeometry x="257" y="943" width="6" height="6" as="geometry" />
         </mxCell>
         <mxCell id="msg-13-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="892" y="1422" width="6" height="6" as="geometry" />
+          <mxGeometry x="722" y="943" width="6" height="6" as="geometry" />
         </mxCell>
-        <mxCell id="flow-13" value="14. New token request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-13-src" target="msg-13-tgt" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="msg-14-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="892" y="1517" width="6" height="6" as="geometry" />
-        </mxCell>
-        <mxCell id="msg-14-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="1517" width="6" height="6" as="geometry" />
-        </mxCell>
-        <mxCell id="flow-14" value="15. New token issued" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#1D4ED8;fontSize=10;fontStyle=1;dashed=1;" parent="1" source="msg-14-src" target="msg-14-tgt" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="msg-15-src" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="512" y="1612" width="6" height="6" as="geometry" />
-        </mxCell>
-        <mxCell id="msg-15-tgt" value="" style="ellipse;fillColor=none;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1082" y="1612" width="6" height="6" as="geometry" />
-        </mxCell>
-        <mxCell id="flow-15" value="16. Retry processing with new token" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=10;fontStyle=1;dashed=0;" parent="1" source="msg-15-src" target="msg-15-tgt" edge="1">
+        <mxCell id="flow-13" value="14. Retry with new token" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;endArrow=block;endFill=1;strokeColor=#111827;fontSize=9;fontStyle=1;dashed=0;" parent="1" source="msg-13-src" target="msg-13-tgt" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

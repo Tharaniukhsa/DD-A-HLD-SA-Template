@@ -328,7 +328,7 @@ def build_default_diagrams_template() -> str:
 
 <h2>How to Generate Diagrams</h2>
 <ol>
-<li>Complete the architecture tables in the main <strong>Solution Architecture</strong> page (Sections 10-13b)</li>
+<li>Complete the architecture tables in the main <strong>High-level Design (HLD) Solution Architecture Template</strong> page (Sections 10-13b)</li>
 <li>Run the diagram generation script: <code>./.venv/Scripts/python.exe ./confluence_update_diagrams.py</code></li>
 <li>All diagrams will be auto-generated and embedded below</li>
 </ol>
@@ -624,12 +624,19 @@ def derive_auth_flow_rules(
     has_token_refresh = any(k in corpus for k in ["token", "jwt", "refresh", "federated", "bearer"])
     has_validation_or_reauth = any(k in corpus for k in ["validate", "validation", "401", "unauthorized", "reauth", "retry", "expired"])
 
+    # Detect whether the project has a web/frontend component so the auth
+    # diagram does not show a "Web App" lane for backend-only solutions.
+    frontend_keywords = ["web app", "webapp", "frontend", "front-end", "ui ", "portal", "browser", "spa", "react", "angular", "vue", "next.js"]
+    comp_names = " ".join((c.get("name", "") + " " + c.get("technology", "")).lower() for c in components)
+    has_webapp = any(k in comp_names for k in frontend_keywords)
+
     return {
         "flow_mode": "sequence",
         "include_mfa_challenge": has_mfa,
         "include_token_refresh": has_token_refresh,
         # Keep retry loop enabled by default for secure-by-design templates.
         "include_reauth_on_validation_failure": True if not has_validation_or_reauth else has_validation_or_reauth,
+        "has_webapp": has_webapp,
     }
 
 
@@ -724,10 +731,148 @@ LAYER_COLORS = {
     "application": "#f8cecc",
     "data":        "#e1d5e7",
 }
-BOX_W, BOX_H   = 160, 50
+BOX_W, BOX_H   = 160, 130   # card width × card height (icon panel + name strip)
 GAP_X, GAP_Y   = 40,  30
 LABEL_W        = 120
 X_START        = LABEL_W + GAP_X
+
+# ── AWS4 icon hints for HLD component cards ────────────────────────────────
+# Each entry: ( (keyword, ...), (icon_style, fill_color) )
+# icon_style is either:
+#   "aws:<suffix>"        → mxgraph.aws4.resourceIcon shape
+#   "azure:<suffix>"      → mxgraph.azure2 shape
+#   "onprem:<suffix>"     → mxgraph.network shape
+#   "openshift:<suffix>"  → mxgraph.redhat shape
+
+_HLD_ICON_HINTS = [
+    # ── AWS ──────────────────────────────────────────────────────────────────
+    (("direct connect", "directconnect", "private connectivity"), ("aws:direct_connect",       "#4D72B8")),
+    (("site-to-site vpn", "site to site vpn", "vpn"),             ("aws:vpn",                  "#4D72B8")),
+    (("api gateway",),                                             ("aws:api_gateway",          "#DD344C")),
+    (("waf",),                                                     ("aws:waf",                  "#C925D1")),
+    (("cognito", "oidc", "oauth", "authentication"),               ("aws:cognito",              "#C925D1")),
+    (("ecs", "container", "app runtime", "application service"),   ("aws:ecs",                  "#ED7100")),
+    (("fargate",),                                                 ("aws:fargate",              "#ED7100")),
+    (("lambda",),                                                  ("aws:lambda",               "#ED7100")),
+    (("ec2", "virtual machine", "instance"),                       ("aws:ec2",                  "#ED7100")),
+    (("rds", "aurora", "managed database", "sql", "postgres"),     ("aws:rds",                  "#4D72B8")),
+    (("dynamodb",),                                                ("aws:dynamodb",             "#4D72B8")),
+    (("elasticache", "redis", "cache"),                            ("aws:elasticache",          "#4D72B8")),
+    (("s3", "bucket", "object storage"),                           ("aws:bucket",               "#7AA116")),
+    (("cloudfront", "cdn"),                                        ("aws:cloudfront",           "#8C4FFF")),
+    (("internet gateway",),                                        ("aws:internet_gateway",     "#4D72B8")),
+    (("nat gateway",),                                             ("aws:nat_gateway",          "#4D72B8")),
+    (("route 53", "route53", "aws dns"),                           ("aws:route_53",             "#4D72B8")),
+    (("cloudwatch", "monitoring", "alerts"),                       ("aws:cloudwatch_2",         "#E7157B")),
+    (("iam", "identity access", "access management"),              ("aws:iam",                  "#C925D1")),
+    (("kms", "key management"),                                    ("aws:kms",                  "#C925D1")),
+    (("glue", "aws etl"),                                          ("aws:glue",                 "#ED7100")),
+    (("kinesis", "streaming"),                                     ("aws:kinesis_data_streams", "#ED7100")),
+    (("redshift", "data warehouse"),                               ("aws:redshift",             "#4D72B8")),
+    (("athena",),                                                  ("aws:athena",               "#ED7100")),
+    (("sns",),                                                     ("aws:sns",                  "#ED7100")),
+    (("sqs",),                                                     ("aws:sqs",                  "#ED7100")),
+    (("step functions", "orchestration"),                          ("aws:step_functions",       "#ED7100")),
+    (("transfer family", "sftp"),                                  ("aws:transfer_family",      "#7AA116")),
+    (("secrets manager", "secret"),                                ("aws:secrets_manager",      "#C925D1")),
+    (("cloudtrail", "audit log"),                                  ("aws:cloudtrail",           "#E7157B")),
+    (("guardduty",),                                               ("aws:guardduty",            "#C925D1")),
+    (("eks",),                                                     ("aws:eks",                  "#ED7100")),
+    (("emr",),                                                     ("aws:emr",                  "#ED7100")),
+    (("sagemaker",),                                               ("aws:sagemaker",            "#ED7100")),
+    (("lakeformation", "lake formation"),                          ("aws:lake_formation",       "#7AA116")),
+    # ── Azure ─────────────────────────────────────────────────────────────────
+    (("azure ad", "entra id", "entra", "azure identity"),          ("azure:entra_id",           "#0078D4")),
+    (("azure api management", "apim"),                             ("azure:api_management",     "#0078D4")),
+    (("azure function", "azure functions"),                        ("azure:function_apps",      "#0078D4")),
+    (("azure blob", "azure storage"),                              ("azure:blob_storage",       "#0078D4")),
+    (("azure sql", "azure database"),                              ("azure:sql_database",       "#0078D4")),
+    (("azure cosmos", "cosmos db"),                                ("azure:cosmos_db",          "#0078D4")),
+    (("azure kubernetes", "aks"),                                  ("azure:kubernetes_service", "#0078D4")),
+    (("azure container", "aci"),                                   ("azure:container_instances","#0078D4")),
+    (("azure devops",),                                            ("azure:devops",             "#0078D4")),
+    (("azure monitor", "app insights"),                            ("azure:monitor",            "#0078D4")),
+    (("azure key vault",),                                         ("azure:key_vault",          "#0078D4")),
+    (("azure service bus",),                                       ("azure:service_bus",        "#0078D4")),
+    (("azure event hub", "event hub"),                             ("azure:event_hubs",         "#0078D4")),
+    (("azure data factory", "adf"),                                ("azure:data_factory",       "#0078D4")),
+    (("azure synapse",),                                           ("azure:synapse_analytics",  "#0078D4")),
+    (("azure virtual network", "azure vnet"),                      ("azure:virtual_network",    "#0078D4")),
+    (("azure firewall",),                                          ("azure:firewall",           "#0078D4")),
+    (("azure load balancer",),                                     ("azure:load_balancer",      "#0078D4")),
+    (("azure app service", "web app"),                             ("azure:app_service",        "#0078D4")),
+    # ── On-premises / Network ─────────────────────────────────────────────────
+    (("on-prem server", "on-premises server", "physical server"),  ("onprem:server",            "#525252")),
+    (("on-prem database", "on-premises database"),                 ("onprem:database",          "#525252")),
+    (("firewall",),                                                ("onprem:firewall",          "#C62828")),
+    (("router",),                                                  ("onprem:router",            "#525252")),
+    (("switch",),                                                  ("onprem:switch",            "#525252")),
+    (("load balancer", "f5", "ha proxy"),                          ("onprem:load_balancer",     "#525252")),
+    (("sftp server", "ftp server"),                                ("onprem:server",            "#525252")),
+    (("data centre", "datacenter", "data center"),                 ("onprem:datacenter",        "#525252")),
+    (("user", "end user", "analyst", "business user"),             ("onprem:user",              "#37474F")),
+    (("laptop", "desktop", "client"),                              ("onprem:client",            "#37474F")),
+    # ── OpenShift / Red Hat ───────────────────────────────────────────────────
+    (("openshift", "open shift"),                                  ("openshift:openshift",      "#CC0000")),
+    (("openshift pod", "pod"),                                     ("openshift:pod",            "#CC0000")),
+    (("openshift operator", "operator"),                           ("openshift:operator",       "#CC0000")),
+    (("openshift pipeline", "tekton"),                             ("openshift:pipeline",       "#CC0000")),
+    (("openshift registry", "quay"),                               ("openshift:registry",       "#CC0000")),
+    (("openshift route", "ingress"),                               ("openshift:route",          "#CC0000")),
+    (("ansible",),                                                 ("openshift:ansible",        "#CC0000")),
+]
+
+
+def _resolve_hld_icon(comp: dict) -> tuple[str, str] | None:
+    """Return (icon_style, fill_color), where icon_style is 'aws:<s>', 'azure:<s>', etc."""
+    text = " ".join([
+        comp.get("name", "") or "",
+        comp.get("technology", "") or "",
+        comp.get("description", "") or "",
+        comp.get("layer", "") or "",
+        comp.get("cloud", "") or "",
+    ]).lower()
+    for keywords, resolved in _HLD_ICON_HINTS:
+        if any(kw in text for kw in keywords):
+            return resolved
+    return None
+
+
+def _icon_style_xml(icon_style: str, fill_color: str) -> str:
+    """Convert icon_style token into a draw.io mxCell style string."""
+    if icon_style.startswith("aws:"):
+        suffix = icon_style[4:]
+        return (
+            f"shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.{suffix};"
+            f"labelBackgroundColor=#ffffff;sketch=0;fontStyle=1;fontSize=11;"
+            f"fillColor={fill_color};strokeColor=none;fontColor=#232F3E;"
+        )
+    elif icon_style.startswith("azure:"):
+        suffix = icon_style[6:]
+        return (
+            f"shape=mxgraph.azure2.{suffix};"
+            f"labelBackgroundColor=#ffffff;sketch=0;fontStyle=1;fontSize=11;"
+            f"fillColor={fill_color};strokeColor=none;fontColor=#032D60;"
+        )
+    elif icon_style.startswith("onprem:"):
+        suffix = icon_style[7:]
+        return (
+            f"shape=mxgraph.network.{suffix};"
+            f"labelBackgroundColor=#ffffff;sketch=0;fontStyle=1;fontSize=11;"
+            f"fillColor={fill_color};strokeColor=#888888;fontColor=#212121;"
+        )
+    elif icon_style.startswith("openshift:"):
+        suffix = icon_style[10:]
+        return (
+            f"shape=mxgraph.redhat.{suffix};"
+            f"labelBackgroundColor=#ffffff;sketch=0;fontStyle=1;fontSize=11;"
+            f"fillColor={fill_color};strokeColor=none;fontColor=#212121;"
+        )
+    # Fallback generic box
+    return (
+        f"rounded=1;arcSize=10;fillColor={fill_color};strokeColor=#232F3E;"
+        f"fontStyle=1;fontSize=11;fontColor=#ffffff;"
+    )
 
 
 def _normalise_layer(layer: str) -> str:
@@ -785,26 +930,77 @@ def generate_architecture_drawio(components: list[dict], connections: list[dict]
             width=str(LABEL_W - 20), height=str(BOX_H),
             **{"as": "geometry"})
 
-    # Component boxes  — name (lower) → cell id
+    # Component cards with AWS icons — name (lower) → cell id
+    _ICON_H = int(BOX_H * 0.60)   # top 60%: coloured icon panel
+    _NAME_H = BOX_H - _ICON_H     # bottom 40%: white name strip
+    _ICON_SZ = 40                  # icon square size (px)
+
     comp_cell: dict[str, str] = {}
     for layer in LAYER_ORDER:
         for i, comp in enumerate(layer_map[layer]):
             cell_id = f"c-{_slug(comp['name'])}"
             comp_cell[comp["name"].lower()] = cell_id
-            color = LAYER_COLORS.get(layer.lower(), "#ffffff")
-            tech_line = f"\n({comp['technology']})" if comp["technology"] else ""
-            cell = ET.SubElement(root, "mxCell",
-                id=cell_id,
-                value=f"{comp['name']}{tech_line}",
-                style=(f"rounded=1;whiteSpace=wrap;align=center;"
-                       f"fillColor={color};strokeColor=#666666;fontSize=11;"),
+            color = LAYER_COLORS.get(layer.lower(), "#f5f5f5")
+            cx = X_START + i * (BOX_W + GAP_X)
+            cy = layer_y[layer]
+
+            # Outer card border (edges connect here)
+            card = ET.SubElement(root, "mxCell",
+                id=cell_id, value="",
+                style="rounded=1;fillColor=#FFFFFF;strokeColor=#666666;strokeWidth=2;shadow=0;",
                 parent="1", vertex="1",
             )
-            ET.SubElement(cell, "mxGeometry",
-                x=str(X_START + i * (BOX_W + GAP_X)),
-                y=str(layer_y[layer]),
-                width=str(BOX_W), height=str(BOX_H),
+            ET.SubElement(card, "mxGeometry",
+                x=str(cx), y=str(cy), width=str(BOX_W), height=str(BOX_H),
                 **{"as": "geometry"})
+
+            # Coloured icon panel (top 60%, layer background)
+            icon_panel = ET.SubElement(root, "mxCell",
+                id=f"{cell_id}-ipanel", value="",
+                style=f"rounded=0;fillColor={color};strokeColor=none;",
+                parent="1", vertex="1",
+            )
+            ET.SubElement(icon_panel, "mxGeometry",
+                x=str(cx + 1), y=str(cy + 1),
+                width=str(BOX_W - 2), height=str(_ICON_H - 1),
+                **{"as": "geometry"})
+
+            # AWS service icon centred in the icon panel
+            ix = cx + (BOX_W - _ICON_SZ) // 2
+            iy = cy + (_ICON_H - _ICON_SZ) // 2
+            native_icon = _resolve_hld_icon(comp)
+            if native_icon:
+                icon_style, fill_color = native_icon
+                ET.SubElement(root, "mxCell",
+                    id=f"{cell_id}-icon", value="",
+                    style=_icon_style_xml(icon_style, fill_color),
+                    parent="1", vertex="1",
+                ).append(ET.Element("mxGeometry",
+                    x=str(ix), y=str(iy), width=str(_ICON_SZ), height=str(_ICON_SZ),
+                    **{"as": "geometry"}))
+
+            # White name strip (bottom 40%)
+            ny = cy + _ICON_H
+            ET.SubElement(root, "mxCell",
+                id=f"{cell_id}-namebg", value="",
+                style="rounded=0;fillColor=#FFFFFF;strokeColor=none;",
+                parent="1", vertex="1",
+            ).append(ET.Element("mxGeometry",
+                x=str(cx + 1), y=str(ny),
+                width=str(BOX_W - 2), height=str(_NAME_H - 1),
+                **{"as": "geometry"}))
+
+            tech_hint = f" [{comp['technology']}]" if comp.get("technology") else ""
+            ET.SubElement(root, "mxCell",
+                id=f"{cell_id}-text",
+                value=f"<b>{comp['name']}</b>{tech_hint}",
+                style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;"
+                      "fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;",
+                parent="1", vertex="1",
+            ).append(ET.Element("mxGeometry",
+                x=str(cx + 4), y=str(ny + 2),
+                width=str(BOX_W - 8), height=str(_NAME_H - 4),
+                **{"as": "geometry"}))
 
     # Connections
     for i, conn in enumerate(connections):
@@ -947,9 +1143,12 @@ def generate_c4_logical_view_drawio(
 
     container_ids: dict[str, str] = {}
     start_x, start_y = 340, 170
-    box_w, box_h = 240, 105
+    box_w, box_h = 240, 140
     x_gap, y_gap = 35, 35
     cols = 3
+    _c_icon_h = int(box_h * 0.60)
+    _c_name_h = box_h - _c_icon_h
+    _c_icon_sz = 44
 
     for i, comp in enumerate(containers):
         row = i // cols
@@ -963,19 +1162,59 @@ def generate_c4_logical_view_drawio(
 
         layer = _normalise_layer(comp.get("layer", ""))
         fill = LAYER_COLORS.get(layer.lower(), "#f5f5f5")
-        tech = comp.get("technology") or comp.get("layer") or "Container"
-        label = f"{name}\n[{tech}]"
 
-        node = ET.SubElement(
-            root,
-            "mxCell",
-            id=cid,
-            value=label,
-            style=f"rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor={fill};strokeColor=#4b5563;fontSize=11;",
-            parent="1",
-            vertex="1",
+        # Outer card border (connection anchor)
+        card = ET.SubElement(root, "mxCell",
+            id=cid, value="",
+            style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;",
+            parent="1", vertex="1",
         )
-        ET.SubElement(node, "mxGeometry", x=str(x), y=str(y), width=str(box_w), height=str(box_h), **{"as": "geometry"})
+        ET.SubElement(card, "mxGeometry", x=str(x), y=str(y),
+            width=str(box_w), height=str(box_h), **{"as": "geometry"})
+
+        # Coloured icon panel (top 60%)
+        ip = ET.SubElement(root, "mxCell",
+            id=f"{cid}-ipanel", value="",
+            style=f"rounded=0;fillColor={fill};strokeColor=none;",
+            parent="1", vertex="1",
+        )
+        ET.SubElement(ip, "mxGeometry", x=str(x + 1), y=str(y + 1),
+            width=str(box_w - 2), height=str(_c_icon_h - 1), **{"as": "geometry"})
+
+        # AWS icon centred in icon panel
+        ix = x + (box_w - _c_icon_sz) // 2
+        iy = y + (_c_icon_h - _c_icon_sz) // 2
+        native_icon = _resolve_hld_icon(comp)
+        if native_icon:
+            icon_style, fill_color = native_icon
+            ic = ET.SubElement(root, "mxCell",
+                id=f"{cid}-icon", value="",
+                style=_icon_style_xml(icon_style, fill_color),
+                parent="1", vertex="1",
+            )
+            ET.SubElement(ic, "mxGeometry", x=str(ix), y=str(iy),
+                width=str(_c_icon_sz), height=str(_c_icon_sz), **{"as": "geometry"})
+
+        # White name strip (bottom 40%)
+        ny = y + _c_icon_h
+        nb = ET.SubElement(root, "mxCell",
+            id=f"{cid}-namebg", value="",
+            style="rounded=0;fillColor=#FFFFFF;strokeColor=none;",
+            parent="1", vertex="1",
+        )
+        ET.SubElement(nb, "mxGeometry", x=str(x + 1), y=str(ny),
+            width=str(box_w - 2), height=str(_c_name_h - 1), **{"as": "geometry"})
+
+        tech = comp.get("technology") or comp.get("layer") or "Container"
+        nl = ET.SubElement(root, "mxCell",
+            id=f"{cid}-text",
+            value=f"<b>{name}</b><br/>[{tech}]",
+            style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;"
+                  "fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;",
+            parent="1", vertex="1",
+        )
+        ET.SubElement(nl, "mxGeometry", x=str(x + 4), y=str(ny + 2),
+            width=str(box_w - 8), height=str(_c_name_h - 4), **{"as": "geometry"})
 
     # Container relationships from architecture connections with flow numbering.
     # Color meaning: Blue = outbound (A→B only), Green = bidirectional (A↔B both exist).
@@ -1987,16 +2226,29 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
     # Default color
     default_color = "fillColor=#f0f0f0;strokeColor=#666666;"
 
-    # Position entities strategically to show data flow path
-    # Left side (on-prem + identity): Business App → SFTP Server + UKHSA identity integration
-    # Right side (consumers): Data Analyst Team, Security Operations
-    positions = [
-        (100, 150),    # On-Prem Business App (top-left)
-        (100, 350),    # On-Prem SFTP Server (middle-left - bridge)
-        (100, 550),    # UKHSA Intra Identity (bottom-left)
-        (1150, 250),   # Data Analyst Team (top-right)
-        (1150, 450),   # Security Operations (bottom-right)
-    ]
+    # Position entities evenly around the centre box.
+    # Split: "Out"/"Both" (producers/bidirectional) on the left, "In" (consumers) on the right.
+    import math as _math
+
+    producers = [e for e in entities if (e.get("direction") or "").lower() in ("out", "both", "")]
+    consumers = [e for e in entities if (e.get("direction") or "").lower() == "in"]
+
+    # If everything is "both" or blank, just spread them all around the centre.
+    if not consumers and not producers:
+        producers = entities
+
+    def _spread_y(count, y_start=100, gap=120):
+        if count == 0:
+            return []
+        total = (count - 1) * gap
+        top = y_start + (400 - total) // 2
+        return [top + i * gap for i in range(count)]
+
+    positions = {}
+    for i, ent in enumerate(_spread_y(len(producers))):
+        positions[entities.index(producers[i])] = (80, ent)
+    for i, ent_y in enumerate(_spread_y(len(consumers))):
+        positions[entities.index(consumers[i])] = (1150, ent_y)
 
     entity_node_ids = {}
     flow_explanations = []
@@ -2027,7 +2279,7 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
         if direction_symbol:
             label += f"\n{direction_symbol}"
         
-        x, y = positions[i] if i < len(positions) else (200, 200 + i * 80)
+        x, y = positions.get(i, (200, 200 + i * 100))
         node = ET.SubElement(
             root,
             "mxCell",
@@ -2424,9 +2676,14 @@ def main() -> None:
     context_entities = inherited_context["context_entities"]
 
     # ── EDAP pattern detection and automatic diagram enrichment
-    # Parse optional explicit pattern IDs from env (comma-separated, e.g. "EDAP-INT-01,EDAP-INT-03")
+    # EDAP enrichment only runs when the user explicitly provides pattern IDs via
+    # EDAP_PATTERN_IDS in .env (e.g. EDAP-INT-01,EDAP-INT-05).
+    # Auto-detection is OFF by default because the keyword triggers are intentionally
+    # broad (e.g. "etl", "analytics", "export") and would fire on almost any project,
+    # injecting all EDAP pipeline steps (DF-EDAP-01…DF-EDAP-16) into the DFD.
     explicit_edap = [p.strip() for p in os.getenv("EDAP_PATTERN_IDS", "").split(",") if p.strip()]
-    if EDAP_KB_AVAILABLE:
+    edap_auto_detect = os.getenv("EDAP_AUTO_DETECT", "false").strip().lower() in {"1", "true", "yes"}
+    if EDAP_KB_AVAILABLE and (explicit_edap or edap_auto_detect):
         edap_patterns = detect_edap_patterns(components, connections, dataflows, context_entities, explicit_edap or None)
         if edap_patterns:
             print(f"\n  {build_edap_integration_summary(edap_patterns)}")
@@ -2439,6 +2696,8 @@ def main() -> None:
             print("  Tip: set EDAP_PATTERN_IDS=EDAP-INT-01,EDAP-INT-03 in .env to force specific patterns.")
     else:
         edap_patterns = []
+        if not explicit_edap:
+            print("\n  EDAP enrichment skipped (not requested). Set EDAP_PATTERN_IDS in .env to enable.")
 
     # ── UKHSA patterns detection and automatic diagram enrichment
     # Supports explicit override via UKHSA_PATTERN_IDS env var (comma-separated IDs e.g. "1A,3C,TSA-NET-01")
@@ -2477,7 +2736,8 @@ def main() -> None:
         f"sequence={auth_flow_rules['flow_mode']} | "
         f"mfa={auth_flow_rules['include_mfa_challenge']} | "
         f"token_refresh={auth_flow_rules['include_token_refresh']} | "
-        f"reauth_loop={auth_flow_rules['include_reauth_on_validation_failure']}"
+        f"reauth_loop={auth_flow_rules['include_reauth_on_validation_failure']} | "
+        f"webapp={auth_flow_rules.get('has_webapp', True)}"
     )
 
     if not components and not dataflows and not datasets:
@@ -2562,21 +2822,6 @@ def main() -> None:
                 target_page_id,
             )
 
-    # Ensure required Context Entities are present for HLD on-prem data path.
-    required_context_entities = [
-        {"name": "On-Prem Business App", "type": "System", "interaction": "Produces daily surveillance files via SFTP export", "direction": "Out"},
-        {"name": "On-Prem SFTP Server", "type": "System", "interaction": "Stages and relays files for secure cloud transfer", "direction": "Both"},
-        {"name": "UKHSA Intra Identity (Azure Entra ID)", "type": "Service", "interaction": "Provides SSO and MFA authentication for transfer users and support access", "direction": "Both"},
-        {"name": "Data Analyst Team", "type": "User", "interaction": "Consumes validated data outputs", "direction": "In"},
-        {"name": "Security Operations", "type": "Service", "interaction": "Reviews logs and alerts", "direction": "In"},
-    ]
-    required_names = {ent["name"] for ent in required_context_entities}
-    parsed_names = {ent.get("name", "") for ent in context_entities}
-    if not required_names.issubset(parsed_names):
-        missing = sorted(required_names - parsed_names)
-        print(f"  Context entities fallback applied (missing from source parse: {', '.join(missing)})")
-        context_entities = required_context_entities
-
     # ── Context View Diagram
     if context_entities:
         print("\nGenerating Context View Diagram...")
@@ -2637,7 +2882,11 @@ def main() -> None:
         
         # Authentication Flow Diagram
         print("\nGenerating Authentication Flow Diagram...")
-        print("  Showing: User → WebApp → API → Azure Network → Azure Entra ID → Service → Database")
+        _has_webapp = auth_flow_rules.get("has_webapp", True)
+        if _has_webapp:
+            print("  Showing: User \u2192 WebApp \u2192 API \u2192 Azure Network \u2192 Azure Entra ID \u2192 Service \u2192 Database")
+        else:
+            print("  Showing: User \u2192 API \u2192 Azure Network \u2192 Azure Entra ID \u2192 Service \u2192 Database (no frontend detected)")
         print("  Steps: SSO/MFA federated token exchange and secure data access")
         auth_xml = generate_authentication_flow_diagram(auth_flow_rules)
         save_local_drawio("authentication-flow-diagram.drawio", auth_xml)

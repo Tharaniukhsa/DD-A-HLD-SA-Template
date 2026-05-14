@@ -11,43 +11,76 @@
         <mxCell id="system-boundary" value="" style="rounded=0;whiteSpace=wrap;fontSize=14;dashed=1;dashPattern=1 4;strokeColor=#1a1a1a;strokeWidth=2;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="450" y="100" width="650" height="600" as="geometry" />
         </mxCell>
-        <mxCell id="system-label" value="Target Data Solution" style="fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+        <mxCell id="system-label" value="RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture" style="fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="460" y="110" width="400" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="solution-core" value="Target Data Solution" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#4da6ff;strokeColor=#003d99;fontSize=12;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+        <mxCell id="solution-core" value="RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#4da6ff;strokeColor=#003d99;fontSize=12;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="575" y="340" width="200" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-on-prem-business-app-0" value="On-Prem Business App&#10;[System]&#10;→" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="100" y="150" width="140" height="80" as="geometry" />
+        <mxCell id="ctx-magentus-0" value="Magentus&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="200" y="200" width="140" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-on-prem-sftp-server-1" value="On-Prem SFTP Server&#10;[System]&#10;↔" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="100" y="350" width="140" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="ctx-edge-1" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;exitX=1;exitY=0.7;entryX=0;entryY=0.8;" parent="1" source="ctx-on-prem-sftp-server-1" target="solution-core" edge="1">
+        <mxCell id="ctx-edge-0" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-magentus-0" target="solution-core" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-ukhsa-intra-identity-azure-entra-id-2" value="UKHSA Intra Identity (Azure Entra ID)&#10;[Service]&#10;↔" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e6f3ff;strokeColor=#0066cc;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="100" y="550" width="140" height="80" as="geometry" />
+        <mxCell id="ctx-rcgp-1" value="RCGP&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="200" y="300" width="140" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-edge-2" value="2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-ukhsa-intra-identity-azure-entra-id-2" target="solution-core" edge="1">
+        <mxCell id="ctx-edge-1" value="2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-rcgp-1" target="solution-core" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-data-analyst-team-3" value="Data Analyst Team&#10;[User]&#10;←" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff4e6;strokeColor=#ff7700;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="1150" y="250" width="140" height="80" as="geometry" />
+        <mxCell id="ctx-oxford-2" value="Oxford&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="200" y="400" width="140" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-edge-3" value="3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="solution-core" target="ctx-data-analyst-team-3" edge="1">
+        <mxCell id="ctx-edge-2" value="3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-oxford-2" target="solution-core" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-security-operations-4" value="Security Operations&#10;[Service]&#10;←" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e6f3ff;strokeColor=#0066cc;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="1150" y="450" width="140" height="80" as="geometry" />
+        <mxCell id="ctx-ukhsa-users-3" value="UKHSA Users&#10;[User]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#fff4e6;strokeColor=#ff7700;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="200" y="500" width="140" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-edge-4" value="4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="solution-core" target="ctx-security-operations-4" edge="1">
+        <mxCell id="ctx-edge-3" value="4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-ukhsa-users-3" target="solution-core" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-bridge-business-to-sftp" value="5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#ea580c;endArrow=classic;" parent="1" source="ctx-on-prem-business-app-0" target="ctx-on-prem-sftp-server-1" edge="1">
+        <mxCell id="ctx-edap-x-4" value="EDAP-X&#10;[Service]" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#e6f3ff;strokeColor=#0066cc;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="200" y="600" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-4" value="5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-edap-x-4" target="solution-core" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-bridge-sftp-to-cloud" value="6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#ea580c;endArrow=classic;exitX=1;exitY=0.45;entryX=0;entryY=0.2;" parent="1" source="ctx-on-prem-sftp-server-1" target="solution-core" edge="1">
+        <mxCell id="ctx-ukhsa-aws-landing-zone-halo-5" value="UKHSA AWS Landing Zone (HALO)&#10;[External system]&#10;←" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="1150" y="240" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-5" value="6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="solution-core" target="ctx-ukhsa-aws-landing-zone-halo-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-ukhsa-azure-landing-zone-phecloud-6" value="UKHSA Azure Landing Zone (PHECloud)&#10;[External system]&#10;←" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="1150" y="360" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-6" value="7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="solution-core" target="ctx-ukhsa-azure-landing-zone-phecloud-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-ukhsa-on-premises-dc-porton-colindale-7" value="UKHSA On-Premises DC (Porton/Colindale)&#10;[External system]&#10;↔" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="80" y="120" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-7" value="8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-ukhsa-on-premises-dc-porton-colindale-7" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-microsoft-entra-id-ukhsa-tenant-8" value="Microsoft Entra ID (UKHSA Tenant)&#10;[External system]&#10;↔" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="80" y="240" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-8" value="9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-microsoft-entra-id-ukhsa-tenant-8" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-ukhsa-edap-platform-9" value="UKHSA EDAP Platform&#10;[External system]&#10;↔" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="80" y="360" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-9" value="10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-ukhsa-edap-platform-9" target="solution-core" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-azure-apim-10" value="Azure APIM&#10;[External system]&#10;↔" style="rounded=1;whiteSpace=wrap;align=center;fillColor=#f0f0f0;strokeColor=#666666;fontSize=10;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="80" y="480" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-edge-10" value="11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;" parent="1" source="ctx-azure-apim-10" target="solution-core" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="data-flow-path" value="On-Prem Data Path:&#10;Business App → SFTP Server → Cloud" style="fontSize=9;align=center;fillColor=#fff9c4;strokeColor=#f9a825;rounded=1;" parent="1" vertex="1">
@@ -59,23 +92,29 @@
         <mxCell id="ctx-flow-explanation-title" value="Data Flow Steps" style="fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=center;" parent="1" vertex="1">
           <mxGeometry x="1810" y="130" width="320" height="24" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-flow-desc-1" value="Flow 1: On-Prem SFTP Server -&gt; Target Data Solution&#10;Stages and relays files for secure cloud transfer" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="ctx-flow-desc-1" value="Flow 1: Magentus -&gt; RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture&#10;In" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1808" y="162" width="324" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-flow-desc-2" value="Flow 2: UKHSA Intra Identity (Azure Entra ID) -&gt; Target Data Solution&#10;Provides SSO and MFA authentication for transfer users and support access" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="ctx-flow-desc-2" value="Flow 2: RCGP -&gt; RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture&#10;Both" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1808" y="228" width="324" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-flow-desc-3" value="Flow 3: Data Analyst Team -&gt; Data Analyst Team&#10;Consumes validated data outputs" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="ctx-flow-desc-3" value="Flow 3: Oxford -&gt; RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture&#10;Both" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1808" y="294" width="324" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-flow-desc-4" value="Flow 4: Security Operations -&gt; Security Operations&#10;Reviews logs and alerts" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="ctx-flow-desc-4" value="Flow 4: UKHSA Users -&gt; RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture&#10;Out" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1808" y="360" width="324" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-flow-desc-5" value="Flow 5: On-Prem Business App -&gt; On-Prem SFTP Server&#10;Daily SFTP export" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="ctx-flow-desc-5" value="Flow 5: EDAP-X -&gt; RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture&#10;Out" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1808" y="426" width="324" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="ctx-flow-desc-6" value="Flow 6: On-Prem SFTP Server -&gt; Target Data Solution&#10;SFTP relay to cloud endpoint" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="ctx-flow-desc-6" value="Flow 6: UKHSA AWS Landing Zone (HALO) -&gt; UKHSA AWS Landing Zone (HALO)&#10;Strategic AWS landing zone — all new AWS workloads must deploy here" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1808" y="492" width="324" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-flow-desc-7" value="Flow 7: UKHSA Azure Landing Zone (PHECloud) -&gt; UKHSA Azure Landing Zone (PHECloud)&#10;Strategic Azure landing zone — all new Azure workloads must deploy here" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1808" y="558" width="324" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-flow-desc-8" value="Flow 8: UKHSA On-Premises DC (Porton/Colindale) -&gt; RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture&#10;Connected via Direct Connect and ExpressRoute for hybrid access" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="1808" y="624" width="324" height="60" as="geometry" />
         </mxCell>
         <mxCell id="legend" value="Legend:" style="fontSize=10;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="300" y="750" width="100" height="20" as="geometry" />

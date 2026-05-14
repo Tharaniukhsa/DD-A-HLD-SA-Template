@@ -11,88 +11,181 @@
         <mxCell id="c4-boundary" value="" style="rounded=0;whiteSpace=wrap;fontSize=14;dashed=1;dashPattern=1 4;strokeColor=#1a1a1a;strokeWidth=2;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="300" y="100" width="1000" height="640" as="geometry" />
         </mxCell>
-        <mxCell id="c4-boundary-label" value="Target Data Solution" style="fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
+        <mxCell id="c4-boundary-label" value="RCGP RSC - A2 Customer Endpoint — High-Level Design (HLD) Solution Architecture" style="fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="312" y="110" width="500" height="24" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-on-prem-business-app-0" value="On-Prem Business App&#10;[On-Prem LoB Application]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="340" y="170" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-external-magentus-environment-0" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="340" y="170" width="240" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-on-prem-sftp-server-1" value="On-Prem SFTP Server&#10;[SFTP Gateway]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="615" y="170" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-external-magentus-environment-0-ipanel" value="" style="rounded=0;fillColor=#dae8fc;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="341" y="171" width="238" height="83" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-aws-transfer-endpoint-2" value="AWS Transfer Endpoint&#10;[AWS Transfer Family]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#d5e8d4;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="890" y="170" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-external-magentus-environment-0-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="341" y="254" width="238" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-raw-landing-bucket-3" value="Raw Landing Bucket&#10;[Amazon S3]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="340" y="310" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-external-magentus-environment-0-text" value="&lt;b&gt;External - Magentus Environment&lt;/b&gt;&lt;br/&gt;[AWS / Apollo Endpoint]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="344" y="256" width="232" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-validation-processor-4" value="Validation Processor&#10;[AWS Lambda / Container Worker]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#f8cecc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="615" y="310" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-ukhsa-aws-landing-zone-1" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="615" y="170" width="240" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-processing-queue-5" value="Processing Queue&#10;[Amazon SQS / Azure Service Bus]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#fff2cc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="890" y="310" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-ukhsa-aws-landing-zone-1-ipanel" value="" style="rounded=0;fillColor=#d5e8d4;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="616" y="171" width="238" height="83" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-curated-database-6" value="Curated Database&#10;[Amazon RDS / Azure SQL]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="340" y="450" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-ukhsa-aws-landing-zone-1-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="616" y="254" width="238" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-monitoring-and-alerts-7" value="Monitoring and Alerts&#10;[CloudWatch / Azure Monitor]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#fff2cc;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="615" y="450" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-ukhsa-aws-landing-zone-1-text" value="&lt;b&gt;UKHSA AWS Landing Zone&lt;/b&gt;&lt;br/&gt;[AWS VPC]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="619" y="256" width="232" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-data-analyst-team-8" value="Data Analyst Team&#10;[User]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#4b5563;fontSize=11;" parent="1" vertex="1">
-          <mxGeometry x="890" y="450" width="240" height="105" as="geometry" />
+        <mxCell id="c4-container-apollo-receiver-service-2" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="890" y="170" width="240" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-edge-0" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-on-prem-business-app-0" target="c4-container-on-prem-sftp-server-1" edge="1">
+        <mxCell id="c4-container-apollo-receiver-service-2-ipanel" value="" style="rounded=0;fillColor=#f8cecc;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="891" y="171" width="238" height="83" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-receiver-service-2-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;fillColor=#ED7100;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="988" y="190" width="44" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-receiver-service-2-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="891" y="254" width="238" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-receiver-service-2-text" value="&lt;b&gt;Apollo Receiver Service&lt;/b&gt;&lt;br/&gt;[Windows Instance]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="894" y="256" width="232" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-decryption-service-3" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="340" y="345" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-decryption-service-3-ipanel" value="" style="rounded=0;fillColor=#f8cecc;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="341" y="346" width="238" height="83" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-decryption-service-3-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;fillColor=#ED7100;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="438" y="365" width="44" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-decryption-service-3-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="341" y="429" width="238" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-apollo-decryption-service-3-text" value="&lt;b&gt;Apollo Decryption Service&lt;/b&gt;&lt;br/&gt;[Windows Instance]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="344" y="431" width="232" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-secure-file-storage-4" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="615" y="345" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-secure-file-storage-4-ipanel" value="" style="rounded=0;fillColor=#e1d5e7;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="616" y="346" width="238" height="83" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-secure-file-storage-4-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bucket;fillColor=#7AA116;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="713" y="365" width="44" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-secure-file-storage-4-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="616" y="429" width="238" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-secure-file-storage-4-text" value="&lt;b&gt;Secure File Storage&lt;/b&gt;&lt;br/&gt;[S3 Bucket]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="619" y="431" width="232" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-data-ingestion-service-5" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="890" y="345" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-data-ingestion-service-5-ipanel" value="" style="rounded=0;fillColor=#fff2cc;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="891" y="346" width="238" height="83" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-data-ingestion-service-5-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;fillColor=#ED7100;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="988" y="365" width="44" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-data-ingestion-service-5-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="891" y="429" width="238" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-data-ingestion-service-5-text" value="&lt;b&gt;Data Ingestion Service&lt;/b&gt;&lt;br/&gt;[ETL / Lambda / Glue]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="894" y="431" width="232" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-platform-6" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="340" y="520" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-platform-6-ipanel" value="" style="rounded=0;fillColor=#fff2cc;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="341" y="521" width="238" height="83" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-platform-6-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="341" y="604" width="238" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-platform-6-text" value="&lt;b&gt;EDAP Platform&lt;/b&gt;&lt;br/&gt;[AWS Managed Platform]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="344" y="606" width="232" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-x-7" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="615" y="520" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-x-7-ipanel" value="" style="rounded=0;fillColor=#f8cecc;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="616" y="521" width="238" height="83" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-x-7-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="616" y="604" width="238" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edap-x-7-text" value="&lt;b&gt;EDAP-X&lt;/b&gt;&lt;br/&gt;[Analytics Platform]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="619" y="606" width="232" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-monitoring-logging-8" value="" style="rounded=1;fillColor=#FFFFFF;strokeColor=#4b5563;strokeWidth=2;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="890" y="520" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-monitoring-logging-8-ipanel" value="" style="rounded=0;fillColor=#fff2cc;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="891" y="521" width="238" height="83" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-monitoring-logging-8-icon" value="" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch_2;fillColor=#E7157B;strokeColor=#FFFFFF;gradientColor=none;dashed=0;aspect=fixed;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="988" y="540" width="44" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-monitoring-logging-8-namebg" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry x="891" y="604" width="238" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-monitoring-logging-8-text" value="&lt;b&gt;Monitoring &amp; Logging&lt;/b&gt;&lt;br/&gt;[CloudWatch]" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="894" y="606" width="232" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-container-edge-0" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-apollo-receiver-service-2" target="c4-container-apollo-decryption-service-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-edge-1" value="2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-on-prem-sftp-server-1" target="c4-container-aws-transfer-endpoint-2" edge="1">
+        <mxCell id="c4-container-edge-1" value="2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-apollo-decryption-service-3" target="c4-container-secure-file-storage-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-edge-2" value="3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-aws-transfer-endpoint-2" target="c4-container-raw-landing-bucket-3" edge="1">
+        <mxCell id="c4-container-edge-2" value="3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-secure-file-storage-4" target="c4-container-data-ingestion-service-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-edge-3" value="4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-raw-landing-bucket-3" target="c4-container-validation-processor-4" edge="1">
+        <mxCell id="c4-container-edge-3" value="4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-data-ingestion-service-5" target="c4-container-edap-platform-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-edge-4" value="5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-validation-processor-4" target="c4-container-processing-queue-5" edge="1">
+        <mxCell id="c4-container-edge-4" value="5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-edap-platform-6" target="c4-container-edap-x-7" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-container-edge-5" value="6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-validation-processor-4" target="c4-container-curated-database-6" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="c4-container-edge-6" value="7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-monitoring-and-alerts-7" target="c4-container-validation-processor-4" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="c4-container-edge-7" value="8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=13;fontStyle=1;fontColor=#1e1e1e;labelBackgroundColor=#ffffff;labelBorderColor=none;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c4-container-monitoring-and-alerts-7" target="c4-container-processing-queue-5" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="c4-external-on-prem-business-app-0" value="On-Prem Business App&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+        <mxCell id="c4-external-magentus-0" value="Magentus&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="40" y="170" width="240" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-on-prem-sftp-server-1" value="On-Prem SFTP Server&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+        <mxCell id="c4-external-rcgp-1" value="RCGP&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="40" y="265" width="240" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-ukhsa-intra-identity-azure-entra-id-2" value="UKHSA Intra Identity (Azure Entra ID)&#10;[Service]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+        <mxCell id="c4-external-oxford-2" value="Oxford&#10;[System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="40" y="360" width="240" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-data-analyst-team-3" value="Data Analyst Team&#10;[User]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
-          <mxGeometry x="1290" y="455" width="240" height="70" as="geometry" />
+        <mxCell id="c4-external-ukhsa-users-3" value="UKHSA Users&#10;[User]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="455" width="240" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-security-operations-4" value="Security Operations&#10;[Service]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
-          <mxGeometry x="1290" y="550" width="240" height="70" as="geometry" />
+        <mxCell id="c4-external-edap-x-4" value="EDAP-X&#10;[Service]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="550" width="240" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-edge-8" value="Produces daily surveillance files via SFTP export" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="c4-external-on-prem-business-app-0" target="c4-container-on-prem-sftp-server-1" edge="1">
+        <mxCell id="c4-external-ukhsa-aws-landing-zone-halo-5" value="UKHSA AWS Landing Zone (HALO)&#10;[External System]" style="rounded=1;whiteSpace=wrap;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#6b7280;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1290" y="645" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-edge-5" value="In" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-magentus-0" target="c4-container-external-magentus-environment-0" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-edge-9" value="Stages and relays files for secure cloud transfer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-on-prem-sftp-server-1" target="c4-container-aws-transfer-endpoint-2" edge="1">
+        <mxCell id="c4-external-edge-6" value="Both" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-rcgp-1" target="c4-container-external-magentus-environment-0" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-edge-10" value="Provides SSO and MFA authentication for transfer users and support access" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-ukhsa-intra-identity-azure-entra-id-2" target="c4-container-aws-transfer-endpoint-2" edge="1">
+        <mxCell id="c4-external-edge-7" value="Both" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-oxford-2" target="c4-container-external-magentus-environment-0" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-edge-11" value="Consumes validated data outputs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="c4-container-curated-database-6" target="c4-external-data-analyst-team-3" edge="1">
+        <mxCell id="c4-external-edge-8" value="Out" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-ukhsa-users-3" target="c4-container-external-magentus-environment-0" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c4-external-edge-12" value="Reviews logs and alerts" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="c4-container-monitoring-and-alerts-7" target="c4-external-security-operations-4" edge="1">
+        <mxCell id="c4-external-edge-9" value="Out" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#059669;strokeWidth=2;startArrow=classic;endArrow=classic;" parent="1" source="c4-external-edap-x-4" target="c4-container-external-magentus-environment-0" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4-external-edge-10" value="Strategic AWS landing zone — all new AWS workloads must deploy here" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=9;strokeColor=#2563EB;strokeWidth=2;startArrow=none;endArrow=classic;" parent="1" source="c4-container-external-magentus-environment-0" target="c4-external-ukhsa-aws-landing-zone-halo-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="flow-explanation-panel" value="" style="rounded=1;fillColor=#F8FAFC;strokeColor=#9AA5B1;strokeWidth=1.5;" parent="1" vertex="1">
@@ -101,29 +194,20 @@
         <mxCell id="flow-explanation-title" value="Data Flows" style="fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=center;" parent="1" vertex="1">
           <mxGeometry x="1860" y="110" width="260" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="flow-desc-1" value="Step 1: On-Prem Business App → On-Prem SFTP Server (Outbound)&#10;Daily file export" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="flow-desc-1" value="Step 1: Apollo Receiver Service → Apollo Decryption Service (Outbound)&#10;Internal processing" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1858" y="145" width="264" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="flow-desc-2" value="Step 2: On-Prem SFTP Server → AWS Transfer Endpoint (Outbound)&#10;Secure file transfer" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="flow-desc-2" value="Step 2: Apollo Decryption Service → Secure File Storage (Outbound)&#10;Store decrypted data" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1858" y="217" width="264" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="flow-desc-3" value="Step 3: AWS Transfer Endpoint → Raw Landing Bucket (Outbound)&#10;Store uploaded file" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="flow-desc-3" value="Step 3: Secure File Storage → Data Ingestion Service (Outbound)&#10;Data ingestion" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1858" y="289" width="264" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="flow-desc-4" value="Step 4: Raw Landing Bucket → Validation Processor (Outbound)&#10;Object-created trigger" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="flow-desc-4" value="Step 4: Data Ingestion Service → EDAP Platform (Outbound)&#10;ETL pipeline" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1858" y="361" width="264" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="flow-desc-5" value="Step 5: Validation Processor → Processing Queue (Outbound)&#10;Publish process event" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
+        <mxCell id="flow-desc-5" value="Step 5: EDAP Platform → EDAP-X (Outbound)&#10;Data consumption" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="1858" y="433" width="264" height="65" as="geometry" />
-        </mxCell>
-        <mxCell id="flow-desc-6" value="Step 6: Validation Processor → Curated Database (Outbound)&#10;Insert validated records" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
-          <mxGeometry x="1858" y="505" width="264" height="65" as="geometry" />
-        </mxCell>
-        <mxCell id="flow-desc-7" value="Step 7: Monitoring and Alerts → Validation Processor (Outbound)&#10;Error and duration metrics" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
-          <mxGeometry x="1858" y="577" width="264" height="65" as="geometry" />
-        </mxCell>
-        <mxCell id="flow-desc-8" value="Step 8: Monitoring and Alerts → Processing Queue (Outbound)&#10;Queue depth monitoring" style="fontSize=9;align=left;verticalAlign=top;fillColor=none;strokeColor=none;whiteSpace=wrap;" parent="1" vertex="1">
-          <mxGeometry x="1858" y="649" width="264" height="65" as="geometry" />
         </mxCell>
         <mxCell id="c4-legend-title" value="Legend:" style="fontSize=10;fontStyle=1;align=left;fillColor=none;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="320" y="760" width="80" height="20" as="geometry" />

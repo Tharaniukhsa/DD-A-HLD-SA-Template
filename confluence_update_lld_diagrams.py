@@ -543,6 +543,54 @@ def _parse_connection_label_fields(label: str, segmentation: dict) -> tuple[str,
     return protocol, port, network_path, auth
 
 
+def parse_selected_patterns_from_hld(main_html: str) -> list[str]:
+    """
+    Read the HLD main page Pattern Selection tables (Section 8) and return
+    only the Pattern IDs where the 'Selected?' column is explicitly marked as selected.
+    This ensures the LLD only applies patterns that were consciously chosen,
+    not every pattern whose keywords happen to appear in the project text.
+    Recognises: Y, Yes, ✓, ✔, ☑, X, Selected (case-insensitive).
+    """
+    import re as _re
+    _SELECTED_RE = _re.compile(r"^(?:y(?:es)?|\u2611|\u2713|\u2714|x|selected)", _re.IGNORECASE)
+    _PATTERN_ID_RE = _re.compile(r"\b((?:UKHSA-INF|TSA-NET|EDAP-INT|SBD)-?\d+[A-Z]?|[1-9][A-Z])\b", _re.IGNORECASE)
+
+    def _is_selected(cell_text: str) -> bool:
+        t = cell_text.strip()
+        if t.startswith("\u2610"):  # ☐ ballot box = unselected
+            return False
+        return bool(_SELECTED_RE.match(t))
+
+    soup = BeautifulSoup(main_html, "html.parser")
+    selected: list[str] = []
+    seen: set[str] = set()
+
+    for table in soup.find_all("table"):
+        headers = [th.get_text(strip=True).lower() for th in table.find_all("th")]
+        joined = " ".join(headers)
+        if "pattern id" not in joined:
+            continue
+        selected_col = next((i for i, h in enumerate(headers) if "selected" in h), None)
+        id_col = next((i for i, h in enumerate(headers) if "pattern id" in h), None)
+        if selected_col is None or id_col is None:
+            continue
+
+        for tr in table.find_all("tr")[1:]:  # skip header row
+            cells = [td.get_text(strip=True) for td in tr.find_all(["td", "th"])]
+            if len(cells) <= max(id_col, selected_col):
+                continue
+            if not _is_selected(cells[selected_col]):
+                continue
+            pid_text = cells[id_col].strip()
+            m = _PATTERN_ID_RE.search(pid_text)
+            pid = m.group(1).upper() if m else pid_text.upper()
+            if pid and pid not in seen:
+                selected.append(pid)
+                seen.add(pid)
+
+    return selected
+
+
 def build_inherited_design_context(main_html: str) -> dict:
     main_components, main_connections = parse_main_components_and_connections(main_html)
     main_dataflows = parse_main_dataflows(main_html)
@@ -956,7 +1004,12 @@ def _mxfile(name: str):
     return mxfile, root
 
 
-def generate_lld_detailed_architecture_drawio(components: list[dict], connections: list[dict]) -> str:
+def generate_lld_detailed_architecture_drawio(
+    components: list[dict],
+    connections: list[dict],
+    edap_components: list[dict] | None = None,
+    edap_connections: list[dict] | None = None,
+) -> str:
     mxfile, root = _mxfile("LLD Detailed Architecture")
     layer_order = ["Edge", "Network", "Platform", "Application", "Data", "Security"]
 
@@ -1007,7 +1060,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
     )
     ET.SubElement(boundary_title, "mxGeometry", x="24", y="60", width="180", height="20", **{"as": "geometry"})
 
-    # ── AWS service classification ─────────────────────────────────────────
+    # â”€â”€ AWS service classification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _AWS_GLOBAL = {
         "cloudfront", "route53", "route 53", "iam", "sts", "waf",
     }
@@ -1062,7 +1115,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
 
     global_scope_items: list[str] = []
 
-    # ── Dynamic layout engine ──────────────────────────────────────────────
+    # â”€â”€ Dynamic layout engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     import math as _math
 
     CARD_W = 170      # component card width
@@ -1083,7 +1136,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         "private": 2, "data": 1, "managed": 2,
     }
 
-    # ── Pre-pass: classify components into zones ────────────────────────────
+    # â”€â”€ Pre-pass: classify components into zones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     zone_comp_lists: dict[str, list] = {k: [] for k in ["internet", "azureid", "public", "private", "data", "managed"]}
     ordered_components2: list[dict] = []
     for layer in layer_order:
@@ -1101,7 +1154,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         if _is_global_scope_item(comp):
             global_scope_items.append((comp.get("name") or "Component").strip())
 
-    # ── Calculate zone dimensions ────────────────────────────────────────────
+    # â”€â”€ Calculate zone dimensions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     def _calc_zone_dims(n: int, max_cols: int):
         n = max(n, 1)
         cols = min(max_cols, n)
@@ -1129,7 +1182,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
     max_zone_h = max(d["h"] for d in zone_layout.values())
     PANEL_X = zones_right_x + 30  # right-side panels start here (clear of all zones)
 
-    # ── Outer solution boundary ─────────────────────────────────────────────
+    # â”€â”€ Outer solution boundary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     boundary_total_w = PANEL_X + 430  # includes all right-side panels
     boundary_total_h = ZONE_Y + max_zone_h + 60
     ET.SubElement(
@@ -1138,7 +1191,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         parent="1", vertex="1",
     ).append(ET.fromstring(f'<mxGeometry x="12" y="58" width="{boundary_total_w}" height="{boundary_total_h}" as="geometry"/>'))
 
-    # ── AWS Cloud boundary (wraps public → managed; azureid is outside in Azure Cloud) ──
+    # â”€â”€ AWS Cloud boundary (wraps public â†’ managed; azureid is outside in Azure Cloud) â”€â”€
     az = zone_layout["azureid"]
     pb = zone_layout["public"]
     mg = zone_layout["managed"]
@@ -1160,7 +1213,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
     )
     ET.SubElement(aws_title, "mxGeometry", x=str(aws_left + 12), y=str(aws_top + 6), width="160", height="20", **{"as": "geometry"})
 
-    # ── VPC boundary (wraps public → data; azure identity is outside) ─────
+    # â”€â”€ VPC boundary (wraps public â†’ data; azure identity is outside) â”€â”€â”€â”€â”€
     dt = zone_layout["data"]
     vpc_left  = pb["x"] - 10
     vpc_top   = ZONE_Y - 16
@@ -1180,7 +1233,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
     )
     ET.SubElement(vpc_title, "mxGeometry", x=str(vpc_left + 10), y=str(vpc_top + 6), width="160", height="20", **{"as": "geometry"})
 
-    # ── Azure Cloud boundary (wraps azureid zone) ───────────────────────────
+    # â”€â”€ Azure Cloud boundary (wraps azureid zone) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     azure_pad = 12
     azure_cloud = ET.SubElement(
         root, "mxCell", id="lld-azure-cloud", value="",
@@ -1201,7 +1254,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         width="260", height="20",
         **{"as": "geometry"})
 
-    # ── AWS Direct Connect icon — in the gap between Azure Cloud and AWS Cloud ──
+    # â”€â”€ AWS Direct Connect icon â€” in the gap between Azure Cloud and AWS Cloud â”€â”€
     dc_cx = az["x"] + az["w"] + AZURE_AWS_GAP // 2  # centre of gap
     dc_cy = ZONE_Y + max_zone_h // 2
     dc_icon = ET.SubElement(
@@ -1214,14 +1267,14 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         x=str(dc_cx - 24), y=str(dc_cy - 24),
         width="48", height="48",
         **{"as": "geometry"})
-    # Arrow: azureid zone → Direct Connect icon
+    # Arrow: azureid zone â†’ Direct Connect icon
     dc_arrow1 = ET.SubElement(
         root, "mxCell", id="lld-direct-connect-arrow1", value="",
         style="edgeStyle=orthogonalEdgeStyle;strokeColor=#0078D4;strokeWidth=2;endArrow=block;endFill=1;startArrow=block;startFill=1;dashed=0;",
         parent="1", source="lld-zone-azureid", target="lld-direct-connect-icon", edge="1",
     )
     ET.SubElement(dc_arrow1, "mxGeometry", relative="1", **{"as": "geometry"})
-    # Arrow: Direct Connect icon → AWS public subnet zone
+    # Arrow: Direct Connect icon â†’ AWS public subnet zone
     dc_arrow2 = ET.SubElement(
         root, "mxCell", id="lld-direct-connect-arrow2", value="",
         style="edgeStyle=orthogonalEdgeStyle;strokeColor=#4D72B8;strokeWidth=2;endArrow=block;endFill=1;startArrow=block;startFill=1;dashed=0;",
@@ -1229,7 +1282,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
     )
     ET.SubElement(dc_arrow2, "mxGeometry", relative="1", **{"as": "geometry"})
 
-    # ── Managed Services zone box ──────────────────────────────────────────
+    # â”€â”€ Managed Services zone box â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     mgl = zone_layout["managed"]
     managed_svc_box = ET.SubElement(
         root, "mxCell", id="lld-managed-services", value="",
@@ -1255,7 +1308,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         parent="1", vertex="1",
     )
     ET.SubElement(vpc_ep_icon, "mxGeometry", x=str(vpc_ep_cx - 24), y=str(vpc_ep_cy - 24), width="48", height="48", **{"as": "geometry"})
-    # Arrow: VPC boundary right edge → VPC endpoint icon
+    # Arrow: VPC boundary right edge â†’ VPC endpoint icon
     vpc_ep_a1 = ET.SubElement(
         root, "mxCell", id="lld-vpc-endpoint-arrow",
         value="",
@@ -1263,7 +1316,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         parent="1", source="lld-zone-data", target="lld-vpc-endpoint-icon", edge="1",
     )
     ET.SubElement(vpc_ep_a1, "mxGeometry", relative="1", **{"as": "geometry"})
-    # Arrow: VPC endpoint icon → Managed services zone
+    # Arrow: VPC endpoint icon â†’ Managed services zone
     vpc_ep_a2 = ET.SubElement(
         root, "mxCell", id="lld-vpc-endpoint-arrow2",
         value="",
@@ -1272,7 +1325,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
     )
     ET.SubElement(vpc_ep_a2, "mxGeometry", relative="1", **{"as": "geometry"})
 
-    # ── Zone colour bands ────────────────────────────────────────────────────
+    # â”€â”€ Zone colour bands â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     ZONE_STYLES = {
         "internet": {"title": "External / On-Prem",      "fill": "#E3F2FD", "stroke": "#1565C0"},
         "azureid":  {"title": "Azure Identity\n(Entra ID)", "fill": "#E1F5FE", "stroke": "#01579B"},
@@ -1297,7 +1350,7 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
         )
         ET.SubElement(lbl, "mxGeometry", x=str(zd["x"] + 4), y=str(zd["y"] + 6), width=str(zd["w"] - 8), height="30", **{"as": "geometry"})
 
-    # ── Component placement ──────────────────────────────────────────────────
+    # â”€â”€ Component placement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     card_w = CARD_W
     card_h = CARD_H
     id_map: dict[str, str] = {}
@@ -1380,13 +1433,13 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
             )
             ET.SubElement(name_label, "mxGeometry", x=str(x + 4), y=str(name_y + 2), width=str(CARD_W - 8), height=str(name_h - 4), **{"as": "geometry"})
 
-    # ── Re-use zone_bounds for boundary-clamping reference ───────────────────
+    # â”€â”€ Re-use zone_bounds for boundary-clamping reference â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     zone_bounds = {
         zk: (zd["x"], zd["w"], zd["y"], zd["h"])
         for zk, zd in zone_layout.items()
     }
 
-    # ── Legacy aliases used by downstream code ───────────────────────────────
+    # â”€â”€ Legacy aliases used by downstream code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     zone_x = {zk: (zd["x"], zd["w"]) for zk, zd in zone_layout.items()}
     zone_next_y = {zk: zd["y"] + zd["h"] + ZONE_GAP for zk, zd in zone_layout.items()}
 
@@ -1759,6 +1812,125 @@ def generate_lld_detailed_architecture_drawio(components: list[dict], connection
     )
     ET.SubElement(legend_text, "mxGeometry", x="30", y=str(legend_y + 6), width="2990", height="18", **{"as": "geometry"})
 
+    # ── EDAP Analytical Environment ─────────────────────────────────────────────────
+    if edap_components:
+        import math as _m2
+        EDAP_FILL   = "#F3E8FF"
+        EDAP_STROKE = "#7C3AED"
+        EDAP_CARD_W, EDAP_CARD_H, EDAP_CARD_GAP = 160, 140, 20
+        EDAP_PAD_X, EDAP_PAD_TOP, EDAP_PAD_BOT = 24, 60, 20
+        EDAP_MAX_COLS = 4
+        edap_cols = min(EDAP_MAX_COLS, len(edap_components))
+        edap_rows = _m2.ceil(len(edap_components) / edap_cols)
+        edap_w = EDAP_PAD_X * 2 + edap_cols * EDAP_CARD_W + max(0, edap_cols - 1) * EDAP_CARD_GAP
+        edap_h = EDAP_PAD_TOP + edap_rows * EDAP_CARD_H + max(0, edap_rows - 1) * EDAP_CARD_GAP + EDAP_PAD_BOT
+        edap_x = 20
+        edap_y = legend_y + 60
+
+        # Dashed outer envelope
+        edap_outer = ET.SubElement(
+            root, "mxCell", id="edap-boundary", value="",
+            style=f"rounded=1;strokeWidth=3;strokeColor={EDAP_STROKE};fillColor=#FAF5FF;dashed=1;dashPattern=10 4;",
+            parent="1", vertex="1",
+        )
+        ET.SubElement(edap_outer, "mxGeometry",
+            x=str(edap_x - 12), y=str(edap_y - 20),
+            width=str(edap_w + 24), height=str(edap_h + 40),
+            **{"as": "geometry"})
+
+        # Inner zone
+        edap_box = ET.SubElement(
+            root, "mxCell", id="edap-zone", value="",
+            style=f"rounded=1;fillColor={EDAP_FILL};strokeColor={EDAP_STROKE};strokeWidth=2.5;",
+            parent="1", vertex="1",
+        )
+        ET.SubElement(edap_box, "mxGeometry",
+            x=str(edap_x), y=str(edap_y),
+            width=str(edap_w), height=str(edap_h),
+            **{"as": "geometry"})
+
+        ET.SubElement(
+            root, "mxCell", id="edap-zone-title",
+            value="<b>EDAP — Enterprise Data &amp; Analytics Platform</b><br/><font style='font-size:8px;' color='#7C3AED'>Separate Analytical Environment (UKHSA EDAP AWS Account)</font>",
+            style="text;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;",
+            parent="1", vertex="1",
+        ).append(ET.fromstring(f'<mxGeometry x="{edap_x + 4}" y="{edap_y + 6}" width="{edap_w - 8}" height="44" as="geometry"/>'))
+
+        edap_id_map: dict[str, str] = {}
+        for idx, comp in enumerate(edap_components):
+            comp_name = (comp.get("name") or "Component").strip()
+            cid = f"edap-cmp-{_slug(comp_name)}"
+            edap_id_map[comp_name.lower()] = cid
+            col = idx % edap_cols
+            row = idx // edap_cols
+            cx = edap_x + EDAP_PAD_X + col * (EDAP_CARD_W + EDAP_CARD_GAP)
+            cy = edap_y + EDAP_PAD_TOP + row * (EDAP_CARD_H + EDAP_CARD_GAP)
+
+            ET.SubElement(
+                root, "mxCell", id=cid, value="",
+                style=f"rounded=1;fillColor=#FFFFFF;strokeColor={EDAP_STROKE};strokeWidth=2;shadow=1;",
+                parent="1", vertex="1",
+            ).append(ET.fromstring(f'<mxGeometry x="{cx}" y="{cy}" width="{EDAP_CARD_W}" height="{EDAP_CARD_H}" as="geometry"/>'))
+
+            icon_h = int(EDAP_CARD_H * 0.55)
+            ET.SubElement(
+                root, "mxCell", id=f"{cid}-ip", value="",
+                style=f"rounded=0;fillColor={EDAP_FILL};strokeColor=none;",
+                parent="1", vertex="1",
+            ).append(ET.fromstring(f'<mxGeometry x="{cx+1}" y="{cy+1}" width="{EDAP_CARD_W-2}" height="{icon_h-1}" as="geometry"/>'))
+
+            native_icon = _resolve_native_aws4_icon(comp)
+            icon_sz = 40
+            icon_x = cx + (EDAP_CARD_W - icon_sz) // 2
+            icon_y = cy + (icon_h - icon_sz) // 2
+            if native_icon:
+                res_icon, fill_color = native_icon
+                ET.SubElement(
+                    root, "mxCell", id=f"{cid}-icon", value="",
+                    style=f"shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.{res_icon};fillColor={fill_color};strokeColor=#FFFFFF;aspect=fixed;",
+                    parent="1", vertex="1",
+                ).append(ET.fromstring(f'<mxGeometry x="{icon_x}" y="{icon_y}" width="{icon_sz}" height="{icon_sz}" as="geometry"/>'))
+
+            ET.SubElement(
+                root, "mxCell", id=f"{cid}-lbl",
+                value=f"<b>{_split_text(comp_name, 20)}</b>",
+                style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontSize=8;fontStyle=1;strokeColor=none;fillColor=none;",
+                parent="1", vertex="1",
+            ).append(ET.fromstring(f'<mxGeometry x="{cx+4}" y="{cy+icon_h}" width="{EDAP_CARD_W-8}" height="{EDAP_CARD_H-icon_h}" as="geometry"/>'))
+
+        # EDAP internal connections
+        for ei, econn in enumerate(edap_connections or []):
+            esrc_key = (econn.get("from") or econn.get("source") or "").lower().strip()
+            etgt_key = (econn.get("to") or econn.get("target") or "").lower().strip()
+            esrc = edap_id_map.get(esrc_key)
+            etgt = edap_id_map.get(etgt_key)
+            if not esrc or not etgt:
+                continue
+            earrow = ET.SubElement(
+                root, "mxCell", id=f"edap-conn-{ei}",
+                value=econn.get("label", econn.get("protocol", "")),
+                style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#7C3AED;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=8;",
+                parent="1", source=esrc, target=etgt, edge="1",
+            )
+            ET.SubElement(earrow, "mxGeometry", relative="1", **{"as": "geometry"})
+
+        # Integration arrow: solution boundary → EDAP
+        integ = ET.SubElement(
+            root, "mxCell", id="edap-integration-arrow",
+            value="EDAP Integration (HTTPS / S3 / Kinesis)",
+            style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#7C3AED;strokeWidth=2.5;dashed=1;dashPattern=10 5;endArrow=block;endFill=1;fontSize=9;fontStyle=1;fontColor=#7C3AED;labelBackgroundColor=#FAF5FF;",
+            parent="1", source="lld-sol-boundary", target="edap-boundary", edge="1",
+        )
+        ET.SubElement(integ, "mxGeometry", relative="1", **{"as": "geometry"})
+
+        # Footnote
+        ET.SubElement(
+            root, "mxCell", id="edap-note",
+            value="&#x26A0; EDAP is a separate AWS account managed by the UKHSA Data Platform team. Connect only via approved interfaces (S3 events, Kinesis Data Streams, REST API).",
+            style="text;html=1;fontSize=8;align=left;verticalAlign=top;strokeColor=none;fillColor=none;fontStyle=2;",
+            parent="1", vertex="1",
+        ).append(ET.fromstring(f'<mxGeometry x="{edap_x}" y="{edap_y + edap_h + 6}" width="{edap_w}" height="26" as="geometry"/>'))
+
     ET.indent(mxfile, space="  ")
     return ET.tostring(mxfile, encoding="unicode", xml_declaration=True)
 
@@ -1818,79 +1990,164 @@ _NET_PATH_STYLES: dict[str, dict] = {
 
 
 def generate_lld_network_connections_drawio(connections: list[dict]) -> str:
+    """Generate a proper connected graph for LLD network connections.
+
+    Each unique component appears exactly once as a node.  Nodes are placed in
+    columns according to their topological depth (longest-path layering) so the
+    diagram reads left-to-right following the data/control flow.  Edges are
+    drawn between the shared node IDs, eliminating duplicated boxes.
+    """
+    from collections import defaultdict
+
     mxfile, root = _mxfile("LLD Network Connections")
 
-    # ── Source nodes (left column) ──────────────────────────────────────────
-    src_nodes: dict[str, str] = {}
-    tgt_nodes: dict[str, str] = {}
-    src_y = 80
-    tgt_y = 80
-    node_w, node_h = 200, 56
-    src_x, tgt_x = 40, 560
-    row_gap = 80
+    if not connections:
+        ET.indent(mxfile, space="  ")
+        return ET.tostring(mxfile, encoding="unicode", xml_declaration=True)
 
-    def _make_node(name: str, nodes: dict, col_x: int, col_y_ref: list, path_type: str) -> str:
-        key = name.lower().strip()
-        if key in nodes:
-            return nodes[key]
-        nid = f"net-{_slug(name)}-{len(nodes)}"
-        nodes[key] = nid
-        style_info = _NET_PATH_STYLES.get(path_type, _NET_PATH_STYLES["internal"])
-        cell = ET.SubElement(
-            root,
-            "mxCell",
-            id=nid,
-            value=f"<b>{name}</b>",
-            style=(
-                f"rounded=1;whiteSpace=wrap;align=center;html=1;"
-                f"fillColor={style_info['node_fill']};strokeColor={style_info['node_stroke']};"
-                "strokeWidth=1.5;fontSize=11;verticalAlign=middle;"
-            ),
-            parent="1",
-            vertex="1",
-        )
-        ET.SubElement(cell, "mxGeometry", x=str(col_x), y=str(col_y_ref[0]), width=str(node_w), height=str(node_h), **{"as": "geometry"})
-        col_y_ref[0] += row_gap
-        return nid
+    # -- Step 1: collect unique ordered node names & edge list -----------------
+    node_names: list[str] = []
+    node_set: set[str] = set()
+    edge_list: list[tuple[str, str, dict]] = []  # (src_name, tgt_name, conn)
 
-    src_y_ref = [src_y]
-    tgt_y_ref = [tgt_y]
+    for c in connections:
+        src = (c.get("source") or "").strip()
+        tgt = (c.get("target") or "").strip()
+        if not src or not tgt:
+            continue
+        if src not in node_set:
+            node_set.add(src)
+            node_names.append(src)
+        if tgt not in node_set:
+            node_set.add(tgt)
+            node_names.append(tgt)
+        edge_list.append((src, tgt, c))
 
-    for i, c in enumerate(connections):
-        path_type = _classify_network_path(c)
-        s = _make_node(c["source"], src_nodes, src_x, src_y_ref, path_type)
-        t = _make_node(c["target"], tgt_nodes, tgt_x, tgt_y_ref, path_type)
+    if not node_names:
+        ET.indent(mxfile, space="  ")
+        return ET.tostring(mxfile, encoding="unicode", xml_declaration=True)
 
-        proto = c.get("protocol", "")
-        port = c.get("port", "")
-        net_path = c.get("network_path", "")
-        auth = c.get("auth", "")
-        parts = [p for p in [proto, port, net_path, auth] if p]
-        label_line1 = " | ".join(parts[:2]) if parts else ""
-        label_line2 = " | ".join(parts[2:]) if len(parts) > 2 else ""
-        label = label_line1 + (f"<br/>{label_line2}" if label_line2 else "")
+    # -- Step 2: topological layering via iterative DFS longest-path -----------
+    adj: dict[str, list[str]] = defaultdict(list)
+    for src, tgt, _ in edge_list:
+        adj[src].append(tgt)
 
+    # Iterative post-order DFS topological sort (handles cycles safely)
+    topo_order: list[str] = []
+    visited: set[str] = set()
+    stack_state: list[tuple[str, bool]] = []  # (node, processed)
+    for start in node_names:
+        if start not in visited:
+            stack_state.append((start, False))
+            while stack_state:
+                node, processed = stack_state.pop()
+                if processed:
+                    topo_order.append(node)
+                    continue
+                if node in visited:
+                    continue
+                visited.add(node)
+                stack_state.append((node, True))
+                for nbr in adj[node]:
+                    if nbr not in visited:
+                        stack_state.append((nbr, False))
+    topo_order.reverse()
+
+    # Assign layer = longest path from any root to this node
+    layers: dict[str, int] = {n: 0 for n in node_names}
+    for n in topo_order:
+        for succ in adj[n]:
+            if layers.get(succ, 0) <= layers[n]:
+                layers[succ] = layers[n] + 1
+
+    # Group nodes by layer
+    layer_nodes: dict[int, list[str]] = defaultdict(list)
+    for n in node_names:
+        layer_nodes[layers[n]].append(n)
+
+    # -- Step 3: position nodes - one column per layer -------------------------
+    node_w, node_h = 200, 60
+    col_gap   = 320   # horizontal distance between column left edges
+    row_gap   = 90    # vertical distance between node tops in the same column
+    start_x   = 40
+    start_y   = 80
+
+    # Determine the tallest column so shorter columns can be centred vertically
+    max_col_size = max(len(v) for v in layer_nodes.values())
+    total_diagram_h = start_y + max_col_size * row_gap
+
+    node_ids: dict[str, str] = {}
+    for layer_idx in sorted(layer_nodes.keys()):
+        col_nodes = layer_nodes[layer_idx]
+        col_x = start_x + layer_idx * col_gap
+        col_total_h = len(col_nodes) * node_h + (len(col_nodes) - 1) * (row_gap - node_h)
+        col_start_y = start_y + (total_diagram_h - start_y - col_total_h) // 2
+
+        for row_idx, name in enumerate(col_nodes):
+            nid = f"net-{_slug(name)}-{layer_idx}-{row_idx}"
+            node_ids[name] = nid
+
+            # Pick style based on the first connection that involves this node
+            path_type = "internal"
+            for e_src, e_tgt, conn in edge_list:
+                if e_src == name or e_tgt == name:
+                    path_type = _classify_network_path(conn)
+                    break
+            style_info = _NET_PATH_STYLES.get(path_type, _NET_PATH_STYLES["internal"])
+
+            node_y = col_start_y + row_idx * row_gap
+            cell = ET.SubElement(
+                root, "mxCell",
+                id=nid,
+                value=f"<b>{name}</b>",
+                style=(
+                    f"rounded=1;whiteSpace=wrap;align=center;html=1;"
+                    f"fillColor={style_info['node_fill']};strokeColor={style_info['node_stroke']};"
+                    "strokeWidth=1.5;fontSize=11;verticalAlign=middle;"
+                ),
+                parent="1", vertex="1",
+            )
+            ET.SubElement(
+                cell, "mxGeometry",
+                x=str(col_x), y=str(node_y),
+                width=str(node_w), height=str(node_h),
+                **{"as": "geometry"},
+            )
+
+    # -- Step 4: draw edges between shared node IDs ----------------------------
+    for i, (src_name, tgt_name, c) in enumerate(edge_list):
+        src_id = node_ids.get(src_name)
+        tgt_id = node_ids.get(tgt_name)
+        if not src_id or not tgt_id:
+            continue
+
+        path_type  = _classify_network_path(c)
         edge_style = _NET_PATH_STYLES.get(path_type, _NET_PATH_STYLES["internal"])["edge"]
+
+        proto    = c.get("protocol", "")
+        port     = c.get("port", "")
+        net_path = c.get("network_path", "")
+        auth     = c.get("auth", "")
+        parts    = [p for p in [proto, port, net_path, auth] if p]
+        label    = " | ".join(parts[:2])
+        if len(parts) > 2:
+            label += f"<br/>{'  |  '.join(parts[2:])}"
+
         edge = ET.SubElement(
-            root,
-            "mxCell",
+            root, "mxCell",
             id=f"nedge-{i}",
             value=label,
             style=edge_style,
             parent="1",
-            source=s,
-            target=t,
+            source=src_id,
+            target=tgt_id,
             edge="1",
         )
-        geom = ET.SubElement(edge, "mxGeometry", relative="1", **{"as": "geometry"})
-        # Add waypoints to separate parallel arrows - alternate vertical offset
-        if i % 2 == 1:
-            wp = ET.SubElement(geom, "mxPoint", x="300", y=str(80 + (i // 2) * 40))
-            wp.set("as", "sourcePoint")
+        ET.SubElement(edge, "mxGeometry", relative="1", **{"as": "geometry"})
 
-    # ── Legend panel ────────────────────────────────────────────────────────
-    legend_x = 40
-    legend_y = max(src_y_ref[0], tgt_y_ref[0]) + 40
+    # -- Legend panel ----------------------------------------------------------
+    legend_x = start_x
+    legend_y = total_diagram_h + 40
     legend_bg = ET.SubElement(
         root, "mxCell", id="net-legend-bg", value="",
         style="rounded=1;fillColor=#F8FAFC;strokeColor=#9AA5B1;strokeWidth=1.5;",
@@ -1906,20 +2163,20 @@ def generate_lld_network_connections_drawio(connections: list[dict]) -> str:
     ET.SubElement(legend_title, "mxGeometry", x=str(legend_x + 12), y=str(legend_y + 10), width="300", height="20", **{"as": "geometry"})
 
     legend_items = [
-        ("vpn", "━ ━  VPN (IPSec, Site-to-Site)", "#D97706"),
-        ("expressroute", "━━━  ExpressRoute / Direct Connect", "#00796B"),
-        ("tls", "━━━  HTTPS / TLS", "#5E35B1"),
-        ("privatelink", "━━━  Private Link / VPC Endpoint", "#388E3C"),
-        ("internet", "- -   Internet / Public", "#C62828"),
-        ("internal", "━━━  Internal Network", "#1565C0"),
+        ("vpn",          "\u2501\u254c  VPN (IPSec, Site-to-Site)"),
+        ("expressroute", "\u2501\u2501\u2501  ExpressRoute / Direct Connect"),
+        ("tls",          "\u2501\u2501\u2501  HTTPS / TLS"),
+        ("privatelink",  "\u2501\u2501\u2501  Private Link / VPC Endpoint"),
+        ("internet",     "- -   Internet / Public"),
+        ("internal",     "\u2501\u2501\u2501  Internal Network"),
     ]
     cols, item_w, item_h = 3, 230, 30
-    for idx, (key, text, color) in enumerate(legend_items):
-        col = idx % cols
+    for idx, (key, text) in enumerate(legend_items):
+        col  = idx % cols
         lrow = idx // cols
-        lx = legend_x + 12 + col * item_w
-        ly = legend_y + 36 + lrow * item_h
-        fill = _NET_PATH_STYLES[key]["node_fill"]
+        lx   = legend_x + 12 + col * item_w
+        ly   = legend_y + 36 + lrow * item_h
+        fill   = _NET_PATH_STYLES[key]["node_fill"]
         stroke = _NET_PATH_STYLES[key]["node_stroke"]
         chip = ET.SubElement(
             root, "mxCell", id=f"net-legend-{key}",
@@ -1934,7 +2191,6 @@ def generate_lld_network_connections_drawio(connections: list[dict]) -> str:
 
     ET.indent(mxfile, space="  ")
     return ET.tostring(mxfile, encoding="unicode", xml_declaration=True)
-
 
 def generate_lld_security_access_drawio(access_rows: list[dict]) -> str:
     mxfile, root = _mxfile("LLD Security Access")
@@ -2116,7 +2372,7 @@ def generate_lld_flow_playback_multi_page_drawio(connections: list[dict]) -> str
             root,
             "mxCell",
             id=f"flow-step-title-{step_index}",
-            value=f"Step S{step_index} of S{total_steps}: {src} → {tgt}",
+            value=f"Step S{step_index} of S{total_steps}: {src} â†’ {tgt}",
             style="text;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;",
             parent="1",
             vertex="1",
@@ -2197,7 +2453,7 @@ def generate_lld_flow_playback_multi_page_drawio(connections: list[dict]) -> str
         ET.SubElement(src_label, "mxGeometry", x="70", y="315", width="320", height="30", **{"as": "geometry"})
 
         # Arrow with label
-        arrow_text = "←→" if any(k in f"{protocol} {path} {auth}".lower() for k in ["bi-directional", "bidirectional", "two-way", "two way", "request/response", "request-response", "mutual"]) else "→"
+        arrow_text = "â†â†’" if any(k in f"{protocol} {path} {auth}".lower() for k in ["bi-directional", "bidirectional", "two-way", "two way", "request/response", "request-response", "mutual"]) else "â†’"
         arrow_label = ET.SubElement(
             root,
             "mxCell",
@@ -2280,7 +2536,7 @@ def generate_lld_flow_playback_multi_page_drawio(connections: list[dict]) -> str
         ET.SubElement(tgt_label, "mxGeometry", x="1130", y="315", width="320", height="30", **{"as": "geometry"})
 
         plain_action, plain_reason = _plain_step_phrase(src, tgt, protocol, path)
-        simple_direction = "Two-way data flow" if arrow_text == "←→" else "One-way data flow"
+        simple_direction = "Two-way data flow" if arrow_text == "â†â†’" else "One-way data flow"
 
         # Build plain-language explanation
         details_html = f"""
@@ -2436,87 +2692,473 @@ def generate_lld_flow_step_drawio(step_index: int, total_steps: int, conn: dict)
 
 
 def lld_detailed_sections_html() -> str:
-    return """
-<hr/>
-<h2>Detailed Architecture Diagrams</h2>
-<p><em>This section provides detailed LLD visualisations for architecture implementation, network/service connections, and security access control paths.</em></p>
+    return """<ac:structured-macro ac:name="anchor" ac:schema-version="1"><ac:parameter ac:name="anchorName">lld-sections-start</ac:parameter></ac:structured-macro>
+<h1 style="color:#003366;border-bottom:4px solid #003366;padding-bottom:10px;">Low-Level Design (LLD) Solution Architecture Template</h1>
+<p><em>Implementation-level architecture detail for engineering delivery. Complete each section below as design decisions are made. Sections 1&#8211;12 are mandatory before handover to the delivery team. Sections 13&#8211;15 should be completed before production go-live.</em></p>
 
-<h3>1. Detailed Component Architecture</h3>
-<p>Capture each deployable service/component with layer, network placement, and service implementation detail.</p>
+<ac:structured-macro ac:name="toc" ac:schema-version="1">
+  <ac:parameter ac:name="minLevel">2</ac:parameter>
+  <ac:parameter ac:name="maxLevel">2</ac:parameter>
+  <ac:parameter ac:name="style">circle</ac:parameter>
+  <ac:parameter ac:name="printable">false</ac:parameter>
+  <ac:parameter ac:name="outline">false</ac:parameter>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="info" ac:schema-version="1">
+  <ac:parameter ac:name="title">How to complete this page</ac:parameter>
+  <ac:rich-text-body>
+    <p>Sections <strong>1, 3, 4 and 12</strong> are seeded automatically from the HLD main page and auto-generate embedded diagrams. Add implementation-specific rows, then re-run <code>confluence_update_lld_diagrams.py</code> to refresh diagrams. Sections 2 and 5&#8211;15 are collapsed below &#8212; expand each to complete.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">1. Detailed Component Architecture</h2>
+<p><em>Each deployable component: layer, network zone, and cloud service. Auto-synced from HLD &#8212; refine with implementation-specific names, ARNs, and subnets.</em></p>
 <table>
-  <thead>
-    <tr><th>Component Name</th><th>Layer</th><th>Service / Technology</th><th>Network Zone / Subnet</th><th>Purpose</th></tr>
-  </thead>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Component Name</th><th>Layer</th><th>Service / Technology</th><th>Network Zone / Subnet</th><th>Cloud</th><th>Purpose / Responsibility</th></tr></thead>
   <tbody>
-    <tr><td></td><td>Edge / Network / Platform / Application / Data / Security</td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
   </tbody>
 </table>
 <p><strong>[[LLD_DIAGRAM:detailed-architecture]]</strong></p>
 
-<h3>2. Detailed Network and Service Connections</h3>
-<p>Capture all service-to-service and network-level paths, including protocols, ports, and auth method.</p>
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">2. Deployment Configuration (environments, sizing, storage)</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <p><em>Environment accounts, compute sizing, and storage configuration for each deployment target.</em></p>
+    <h3>2a. Environment Summary</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Environment</th><th>AWS Account / Azure Subscription</th><th>Region</th><th>Purpose</th><th>Auto-Deploy?</th></tr></thead>
+      <tbody>
+        <tr><td>DEV</td><td></td><td>eu-west-2</td><td>Developer integration</td><td>Yes &#8212; on PR merge</td></tr>
+        <tr><td>TEST / SIT</td><td></td><td>eu-west-2</td><td>System integration and acceptance testing</td><td>Yes &#8212; on release branch</td></tr>
+        <tr><td>PRE-PROD</td><td></td><td>eu-west-2</td><td>Production mirror for load and security tests</td><td>Gated &#8212; approval required</td></tr>
+        <tr><td>PROD</td><td></td><td>eu-west-2</td><td>Live production service</td><td>Gated &#8212; CAB approval</td></tr>
+      </tbody>
+    </table>
+    <h3>2b. Compute &amp; Sizing</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Component</th><th>Instance / SKU</th><th>vCPU</th><th>Memory (GB)</th><th>Min</th><th>Max</th><th>Scaling Trigger</th></tr></thead>
+      <tbody>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3>2c. Storage Configuration</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Store</th><th>Service</th><th>Capacity</th><th>Encryption</th><th>Retention Policy</th><th>Backup Frequency</th></tr></thead>
+      <tbody>
+        <tr><td></td><td></td><td></td><td>SSE-KMS (CMK)</td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">3. Detailed Network and Service Connections</h2>
+<p><em>All service-to-service paths &#8212; protocol, port, auth, and network route. Auto-synced from HLD &#8212; add implementation-specific ports and exact endpoints.</em></p>
 <table>
-  <thead>
-    <tr><th>Source</th><th>Target</th><th>Protocol</th><th>Port</th><th>Network Path</th><th>Authentication Method</th></tr>
-  </thead>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Source</th><th>Target</th><th>Protocol</th><th>Port</th><th>Network Path</th><th>Authentication Method</th><th>Direction</th></tr></thead>
   <tbody>
-    <tr><td></td><td></td><td>HTTPS / TCP / gRPC / AMQP</td><td></td><td>Internet / Private Link / VNet / Peering / Transit</td><td>mTLS / OAuth2 / API Key / Managed Identity</td></tr>
-    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
   </tbody>
 </table>
 <p><strong>[[LLD_DIAGRAM:network-connections]]</strong></p>
 
-<h3>3. Security Access Connections</h3>
-<p>Capture identity-driven access links from users/services to target services and data stores with control details.</p>
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">4. Security Access Connections</h2>
+<p><em>Identity-driven access from actors and services to target resources. Auto-synced from HLD &#8212; refine with actual IAM role names, secret ARNs, and scope.</em></p>
+<h3>4a. Access Control Matrix</h3>
 <table>
-  <thead>
-    <tr><th>Actor / Service</th><th>Target Resource</th><th>Access Type</th><th>Authentication</th><th>Authorisation</th><th>Secret / Key Source</th><th>Encryption in Transit</th></tr>
-  </thead>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Actor / Service</th><th>Target Resource</th><th>Access Type</th><th>Authentication</th><th>Authorisation</th><th>Secret / Key Source</th><th>Encryption in Transit</th></tr></thead>
   <tbody>
-    <tr><td></td><td></td><td>Control Plane / Data Plane / Admin</td><td>Entra ID / OIDC / mTLS</td><td>RBAC / ABAC / ACL</td><td>Key Vault / KMS / Secret Manager</td><td>TLS 1.2+ / TLS 1.3</td></tr>
     <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
     <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
   </tbody>
 </table>
 <p><strong>[[LLD_DIAGRAM:security-access]]</strong></p>
+<h3>4b. IAM Role / Policy Summary</h3>
+<table>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Role / Policy Name</th><th>Principal</th><th>Permissions (Summary)</th><th>Scope (ARN / Prefix)</th><th>Least-Privilege Rationale</th></tr></thead>
+  <tbody>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+  </tbody>
+</table>
+<h3>4c. Secrets &amp; Key Management</h3>
+<table>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Secret / Key Name</th><th>Service</th><th>Rotation Policy</th><th>Consumer</th><th>Access Control</th></tr></thead>
+  <tbody>
+    <tr><td></td><td></td><td>Auto-rotate every 30 days</td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+  </tbody>
+</table>
 
-<h3>4. Flow Playback (Multi-Tab Diagram)</h3>
-<p>Navigate through each step of the data flow using the tabs below. Each tab isolates one step (S1-S8) with source, target, channel, and authentication details.</p>
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">5. Configuration &amp; Environment Variables</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <p><em>All runtime configuration values &#8212; source, sensitivity, and format.</em></p>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Variable Name</th><th>Component</th><th>Source</th><th>Sensitive?</th><th>Example Value / Format</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">6. API Contract &amp; Interface Specification</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <p><em>Every endpoint or data interface exposed or consumed by this solution.</em></p>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Endpoint / Interface</th><th>Method</th><th>Path / Topic</th><th>Request Format</th><th>Response Format</th><th>Auth</th><th>Rate Limit</th><th>Consumer(s)</th></tr></thead>
+      <tbody>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p><em>Link to full OpenAPI / AsyncAPI spec: </em><a href="#">[OpenAPI Spec]</a></p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">7. CI/CD Pipeline &amp; Security Gates</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <h3>7a. Pipeline Stages</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Stage</th><th>Tool</th><th>Trigger</th><th>Actions</th><th>Gate / Approval</th><th>Target Environment</th></tr></thead>
+      <tbody>
+        <tr><td>Build</td><td></td><td>PR / push to main</td><td>Compile, lint, unit tests, SAST, container image build</td><td>All checks pass</td><td>N/A</td></tr>
+        <tr><td>Deploy DEV</td><td>Terraform</td><td>Merge to develop</td><td>terraform apply, smoke test</td><td>Automated</td><td>DEV</td></tr>
+        <tr><td>Deploy TEST</td><td>Terraform</td><td>Release branch</td><td>terraform apply, integration tests</td><td>Automated</td><td>TEST</td></tr>
+        <tr><td>Deploy PRE-PROD</td><td>Terraform</td><td>Manual trigger</td><td>terraform apply, performance tests</td><td>Architect approval</td><td>PRE-PROD</td></tr>
+        <tr><td>Deploy PROD</td><td>Terraform</td><td>Manual trigger</td><td>terraform apply, post-deploy checks</td><td>CAB approval</td><td>PROD</td></tr>
+      </tbody>
+    </table>
+    <h3>7b. Security Gates (SBD Requirements)</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Gate</th><th>Tool</th><th>Pass Criteria</th><th>Blocks Deployment?</th></tr></thead>
+      <tbody>
+        <tr><td>SAST</td><td>Snyk / SonarQube</td><td>0 critical/high vulnerabilities</td><td>Yes</td></tr>
+        <tr><td>Container Image Scan</td><td>ECR scan-on-push / Trivy</td><td>0 critical CVEs</td><td>Yes</td></tr>
+        <tr><td>IaC Security Scan</td><td>Checkov / tfsec</td><td>No HIGH policy violations</td><td>Yes</td></tr>
+        <tr><td>Secrets Detection</td><td>git-secrets / detect-secrets</td><td>No secrets committed</td><td>Yes</td></tr>
+        <tr><td>DAST</td><td>OWASP ZAP / Burp Suite</td><td>No HIGH findings in PRE-PROD</td><td>Yes &#8212; before PROD</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">8. Monitoring, Alerting &amp; Observability</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <h3>8a. Log Groups &amp; Metrics</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Component</th><th>Log Group / Stream</th><th>Retention (days)</th><th>Key Metrics</th><th>Dashboard</th></tr></thead>
+      <tbody>
+        <tr><td></td><td></td><td>30</td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3>8b. Alarms &amp; Notifications</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Alarm Name</th><th>Metric</th><th>Threshold</th><th>Period</th><th>Action (SNS / PagerDuty)</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr><td></td><td></td><td></td><td>5 min</td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3>8c. Distributed Tracing</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Component</th><th>Tracing Tool</th><th>Trace ID Propagation</th><th>Sampling Rate</th></tr></thead>
+      <tbody>
+        <tr><td></td><td>AWS X-Ray / OpenTelemetry</td><td>X-Amzn-Trace-Id header</td><td>5%</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">9. Error Handling &amp; Resilience</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Component</th><th>Failure Mode</th><th>Detection</th><th>Retry Strategy</th><th>Dead-Letter / Fallback</th><th>Alert?</th></tr></thead>
+      <tbody>
+        <tr><td></td><td></td><td></td><td>Exponential backoff &#8212; max 3 retries</td><td>SQS DLQ / S3 error prefix</td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3>9a. Circuit Breaker &amp; Bulkhead</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Pattern</th><th>Applied To</th><th>Configuration</th><th>Implementation</th></tr></thead>
+      <tbody>
+        <tr><td>Circuit Breaker</td><td></td><td>Open after 5 failures in 60s</td><td></td></tr>
+        <tr><td>Bulkhead</td><td></td><td>Separate Lambda concurrency limits</td><td></td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">10. Infrastructure as Code (Terraform)</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <h3>10a. Module Structure</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Module Path</th><th>Resources Managed</th><th>Inputs (Key Variables)</th><th>Outputs</th></tr></thead>
+      <tbody>
+        <tr><td>modules/compute</td><td>Lambda, ECS, EC2</td><td>environment, instance_type, min_capacity</td><td>function_arn, cluster_arn</td></tr>
+        <tr><td>modules/storage</td><td>S3, RDS, DynamoDB</td><td>environment, kms_key_arn, retention_days</td><td>bucket_arn, db_endpoint</td></tr>
+        <tr><td>modules/network</td><td>VPC, Subnets, SGs</td><td>vpc_cidr, az_count</td><td>vpc_id, subnet_ids</td></tr>
+        <tr><td>modules/security</td><td>IAM roles, KMS, Secrets Manager</td><td>service_names, rotation_days</td><td>role_arns, key_arns</td></tr>
+      </tbody>
+    </table>
+    <h3>10b. State &amp; Backend</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Environment</th><th>Backend (S3 Bucket / Key)</th><th>Lock Table (DynamoDB)</th><th>Workspace</th></tr></thead>
+      <tbody>
+        <tr><td>DEV</td><td></td><td></td><td>dev</td></tr>
+        <tr><td>PROD</td><td></td><td></td><td>prod</td></tr>
+      </tbody>
+    </table>
+    <p><em>Generated outputs: <code>output/terraform/aws/main.tf</code>, <code>output/terraform/azure/main.tf</code></em></p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">11. Test Strategy</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Test Type</th><th>Scope</th><th>Tool / Framework</th><th>Coverage Target</th><th>Environment</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td>Unit Tests</td><td>Individual functions / methods</td><td>pytest / Jest / JUnit</td><td>&ge;80% line coverage</td><td>Local / CI</td><td>Developer</td></tr>
+        <tr><td>Integration Tests</td><td>Service interactions &amp; API contracts</td><td>pytest / Postman</td><td>All key flows</td><td>DEV / TEST</td><td>Developer</td></tr>
+        <tr><td>Contract Tests</td><td>API consumer/provider</td><td>Pact / OpenAPI validator</td><td>All published endpoints</td><td>CI</td><td>Developer</td></tr>
+        <tr><td>Performance / Load Tests</td><td>NFR throughput &amp; latency</td><td>k6 / Locust</td><td>NFR targets met</td><td>PRE-PROD</td><td>QA / Architect</td></tr>
+        <tr><td>Security / Pen Tests</td><td>OWASP Top 10 + SBD</td><td>OWASP ZAP / Burp</td><td>0 critical findings</td><td>PRE-PROD</td><td>Security Team</td></tr>
+        <tr><td>DR Test</td><td>RTO/RPO validation</td><td>Manual / automated failover</td><td>RTO &amp; RPO targets met</td><td>PRE-PROD</td><td>Architect / Ops</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">12. Data Flow Playback (Step-by-Step)</h2>
+<p><em>Step-by-step navigation of the end-to-end data flow. Each diagram tab isolates one step (S1&#8211;S8). Fill in the reference table, then re-run the script to refresh the diagram.</em></p>
 <p><strong>[[LLD_DIAGRAM:flow-playback-tabs]]</strong></p>
+<h3>12a. Flow Step Reference</h3>
+<table>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Step</th><th>Name</th><th>Source</th><th>Target</th><th>Data / Payload</th><th>Protocol</th><th>Authentication</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>S1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>S2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>S3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>S4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>S5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>S6</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>S7</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>S8</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </tbody>
+</table>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">13. Operational Runbook</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <h3>13a. Routine Operations</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Task</th><th>Frequency</th><th>Steps</th><th>Owner</th><th>Tool / Script</th></tr></thead>
+      <tbody>
+        <tr><td>Backup verification</td><td>Weekly</td><td>Check snapshot status in RDS / S3 lifecycle</td><td>Ops Team</td><td>AWS Console / CLI</td></tr>
+        <tr><td>Key rotation check</td><td>Monthly</td><td>Verify Secrets Manager auto-rotation status</td><td>Security Team</td><td>AWS Console</td></tr>
+        <tr><td>Dependency version review</td><td>Monthly</td><td>Review Dependabot / Snyk alerts, patch within SLA</td><td>Developer</td><td>GitHub / Snyk</td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3>13b. Incident Response</h3>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Incident Type</th><th>Detection</th><th>Immediate Actions</th><th>Escalation</th><th>Recovery Steps</th><th>Post-Incident</th></tr></thead>
+      <tbody>
+        <tr><td>Service Outage (P1)</td><td>CloudWatch alarm / PagerDuty</td><td>Page on-call; check health dashboard</td><td>L1 &#8594; L2 &#8594; Architect</td><td>Rollback Terraform; restore snapshot</td><td>PIR within 48h</td></tr>
+        <tr><td>Security Incident</td><td>GuardDuty / Sentinel</td><td>Isolate resource; preserve logs</td><td>SOC</td><td>Rotate credentials; patch; re-deploy</td><td>SIRT report</td></tr>
+        <tr><td>Data Loss / Corruption</td><td>Quality check failure</td><td>Halt pipeline; quarantine data</td><td>Data Owner &#8594; CISO</td><td>Restore from backup</td><td>DPIA review if PII</td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">14. Dependencies &amp; Third-Party Services</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Dependency</th><th>Type</th><th>Version / SLA</th><th>Owner / Provider</th><th>Risk if Unavailable</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td>Microsoft Entra ID</td><td>Shared Platform &#8212; Identity</td><td>UKHSA SLA</td><td>UKHSA IT / Microsoft</td><td>All authentication fails</td><td>Cached tokens; break-glass accounts</td></tr>
+        <tr><td>AWS Landing Zone</td><td>Shared Platform &#8212; Infrastructure</td><td>AWS 99.99%</td><td>UKHSA Cloud Platform Team</td><td>No compliant account/networking</td><td>Raise as blocker at project start</td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">15. Open Items &amp; Technical Debt</h2>
+<ac:structured-macro ac:name="expand" ac:schema-version="1">
+  <ac:parameter ac:name="title">&#9656; Show details</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>ID</th><th>Item</th><th>Category</th><th>Impact</th><th>Owner</th><th>Target Resolution</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>TD-01</td><td></td><td></td><td></td><td></td><td></td><td>Open</td></tr>
+        <tr><td>TD-02</td><td></td><td></td><td></td><td></td><td></td><td>Open</td></tr>
+        <tr><td>TD-03</td><td></td><td></td><td></td><td></td><td></td><td>Open</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3 style="color:#0052CC;margin-top:2em;">&#128196; Section Reference</h3>
+<p>Quick reference to all sections in this Low-Level Design document.</p>
+<table>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>#</th><th>Section</th><th>Status</th><th>Auto-seeded?</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Detailed Component Architecture</td><td>Mandatory</td><td>Yes &#8212; from HLD</td></tr>
+    <tr><td>2</td><td>Deployment Configuration (environments, sizing, storage)</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>3</td><td>Detailed Network and Service Connections</td><td>Mandatory</td><td>Yes &#8212; from HLD</td></tr>
+    <tr><td>4</td><td>Security Access Connections</td><td>Mandatory</td><td>Yes &#8212; from HLD</td></tr>
+    <tr><td>5</td><td>Configuration &amp; Environment Variables</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>6</td><td>API Contract &amp; Interface Specification</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>7</td><td>CI/CD Pipeline &amp; Security Gates</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>8</td><td>Monitoring, Alerting &amp; Observability</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>9</td><td>Error Handling &amp; Resilience</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>10</td><td>Infrastructure as Code (Terraform)</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>11</td><td>Test Strategy</td><td>Mandatory</td><td>No</td></tr>
+    <tr><td>12</td><td>Data Flow Playback (Step-by-Step)</td><td>Mandatory</td><td>Yes &#8212; from HLD</td></tr>
+    <tr><td>13</td><td>Operational Runbook</td><td>Pre-production</td><td>No</td></tr>
+    <tr><td>14</td><td>Dependencies &amp; Third-Party Services</td><td>Pre-production</td><td>No</td></tr>
+    <tr><td>15</td><td>Open Items &amp; Technical Debt</td><td>Pre-production</td><td>No</td></tr>
+    <tr><td>16</td><td>Acronyms &amp; Glossary</td><td>Pre-production</td><td>No</td></tr>
+  </tbody>
+</table>
+
+<h2 style="border-bottom:2px solid #0052CC;padding-bottom:6px;color:#0052CC;">16. Acronyms &amp; Glossary</h2>
+<p><em>Define all abbreviations, acronyms, and domain terms used in this document. Add rows as needed.</em></p>
+<table>
+  <thead><tr style="background-color:#0052CC;color:#ffffff;"><th>Term / Acronym</th><th>Full Form</th><th>Definition / Context</th></tr></thead>
+  <tbody>
+    <tr><td>API</td><td>Application Programming Interface</td><td>A set of protocols and tools allowing applications to communicate.</td></tr>
+    <tr><td>ARN</td><td>Amazon Resource Name</td><td>Unique identifier for AWS resources.</td></tr>
+    <tr><td>CAB</td><td>Change Advisory Board</td><td>Governance body that approves changes to production environments.</td></tr>
+    <tr><td>CI/CD</td><td>Continuous Integration / Continuous Deployment</td><td>Automated pipeline for building, testing, and deploying code.</td></tr>
+    <tr><td>CMK</td><td>Customer Managed Key</td><td>Encryption key managed by the customer in AWS KMS.</td></tr>
+    <tr><td>DAST</td><td>Dynamic Application Security Testing</td><td>Runtime security testing of running applications.</td></tr>
+    <tr><td>DLQ</td><td>Dead-Letter Queue</td><td>Queue that holds messages that could not be processed successfully.</td></tr>
+    <tr><td>DPIA</td><td>Data Protection Impact Assessment</td><td>Risk assessment required under UK GDPR for high-risk data processing.</td></tr>
+    <tr><td>DR</td><td>Disaster Recovery</td><td>Strategy and processes to restore services after a failure event.</td></tr>
+    <tr><td>ECS</td><td>Elastic Container Service</td><td>AWS managed container orchestration service.</td></tr>
+    <tr><td>HLD</td><td>High-Level Design</td><td>Architecture document describing system components and interactions at a strategic level.</td></tr>
+    <tr><td>IAM</td><td>Identity and Access Management</td><td>AWS service for managing authentication and authorisation.</td></tr>
+    <tr><td>IaC</td><td>Infrastructure as Code</td><td>Managing and provisioning infrastructure through machine-readable configuration files.</td></tr>
+    <tr><td>KMS</td><td>Key Management Service</td><td>AWS managed service for creating and controlling encryption keys.</td></tr>
+    <tr><td>LLD</td><td>Low-Level Design</td><td>Detailed technical specification for implementation, extending the HLD.</td></tr>
+    <tr><td>NFR</td><td>Non-Functional Requirement</td><td>Requirements describing system qualities such as performance, reliability, and security.</td></tr>
+    <tr><td>PIR</td><td>Post-Incident Review</td><td>Structured review conducted after a significant incident to identify lessons learned.</td></tr>
+    <tr><td>PII</td><td>Personally Identifiable Information</td><td>Any data that could identify a specific individual.</td></tr>
+    <tr><td>RBAC</td><td>Role-Based Access Control</td><td>Access control model where permissions are assigned to roles, not individuals.</td></tr>
+    <tr><td>RDS</td><td>Relational Database Service</td><td>AWS managed relational database service.</td></tr>
+    <tr><td>RPO</td><td>Recovery Point Objective</td><td>Maximum acceptable amount of data loss measured in time.</td></tr>
+    <tr><td>RTO</td><td>Recovery Time Objective</td><td>Maximum acceptable time to restore a service after a failure.</td></tr>
+    <tr><td>SAST</td><td>Static Application Security Testing</td><td>Analysis of source code for security vulnerabilities without executing the code.</td></tr>
+    <tr><td>SBD</td><td>Secure by Design</td><td>UKHSA security assurance framework embedded into the delivery lifecycle.</td></tr>
+    <tr><td>SIRT</td><td>Security Incident Response Team</td><td>Team responsible for managing and coordinating security incidents.</td></tr>
+    <tr><td>SLA</td><td>Service Level Agreement</td><td>Contractual commitment defining expected service performance levels.</td></tr>
+    <tr><td>SOC</td><td>Security Operations Centre</td><td>Team monitoring systems for security threats and incidents.</td></tr>
+    <tr><td>SSE</td><td>Server-Side Encryption</td><td>Encryption of data at rest performed by the storage service.</td></tr>
+    <tr><td>TLS</td><td>Transport Layer Security</td><td>Cryptographic protocol for securing data in transit.</td></tr>
+    <tr><td>UKHSA</td><td>UK Health Security Agency</td><td>Government agency responsible for protecting the UK from infectious diseases and other health threats.</td></tr>
+    <tr><td>VPC</td><td>Virtual Private Cloud</td><td>Isolated virtual network within a cloud provider.</td></tr>
+    <tr><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td></tr>
+  </tbody>
+</table>
 """
 
 
 def rebuild_lld_detailed_section(body_html: str) -> str:
-    """Ensure exactly one LLD detailed-diagrams block exists (remove duplicates, keep one fresh block)."""
-    soup = BeautifulSoup(body_html, "html.parser")
+    """Ensure exactly one LLD sections block exists.
 
-    first_marker = None
-    for h2 in soup.find_all("h2"):
-        if "detailed architecture diagrams" in h2.get_text(" ", strip=True).lower():
-            first_marker = h2
+    Searches for ALL occurrences of every known LLD-section marker and cuts from
+    the absolute earliest one.  This removes every duplicate in a single pass no
+    matter how many copies have accumulated.
+    """
+    import re as _re
+
+    fresh = lld_detailed_sections_html()
+    candidates: list[int] = []
+
+    def _macro_start(pos: int) -> int:
+        """Walk back from pos to the opening <ac:structured-macro tag."""
+        tag = body_html.rfind("<ac:structured-macro", 0, pos)
+        return tag if tag != -1 else pos
+
+    # ── Marker A: every occurrence of our anchor name ─────────────────────────
+    for m in _re.finditer("lld-sections-start", body_html):
+        candidates.append(_macro_start(m.start()))
+
+    # ── Marker B: every occurrence of the info-macro title ────────────────────
+    # "How to complete this page" is unique to our block; it does NOT appear in
+    # the preamble (which says "How to use this page").
+    for m in _re.finditer("How to complete this page", body_html):
+        candidates.append(_macro_start(m.start()))
+
+    # ── Marker C: h1 page title (ensures the entire body is managed) ──────────
+    for fragment in [
+        "Low-Level Design (LLD) Solution Architecture Template",
+    ]:
+        pos = body_html.find(fragment)
+        if pos != -1:
+            h1 = body_html.rfind("<h1", 0, pos)
+            candidates.append(h1 if h1 != -1 else pos)
             break
 
-    if first_marker is not None:
-        node = first_marker
-        while node is not None:
-            next_node = node.next_sibling
-            node.decompose()
-            node = next_node
+    # ── Marker D: first matching h2 section heading ───────────────────────────
+    for fragment in [
+        ">Contents<",
+        ">1. Detailed Component Architecture<",
+        ">Detailed Component Architecture<",
+    ]:
+        pos = body_html.find(fragment)
+        if pos != -1:
+            h2 = body_html.rfind("<h2", 0, pos)
+            candidates.append(h2 if h2 != -1 else pos)
+            break
 
-    fragment = BeautifulSoup(lld_detailed_sections_html(), "html.parser")
-    for child in list(fragment.contents):
-        soup.append(child)
+    if candidates:
+        cut = min(candidates)
+        copies = len([m for m in _re.finditer("How to complete this page", body_html)])
+        print(f"  [rebuild] found {copies} copy/copies — cutting from position {cut} (page length {len(body_html)})")
+        return body_html[:cut] + fresh
 
-    return str(soup)
+    # Nothing found — first-ever run on a blank page
+    return body_html + fresh
 
 
 def default_lld_page_html() -> str:
     return """
 <h1>Low-Level Design (LLD) Solution Architecture Template</h1>
-<p><em>Implementation-level architecture detail for engineering delivery.</em></p>
+<p><em>Implementation-level architecture detail for engineering delivery. Complete each section below as design decisions are made. Sections 1â€“12 are mandatory before handover to the delivery team. Sections 13â€“15 should be completed before production go-live.</em></p>
+<ac:structured-macro ac:name="tip"><ac:rich-text-body>
+<p><strong>How to use this page:</strong> Fill in the tables row by row as you design each component. The diagram placeholders (e.g. <code>[[LLD_DIAGRAM:detailed-architecture]]</code>) are automatically replaced with embedded draw.io diagrams when you run <code>confluence_update_lld_diagrams.py</code>.</p>
+</ac:rich-text-body></ac:structured-macro>
 """ + lld_detailed_sections_html()
 
 
@@ -2686,7 +3328,7 @@ def main() -> None:
     connections = _merge_connections(connections, inherited_context["connections"])
     security_rows = _merge_security(security_rows, inherited_context["security_rows"])
 
-    # ── EDAP pattern detection and automatic LLD diagram enrichment
+    # â”€â”€ EDAP pattern detection and automatic LLD diagram enrichment
     if EDAP_KB_AVAILABLE:
         # Build lightweight proxy lists from LLD-format dicts for the KB functions
         _hld_comps = [{"name": c.get("name", ""), "layer": c.get("layer", ""),
@@ -2699,44 +3341,37 @@ def main() -> None:
                        "interaction": "", "direction": ""}
                      for e in inherited_context.get("context_entities", [])]
         explicit_edap = [p.strip() for p in os.getenv("EDAP_PATTERN_IDS", "").split(",") if p.strip()]
-        edap_patterns = detect_edap_patterns(_hld_comps, _hld_conns, _hld_flows, _hld_ents, explicit_edap or None)
-        if edap_patterns:
-            print(f"\n  {build_edap_integration_summary(edap_patterns)}")
-            # Inject EDAP AWS services as LLD-format components
-            _existing_names = {c.get("name", "").lower() for c in components}
-            for pattern in edap_patterns:
-                for svc in pattern.get("aws_services", []):
-                    if svc["name"].lower() not in _existing_names:
-                        components.append({
-                            "name": svc["name"],
-                            "layer": svc.get("layer", "Managed"),
-                            "service": svc.get("technology", ""),
-                            "network_zone": svc.get("layer", "managed"),
-                            "purpose": f"[{pattern['id']}] {pattern['name']}",
-                        })
-                        _existing_names.add(svc["name"].lower())
-            # Inject EDAP connections as LLD-format connections
-            _existing_conns = {(c.get("source", "").lower(), c.get("target", "").lower()) for c in connections}
-            for pattern in edap_patterns:
-                for conn in pattern.get("edap_connections", []):
-                    key = (conn["from"].lower(), conn["to"].lower())
-                    if key not in _existing_conns:
-                        connections.append({
-                            "source": conn["from"],
-                            "target": conn["to"],
-                            "protocol": conn.get("label", ""),
-                            "port": "",
-                            "network_path": "EDAP",
-                            "auth": "IAM / SSE-KMS",
-                        })
-                        _existing_conns.add(key)
+        edap_auto_detect = os.getenv("EDAP_AUTO_DETECT", "false").strip().lower() in {"1", "true", "yes"}
+        if explicit_edap or edap_auto_detect:
+            edap_patterns = detect_edap_patterns(_hld_comps, _hld_conns, _hld_flows, _hld_ents, explicit_edap or None)
+            if edap_patterns:
+                print(f"\n  EDAP patterns detected — rendering as separate EDAP zone in detailed architecture diagram:")
+                print(f"  {build_edap_integration_summary(edap_patterns)}")
+                # Collect EDAP zone components (deduplicated by name) from pattern edap_components
+                _edap_seen: set[str] = set()
+                edap_zone_components: list[dict] = []
+                for _p in edap_patterns:
+                    for _c in _p.get("edap_components", _p.get("aws_services", [])):
+                        _cname = (_c.get("name") or "").strip()
+                        if _cname and _cname not in _edap_seen:
+                            _edap_seen.add(_cname)
+                            edap_zone_components.append({
+                                "name": _cname,
+                                "layer": _c.get("layer", "Application"),
+                                "service": _c.get("technology", ""),
+                                "purpose": _c.get("description", ""),
+                            })
+            else:
+                edap_zone_components = []
         else:
-            print("\n  No EDAP integration patterns detected in LLD tables.")
-            print("  Tip: set EDAP_PATTERN_IDS=EDAP-INT-01,EDAP-INT-03 in .env to force specific patterns.")
+            edap_patterns = []
+            edap_zone_components = []
+            print("\n  EDAP pattern injection skipped. Set EDAP_PATTERN_IDS in .env to enable.")
     else:
         edap_patterns = []
+        edap_zone_components = []
 
-    # ── UKHSA patterns detection and automatic LLD diagram enrichment
+    # â”€â”€ UKHSA patterns detection and automatic LLD diagram enrichment
     if UKHSA_KB_AVAILABLE:
         _hld_comps_u = [{"name": c.get("name", ""), "layer": c.get("layer", ""),
                          "technology": c.get("service", ""), "description": c.get("purpose", "")} for c in components]
@@ -2747,41 +3382,26 @@ def main() -> None:
         _hld_ents_u  = [{"name": e.get("name", ""), "type": e.get("layer", ""),
                          "interaction": "", "direction": ""}
                         for e in inherited_context.get("context_entities", [])]
+
+        # Use patterns explicitly marked Y in the HLD Section 8 pattern selection tables.
+        # Fall back to UKHSA_PATTERN_IDS env var if set, or skip auto-detection entirely.
+        # This prevents all keyword-matched patterns from being injected regardless of intent.
+        hld_selected = parse_selected_patterns_from_hld(main_page["body"]["storage"]["value"])
         explicit_ukhsa = [p.strip() for p in os.getenv("UKHSA_PATTERN_IDS", "").split(",") if p.strip()]
-        ukhsa_patterns = detect_ukhsa_patterns(_hld_comps_u, _hld_conns_u, _hld_flows_u, _hld_ents_u, explicit_ukhsa or None)
-        if ukhsa_patterns:
-            print(f"\n  {build_ukhsa_pattern_summary(ukhsa_patterns)}")
-            # Inject UKHSA-pattern components as LLD-format components
-            _existing_names = {c.get("name", "").lower() for c in components}
-            for pattern in ukhsa_patterns:
-                for svc in pattern.get("components", []):
-                    if svc["name"].lower() not in _existing_names:
-                        components.append({
-                            "name": svc["name"],
-                            "layer": svc.get("layer", "Managed"),
-                            "service": svc.get("technology", ""),
-                            "network_zone": svc.get("layer", "managed"),
-                            "purpose": f"[{pattern['id']}] {pattern['name']}",
-                        })
-                        _existing_names.add(svc["name"].lower())
-            # Inject UKHSA connections as LLD-format connections
-            _existing_conns = {(c.get("source", "").lower(), c.get("target", "").lower()) for c in connections}
-            for pattern in ukhsa_patterns:
-                for conn in pattern.get("connections", []):
-                    key = (conn["from"].lower(), conn["to"].lower())
-                    if key not in _existing_conns:
-                        connections.append({
-                            "source": conn["from"],
-                            "target": conn["to"],
-                            "protocol": conn.get("label", ""),
-                            "port": "",
-                            "network_path": f"UKHSA-{pattern['family']}",
-                            "auth": "IAM / KMS (UKHSA mandatory)",
-                        })
-                        _existing_conns.add(key)
+        combined_explicit = list(dict.fromkeys(hld_selected + explicit_ukhsa))  # preserve order, dedup
+
+        if combined_explicit:
+            ukhsa_patterns = detect_ukhsa_patterns(_hld_comps_u, _hld_conns_u, _hld_flows_u, _hld_ents_u, combined_explicit)
+            if ukhsa_patterns:
+                ids = ", ".join(p["id"] for p in ukhsa_patterns)
+                families = sorted({p.get("family", p.get("id", "")) for p in ukhsa_patterns})
+                print(f"\n  UKHSA Patterns from HLD Section 8 (informational — not injected into diagrams):")
+                print(f"  IDs: {ids}")
+                print(f"  Families: {', '.join(families)}")
         else:
-            print("\n  No UKHSA patterns detected in LLD tables.")
-            print("  Tip: set UKHSA_PATTERN_IDS=1A,3C,UKHSA-INF-01 in .env to force specific patterns.")
+            ukhsa_patterns = []
+            print("\n  UKHSA pattern injection skipped — no patterns marked 'Y' in HLD Section 8.")
+            print("  Tip: mark patterns as Selected=Y in the HLD pattern tables, or set UKHSA_PATTERN_IDS in .env to force specific patterns.")
     else:
         ukhsa_patterns = []
 
@@ -2812,7 +3432,10 @@ def main() -> None:
 
     if components:
         print("\nGenerating detailed component architecture diagram...")
-        xml = generate_lld_detailed_architecture_drawio(components, connections)
+        xml = generate_lld_detailed_architecture_drawio(
+            components, connections,
+            edap_components=edap_zone_components if edap_zone_components else None,
+        )
         save_local_drawio("lld-detailed-architecture.drawio", xml)
         upload_attachment(session, base_url, lld_page_id, "lld-detailed-architecture.drawio", xml)
         embed_html = replace_lld_placeholder(
@@ -2872,7 +3495,7 @@ def main() -> None:
             embed_html,
         )
     else:
-        # Placeholders already replaced in a previous run — force a minor page
+        # Placeholders already replaced in a previous run â€” force a minor page
         # update so Confluence invalidates its cached draw.io renders.
         print("\nForcing page refresh to invalidate Confluence diagram cache...")
         updated = update_page_body(

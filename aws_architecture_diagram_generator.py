@@ -1580,44 +1580,78 @@ def _build_auth_sequence_messages(auth_rules: dict | None = None) -> list[tuple[
     if auth_rules:
         rules.update({k: v for k, v in auth_rules.items() if v is not None})
 
-    messages = [
-        ("user", "webapp", "1. Login request", "#111827", False),
-        ("webapp", "api", "2. Forward to API", "#111827", False),
-        ("api", "azure-vnet", "3. Identity request", "#1D4ED8", False),
-    ]
+    has_webapp = rules.get("has_webapp", True)
 
-    if rules.get("include_mfa_challenge", True):
-        messages.append(("azure-vnet", "azure-identity", "4. SSO + MFA challenge", "#1D4ED8", False))
+    if has_webapp:
+        # Full flow with frontend Web App lane
+        messages = [
+            ("user", "webapp", "1. Login request", "#111827", False),
+            ("webapp", "api", "2. Forward to API", "#111827", False),
+            ("api", "azure-vnet", "3. Identity request", "#1D4ED8", False),
+        ]
+        if rules.get("include_mfa_challenge", True):
+            messages.append(("azure-vnet", "azure-identity", "4. SSO + MFA challenge", "#1D4ED8", False))
+        else:
+            messages.append(("azure-vnet", "azure-identity", "4. SSO challenge", "#1D4ED8", False))
+        if rules.get("include_token_refresh", True):
+            messages.extend([
+                ("azure-identity", "api", "5. Federated token issued", "#1D4ED8", True),
+                ("api", "webapp", "6. Token returned", "#1D4ED8", True),
+            ])
+        else:
+            messages.extend([
+                ("azure-identity", "api", "5. Access granted", "#1D4ED8", True),
+                ("api", "webapp", "6. Authorization confirmed", "#1D4ED8", True),
+            ])
+        messages.extend([
+            ("webapp", "service", "7. API call + token", "#111827", False),
+            ("service", "db", "8. Query with auth context", "#111827", False),
+        ])
+        if rules.get("include_reauth_on_validation_failure", True):
+            messages.extend([
+                ("service", "api", "9. Token validation failed / expired", "#B91C1C", True),
+                ("api", "webapp", "10. 401 Unauthorized - reauthenticate", "#B91C1C", True),
+                ("webapp", "user", "11. Prompt for sign-in again", "#B91C1C", True),
+                ("user", "webapp", "12. Re-enter credentials", "#111827", False),
+                ("webapp", "api", "13. Reinitiate authentication flow", "#111827", False),
+                ("api", "azure-identity", "14. New token request", "#1D4ED8", False),
+                ("azure-identity", "api", "15. New token issued", "#1D4ED8", True),
+                ("api", "service", "16. Retry with new token", "#111827", False),
+            ])
     else:
-        messages.append(("azure-vnet", "azure-identity", "4. SSO challenge", "#1D4ED8", False))
-
-    if rules.get("include_token_refresh", True):
+        # Condensed flow — no frontend, User/Client calls API directly
+        messages = [
+            ("user", "api", "1. Login request", "#111827", False),
+            ("api", "azure-vnet", "2. Identity request", "#1D4ED8", False),
+        ]
+        if rules.get("include_mfa_challenge", True):
+            messages.append(("azure-vnet", "azure-identity", "3. SSO + MFA challenge", "#1D4ED8", False))
+        else:
+            messages.append(("azure-vnet", "azure-identity", "3. SSO challenge", "#1D4ED8", False))
+        if rules.get("include_token_refresh", True):
+            messages.extend([
+                ("azure-identity", "api", "4. Federated token issued", "#1D4ED8", True),
+                ("api", "user", "5. Token returned", "#1D4ED8", True),
+            ])
+        else:
+            messages.extend([
+                ("azure-identity", "api", "4. Access granted", "#1D4ED8", True),
+                ("api", "user", "5. Authorization confirmed", "#1D4ED8", True),
+            ])
         messages.extend([
-            ("azure-identity", "api", "5. Federated token issued", "#1D4ED8", True),
-            ("api", "webapp", "6. Token returned", "#1D4ED8", True),
+            ("user", "api", "6. API call + token", "#111827", False),
+            ("api", "service", "7. Route request to service", "#111827", False),
+            ("service", "db", "8. Query with auth context", "#111827", False),
         ])
-    else:
-        messages.extend([
-            ("azure-identity", "api", "5. Access granted", "#1D4ED8", True),
-            ("api", "webapp", "6. Authorization confirmed", "#1D4ED8", True),
-        ])
-
-    messages.extend([
-        ("webapp", "service", "7. API call + token", "#111827", False),
-        ("service", "db", "8. Query with auth context", "#111827", False),
-    ])
-
-    if rules.get("include_reauth_on_validation_failure", True):
-        messages.extend([
-            ("service", "api", "9. Token validation failed / expired", "#B91C1C", True),
-            ("api", "webapp", "10. 401 Unauthorized - reauthenticate", "#B91C1C", True),
-            ("webapp", "user", "11. Prompt for sign-in again", "#B91C1C", True),
-            ("user", "webapp", "12. Re-enter credentials", "#111827", False),
-            ("webapp", "api", "13. Reinitiate authentication flow", "#111827", False),
-            ("api", "azure-identity", "14. New token request", "#1D4ED8", False),
-            ("azure-identity", "api", "15. New token issued", "#1D4ED8", True),
-            ("api", "service", "16. Retry processing with new token", "#111827", False),
-        ])
+        if rules.get("include_reauth_on_validation_failure", True):
+            messages.extend([
+                ("service", "api", "9. Token validation failed / expired", "#B91C1C", True),
+                ("api", "user", "10. 401 Unauthorized - reauthenticate", "#B91C1C", True),
+                ("user", "api", "11. Re-enter credentials", "#111827", False),
+                ("api", "azure-identity", "12. New token request", "#1D4ED8", False),
+                ("azure-identity", "api", "13. New token issued", "#1D4ED8", True),
+                ("api", "service", "14. Retry with new token", "#111827", False),
+            ])
 
     return messages
 
@@ -1634,8 +1668,8 @@ def generate_authentication_flow_diagram(auth_rules: dict | None = None) -> str:
     diagram = ET.SubElement(mxfile, "diagram", {"name": "Authentication Flow Sequence"})
     
     model = ET.SubElement(diagram, "mxGraphModel", {
-        "dx": "1600",
-        "dy": "1600",
+        "dx": "1200",
+        "dy": "900",
         "grid": "1",
         "gridSize": "10",
         "guides": "1",
@@ -1645,8 +1679,8 @@ def generate_authentication_flow_diagram(auth_rules: dict | None = None) -> str:
         "fold": "1",
         "page": "0",
         "pageScale": "1",
-        "pageWidth": "1600",
-        "pageHeight": "1600",
+        "pageWidth": "1300",
+        "pageHeight": "1100",
         "math": "0",
         "shadow": "0"
     })
@@ -1655,23 +1689,28 @@ def generate_authentication_flow_diagram(auth_rules: dict | None = None) -> str:
     ET.SubElement(root, "mxCell", {"id": "0"})
     ET.SubElement(root, "mxCell", {"id": "1", "parent": "0"})
 
+    has_webapp = rules.get("has_webapp", True)
+
     participants = [
         ("user", "User", "Consumer", "#FF9900"),
-        ("webapp", "Web App", "Frontend", "#4B9BFF"),
+    ]
+    if has_webapp:
+        participants.append(("webapp", "Web App", "Frontend", "#4B9BFF"))
+    participants.extend([
         ("api", "API Gateway", "Backend API", "#FF9900"),
         ("azure-vnet", "Azure Network", "Identity Network", "#0078D4"),
         ("azure-identity", "Azure Entra ID", identity_desc, "#0078D4"),
         ("service", "Service", "Application", "#4B9BFF"),
         ("db", "Database", "Data Store", "#2262FF"),
-    ]
+    ])
 
-    x_start = 60
-    x_gap = 190
-    head_y = 60
-    head_w = 150
-    head_h = 54
-    line_y = 130
-    line_h = 1300
+    x_start = 40
+    x_gap = 155
+    head_y = 30
+    head_w = 130
+    head_h = 44
+    line_y = 82
+    line_h = 1050
 
     x_positions = {}
     for idx, (pid, name, desc, color) in enumerate(participants):
@@ -1681,7 +1720,7 @@ def generate_authentication_flow_diagram(auth_rules: dict | None = None) -> str:
         head = ET.SubElement(root, "mxCell", {
             "id": pid,
             "value": f"{name}\n({desc})",
-            "style": f"rounded=1;fillColor={color};strokeColor=#1F2937;strokeWidth=2;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;",
+            "style": f"rounded=1;fillColor={color};strokeColor=#1F2937;strokeWidth=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;",
             "parent": "1",
             "vertex": "1",
         })
@@ -1710,8 +1749,8 @@ def generate_authentication_flow_diagram(auth_rules: dict | None = None) -> str:
 
     messages = _build_auth_sequence_messages(rules)
 
-    y = 190
-    y_step = 95
+    y = 140
+    y_step = 62
     for i, (from_id, to_id, label, color, is_response) in enumerate(messages):
         source_anchor = ET.SubElement(root, "mxCell", {
             "id": f"msg-{i}-src",
@@ -1745,7 +1784,7 @@ def generate_authentication_flow_diagram(auth_rules: dict | None = None) -> str:
 
         line_style = (
             f"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;"
-            f"endArrow=block;endFill=1;strokeColor={color};fontSize=10;fontStyle=1;"
+            f"endArrow=block;endFill=1;strokeColor={color};fontSize=9;fontStyle=1;"
             f"dashed={'1' if is_response else '0'};"
         )
         edge = ET.SubElement(root, "mxCell", {
@@ -1765,5 +1804,193 @@ def generate_authentication_flow_diagram(auth_rules: dict | None = None) -> str:
 
 
 def generate_network_segregation_diagram(network_spec: dict | None = None) -> str:
-    """Generate network segregation diagram (backward compatible)."""
-    return generate_detailed_network_diagram([], [], network_spec)
+    """Generate a clear, zoned network segregation diagram.
+
+    Layout (top → bottom):
+      [External Zone]  Internet · IGW · VPN · On-prem · Azure VNet · Azure Entra ID · NAT (outbound)
+      [AWS VPC]
+        Public Subnet   │  Private Subnet   │  Data Subnet
+        SG + ALB + NAT  │  SG + EKS + Apps  │  SG + RDS + Cache
+        Route table     │  Route table       │  Route table
+      [Legend]
+    """
+    spec = network_spec or {}
+    vpc_cidr         = spec.get("vpc_cidr")          or "10.0.0.0/16"
+    pub_cidr         = spec.get("public_subnet_cidr") or "10.0.1.0/24"
+    priv_cidr        = spec.get("private_subnet_cidr") or "10.0.2.0/24"
+    data_cidr        = spec.get("data_subnet_cidr")   or "10.0.3.0/24"
+    on_prem_cidr     = spec.get("on_prem_cidr")       or "172.16.0.0/16"
+    conn_type        = spec.get("connectivity_type")  or "Site-to-Site VPN"
+    sg_pub_rule      = spec.get("sg_public_rule")     or "HTTP(80), HTTPS(443)"
+    sg_priv_rule     = spec.get("sg_private_rule")    or "Internal east-west only"
+    sg_data_rule     = spec.get("sg_data_rule")       or "DB ports (3306/5432/6379)"
+    route_pub        = spec.get("route_public")       or "0.0.0.0/0 → IGW"
+    route_priv       = spec.get("route_private")      or f"{on_prem_cidr} → VPN"
+
+    PAGE_W, PAGE_H = 1600, 1080
+
+    mxfile  = ET.Element("mxfile", {"host": "Confluence", "type": "device", "version": "1.0"})
+    diagram = ET.SubElement(mxfile, "diagram", {"name": "Network Segregation"})
+    model   = ET.SubElement(diagram, "mxGraphModel", {
+        "dx": "1800", "dy": "1100",
+        "grid": "1", "gridSize": "10", "guides": "1", "tooltips": "1",
+        "connect": "1", "arrows": "1", "fold": "1", "page": "0",
+        "pageScale": "1", "pageWidth": str(PAGE_W), "pageHeight": str(PAGE_H),
+        "math": "0", "shadow": "0",
+    })
+    root = ET.SubElement(model, "root")
+    ET.SubElement(root, "mxCell", {"id": "0"})
+    ET.SubElement(root, "mxCell", {"id": "1", "parent": "0"})
+
+    _id = [2]
+
+    def _v(label: str, style: str, x: int, y: int, w: int, h: int) -> str:
+        cid = str(_id[0]); _id[0] += 1
+        c = ET.SubElement(root, "mxCell",
+                          {"id": cid, "value": label, "style": style,
+                           "parent": "1", "vertex": "1"})
+        ET.SubElement(c, "mxGeometry",
+                      {"x": str(x), "y": str(y), "width": str(w), "height": str(h),
+                       "as": "geometry"})
+        return cid
+
+    def _e(src: str, tgt: str, label: str, style: str) -> str:
+        cid = str(_id[0]); _id[0] += 1
+        c = ET.SubElement(root, "mxCell",
+                          {"id": cid, "value": label, "style": style,
+                           "parent": "1", "source": src, "target": tgt, "edge": "1"})
+        ET.SubElement(c, "mxGeometry", {"relative": "1", "as": "geometry"})
+        return cid
+
+    # ── styles ──────────────────────────────────────────────────────────────
+    S_ZONE  = ("fillColor=#F5F5F5;strokeColor=#9E9E9E;strokeWidth=2;"
+               "fontStyle=1;fontSize=13;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;")
+    S_VPC   = ("fillColor=#E8F4FD;strokeColor=#0369A1;strokeWidth=3;dashed=1;"
+               "fontStyle=1;fontSize=13;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;")
+    S_PUB   = ("rounded=0;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=2;"
+               "fontStyle=1;fontSize=12;verticalAlign=top;align=center;spacingTop=8;")
+    S_PRIV  = ("rounded=0;fillColor=#F0FFF4;strokeColor=#16A34A;strokeWidth=2;"
+               "fontStyle=1;fontSize=12;verticalAlign=top;align=center;spacingTop=8;")
+    S_DATA  = ("rounded=0;fillColor=#FFFBEB;strokeColor=#D97706;strokeWidth=2;"
+               "fontStyle=1;fontSize=12;verticalAlign=top;align=center;spacingTop=8;")
+    S_SG    = ("rounded=0;fillColor=none;strokeColor=#EA580C;strokeWidth=2;dashed=1;"
+               "fontSize=10;fontStyle=3;verticalAlign=top;align=left;spacingLeft=6;spacingTop=4;")
+    S_SVC_B = ("rounded=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;"
+               "fontSize=11;fontStyle=1;align=center;verticalAlign=middle;")
+    S_SVC_G = ("rounded=1;fillColor=#D1FAE5;strokeColor=#059669;strokeWidth=2;"
+               "fontSize=11;fontStyle=1;align=center;verticalAlign=middle;")
+    S_SVC_Y = ("rounded=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;"
+               "fontSize=11;fontStyle=1;align=center;verticalAlign=middle;")
+    S_SVC_O = ("rounded=1;fillColor=#FFEDD5;strokeColor=#EA580C;strokeWidth=2;"
+               "fontSize=11;fontStyle=1;align=center;verticalAlign=middle;")
+    S_EXT   = ("rounded=1;fillColor=#F3E8FF;strokeColor=#7C3AED;strokeWidth=2;"
+               "fontSize=11;fontStyle=1;align=center;verticalAlign=middle;")
+    S_AZ    = ("rounded=1;fillColor=#FEE2E2;strokeColor=#DC2626;strokeWidth=2;"
+               "fontSize=11;fontStyle=1;align=center;verticalAlign=middle;")
+    S_RT    = ("rounded=0;fillColor=#F9FAFB;strokeColor=#9CA3AF;strokeWidth=1;"
+               "fontSize=10;fontStyle=2;verticalAlign=top;align=left;spacingLeft=6;spacingTop=4;")
+    S_LG    = ("fontSize=10;fillColor=#FFFFFF;strokeColor=#D1D5DB;strokeWidth=1;"
+               "align=left;spacingLeft=10;verticalAlign=middle;")
+
+    ARROW   = ("edgeStyle=orthogonalEdgeStyle;rounded=1;fontSize=10;fontStyle=1;"
+               "endArrow=block;endFill=1;strokeWidth=2;")
+
+    # ── dimensions ──────────────────────────────────────────────────────────
+    EXT_Y, EXT_H   = 10, 160
+    VPC_Y, VPC_H   = EXT_Y + EXT_H + 10, 810
+    SUBNET_Y        = VPC_Y + 50
+    SUBNET_H        = VPC_H - 70
+    SN_W            = 440
+    SX1, SX2, SX3   = 30, 510, 990
+    LG_Y            = VPC_Y + VPC_H + 10
+
+    # ── External zone ────────────────────────────────────────────────────────
+    _v("External / Internet Zone", S_ZONE, 10, EXT_Y, PAGE_W - 20, EXT_H)
+
+    inet_id   = _v("Internet\n(Public)", S_SVC_B,  50, 50,  130, 80)
+    igw_id    = _v("Internet\nGateway",  S_SVC_O, 230, 50,  130, 80)
+    vpn_id    = _v(f"{conn_type}",       S_SVC_G, 420, 50,  140, 80)
+    op_id     = _v(f"On-Premises\n{on_prem_cidr}", S_EXT, 620, 50, 150, 80)
+    avnet_id  = _v("Azure VNet\n(Private Link)",   S_AZ,  830, 50, 140, 80)
+    aentra_id = _v("Azure Entra ID\n(SSO + MFA)",  S_AZ, 1030, 50, 150, 80)
+    nat_out_id = _v("NAT Gateway\n(Outbound)", S_SVC_O, 1250, 50, 140, 80)
+
+    # ── VPC ──────────────────────────────────────────────────────────────────
+    _v(f"AWS VPC  ({vpc_cidr})", S_VPC, 10, VPC_Y, PAGE_W - 20, VPC_H)
+
+    # ── Public Subnet ────────────────────────────────────────────────────────
+    _v(f"Public Subnet\n{pub_cidr}", S_PUB, SX1, SUBNET_Y, SN_W, SUBNET_H)
+    _v(f"Security Group\nInbound: {sg_pub_rule}\nOutbound: All traffic", S_SG,
+       SX1+12, SUBNET_Y+52, SN_W-24, SUBNET_H-62)
+
+    alb_id     = _v("Application\nLoad Balancer\n(ALB)", S_SVC_B,
+                    SX1+80,  SUBNET_Y+110, 180, 80)
+    natgw_id   = _v("NAT Gateway\n(Private side)", S_SVC_O,
+                    SX1+80,  SUBNET_Y+230, 180, 80)
+    _v(f"Route Table\n{route_pub}\n{on_prem_cidr} → VPN", S_RT,
+       SX1+20, SUBNET_Y+360, 300, 70)
+
+    # ── Private Subnet ───────────────────────────────────────────────────────
+    _v(f"Private Subnet\n{priv_cidr}", S_PRIV, SX2, SUBNET_Y, SN_W, SUBNET_H)
+    _v(f"Security Group\nInbound: {sg_priv_rule}\nOutbound: All VPC traffic", S_SG,
+       SX2+12, SUBNET_Y+52, SN_W-24, SUBNET_H-62)
+
+    eks_id     = _v("EKS Cluster\n(Application Tier)", S_SVC_G,
+                    SX2+80, SUBNET_Y+110, 180, 80)
+    appsvc_id  = _v("App Services\n(Microservices)", S_SVC_G,
+                    SX2+80, SUBNET_Y+230, 180, 80)
+    _v(f"Route Table\n{route_priv}\nLocal → local", S_RT,
+       SX2+20, SUBNET_Y+360, 300, 70)
+
+    # ── Data Subnet ──────────────────────────────────────────────────────────
+    _v(f"Data Subnet\n{data_cidr}", S_DATA, SX3, SUBNET_Y, SN_W, SUBNET_H)
+    _v(f"Security Group\nInbound: {sg_data_rule}\nOutbound: VPC only", S_SG,
+       SX3+12, SUBNET_Y+52, SN_W-24, SUBNET_H-62)
+
+    rds_id     = _v("RDS Aurora\n(Primary DB)", S_SVC_Y,
+                    SX3+80, SUBNET_Y+110, 180, 80)
+    cache_id   = _v("ElastiCache\n(Redis / Cache)", S_SVC_Y,
+                    SX3+80, SUBNET_Y+230, 180, 80)
+    _v("Route Table\nIsolated — no IGW\nInternal VPC only", S_RT,
+       SX3+20, SUBNET_Y+360, 300, 70)
+
+    # ── Arrows ───────────────────────────────────────────────────────────────
+    A_PUB  = ARROW + "strokeColor=#D97706;"  # orange — public ingress
+    A_APP  = ARROW + "strokeColor=#16A34A;"  # green  — internal app traffic
+    A_VPN  = ARROW + "strokeColor=#7C3AED;dashed=1;"  # purple — VPN
+    A_AZ   = ARROW + "strokeColor=#DC2626;dashed=1;"  # red    — Azure identity
+    A_DATA = ARROW + "strokeColor=#059669;"  # teal   — data path
+    A_OUT  = ARROW + "strokeColor=#9CA3AF;dashed=1;"  # gray   — outbound
+
+    # Public ingress path
+    _e(inet_id,    igw_id,    "Public traffic",         A_PUB)
+    _e(igw_id,     alb_id,    "HTTPS/443",              A_PUB)
+    # App routing
+    _e(alb_id,     eks_id,    "HTTP internal\nrouting", A_APP)
+    _e(eks_id,     appsvc_id, "Internal\nservice call", A_APP)
+    # Data path
+    _e(eks_id,     rds_id,    "DB query\n(port 5432)",  A_DATA)
+    _e(appsvc_id,  cache_id,  "Cache read\n(port 6379)", A_DATA)
+    # Outbound via NAT
+    _e(appsvc_id,  natgw_id,  "Outbound calls",         A_OUT)
+    _e(natgw_id,   nat_out_id, "SNAT /\nmasquerade",    A_OUT)
+    # VPN / on-prem
+    _e(op_id,      vpn_id,    conn_type,                A_VPN)
+    _e(vpn_id,     eks_id,    "Private\nchannel",        A_VPN)
+    # Azure identity
+    _e(avnet_id,   aentra_id, "Identity\nfederation",   A_AZ)
+    _e(aentra_id,  eks_id,    "OIDC/SAML\ntoken",       A_AZ)
+
+    # ── Legend ───────────────────────────────────────────────────────────────
+    legend = (
+        "🟠 Orange arrows — Public ingress  (Internet → IGW → ALB)   "
+        "🟢 Green arrows — App traffic  (ALB → EKS → Services)   "
+        "🟣 Purple dashed — VPN / On-premises private channel   "
+        "🔴 Red dashed — Azure identity / SSO authentication   "
+        "⚫ Grey dashed — Outbound via NAT Gateway   "
+        "🔶 Orange dashed border — Security Group boundary"
+    )
+    _v(legend, S_LG, 10, LG_Y, PAGE_W - 20, 55)
+
+    ET.indent(mxfile, space="  ")
+    return ET.tostring(mxfile, encoding="unicode", xml_declaration=True)
