@@ -167,22 +167,9 @@ QUESTIONNAIRE_HTML = """
 
 <p><strong>Reference:</strong> See the <a href="https://ukhsa.atlassian.net/wiki/spaces/CDA/pages/520783944/Architecture+Patterns+Reference">Architecture Patterns Reference</a> page for full descriptions, rationale, and ADRs for every pattern.</p>
 
-<h2>&#128196; Contents</h2>
-
-<ac:structured-macro ac:name="toc">
-  <ac:parameter ac:name="printable">true</ac:parameter>
-  <ac:parameter ac:name="style">disc</ac:parameter>
-  <ac:parameter ac:name="maxLevel">2</ac:parameter>
-  <ac:parameter ac:name="minLevel">2</ac:parameter>
-  <ac:parameter ac:name="type">list</ac:parameter>
-</ac:structured-macro>
-
-<hr />
-
-<h2>&#9654; How to Use This Page</h2>
-
-<ac:structured-macro ac:name="info">
-<ac:rich-text-body>
+<ac:structured-macro ac:name="expand">
+  <ac:parameter ac:name="title">&#9654; How to Use This Page</ac:parameter>
+  <ac:rich-text-body>
 <p><strong>Three steps to get your diagrams generated automatically:</strong></p>
 <ol>
   <li><strong>Fill in Section 1</strong> (Business Context) — solution name, data domain, sensitivity level, and stakeholders.</li>
@@ -192,20 +179,17 @@ QUESTIONNAIRE_HTML = """
       <li><strong>Section 10</strong> — Infrastructure &amp; Platform patterns (INF-01 to INF-06)</li>
       <li><strong>Section 11</strong> — Target State Architecture patterns (TSA-NET and TSA-IDN)</li>
     </ul>
-    For each ticked pattern, fill in the <em>Details</em> column. Use the <strong>Fast-Fill Guidance</strong> and <strong>Pattern Quick-Reference</strong> below if you are unsure which to pick.
+    For each ticked pattern, fill in the <em>Details</em> column. Use the <strong>Fast-Fill Guidance</strong> and <strong>Pattern Quick-Reference</strong> sections below if you are unsure which to pick.
   </li>
-  <li><strong>Run the sync script</strong> from your local workspace:<br/>
-  <code>python confluence_sync_questionnaire_to_main.py</code><br/>
-  This reads your answers, merges them into the main HLD SA page, and auto-generates all HLD + LLD diagrams on Confluence.</li>
+  <li><strong>Tick "Sync to HLD" at the top of this page and Save</strong> — the watcher will automatically push your selections to the main HLD page and regenerate all diagrams within 30 seconds.</li>
 </ol>
 <p>&#128276; <strong>You do not need to edit the main SA page or the LLD page directly.</strong> Everything flows from this questionnaire. INF-01 (Landing Zone) and INF-05 (Federated Identity) are always mandatory — they will be applied automatically even if not ticked.</p>
-</ac:rich-text-body>
+  </ac:rich-text-body>
 </ac:structured-macro>
 
-<hr />
-
-<h2>&#9889; Fast-Fill Guidance</h2>
-
+<ac:structured-macro ac:name="expand">
+  <ac:parameter ac:name="title">&#9889; Fast-Fill Guidance — Which Sections to Complete First</ac:parameter>
+  <ac:rich-text-body>
 <p><em>Use the table below to quickly identify which patterns to tick based on your project type. Find your scenario, then go to the relevant sections and tick those patterns.</em></p>
 
 <table>
@@ -256,11 +240,12 @@ QUESTIONNAIRE_HTML = """
     </tr>
   </tbody>
 </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
 
-<hr />
-
-<h2>&#128270; Pattern Quick-Reference</h2>
-
+<ac:structured-macro ac:name="expand">
+  <ac:parameter ac:name="title">&#128270; Pattern Quick-Reference</ac:parameter>
+  <ac:rich-text-body>
 <p><em>Not sure what a pattern does? Use this at-a-glance summary before filling in the sections below.</em></p>
 
 <table>
@@ -306,6 +291,18 @@ QUESTIONNAIRE_HTML = """
     <tr><td>8B</td><td>Multi-Region DR</td><td>Required if RTO &lt; 4h or RPO &lt; 1h — Route 53 failover</td><td>Route 53, S3 CRR, RDS cross-region replica</td></tr>
   </tbody>
 </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>&#128196; Contents</h2>
+
+<ac:structured-macro ac:name="toc">
+  <ac:parameter ac:name="printable">true</ac:parameter>
+  <ac:parameter ac:name="style">disc</ac:parameter>
+  <ac:parameter ac:name="maxLevel">2</ac:parameter>
+  <ac:parameter ac:name="minLevel">2</ac:parameter>
+  <ac:parameter ac:name="type">list</ac:parameter>
+</ac:structured-macro>
 
 <hr />
 

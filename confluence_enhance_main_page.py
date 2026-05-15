@@ -248,7 +248,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <h1 style="color: #003366; border-bottom: 4px solid #003366; padding-bottom: 10px;">High-level Design (HLD) Solution Architecture Template</h1>
 <p><em>Single source of truth: complete this page during discovery workshops. The tables below drive automated diagram generation and Terraform delivery output.</em></p>
 
-<ac:structured-macro ac:name="tip">
+<ac:structured-macro ac:name="expand">
   <ac:parameter ac:name="title">⚡ Fast-Fill Guidance — Which Sections to Complete First</ac:parameter>
   <ac:rich-text-body>
     <p><strong>Use this guide to prioritise which sections to fill based on your project type:</strong></p>
@@ -298,7 +298,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
   </ac:rich-text-body>
 </ac:structured-macro>
 
-<ac:structured-macro ac:name="info">
+<ac:structured-macro ac:name="expand">
   <ac:parameter ac:name="title">▶ How to Use This Page — Step-by-Step</ac:parameter>
   <ac:rich-text-body>
     <p><strong>Recommended approach: use the Data Solution Architecture Questionnaire to drive this page automatically.</strong></p>
