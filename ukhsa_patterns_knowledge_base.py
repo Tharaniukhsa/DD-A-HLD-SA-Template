@@ -329,6 +329,119 @@ INFRA_PATTERNS: list[dict] = [
             "ADR-009: IaC mandatory for all platform infrastructure",
         ],
     },
+
+    {
+        "id": "UKHSA-INF-07",
+        "name": "OpenShift Container Platform — Internal Environment",
+        "family": "Infrastructure",
+        "reference": "UKHSA Baseline Current State Architecture §5 / CCoE Platform Register",
+        "use_case": (
+            "UKHSA on-premises OpenShift cluster (OCP) hosting containerised workloads. "
+            "Connects to AWS via Transit Gateway + PrivateLink, to Azure via ExpressRoute "
+            "Private Endpoint, and to on-premises DC via internal LAN/SDN. "
+            "All four UKHSA internal environments (On-Prem DC, OpenShift, AWS, Azure) are "
+            "classified as 'internal' — external data sources must be drawn outside this boundary."
+        ),
+        "trigger_keywords": [
+            "openshift", "open shift", "ocp", "red hat", "redhat",
+            "container platform", "kubernetes on-prem", "openshift cluster",
+            "tekton", "openshift pipeline", "openshift route", "quay",
+            "openshift registry", "openshift operator", "openshift pod",
+            "ansible", "internal environment", "internal zone",
+        ],
+        "aws_services": [
+            {"name": "AWS PrivateLink", "layer": "Network", "technology": "AWS PrivateLink (private endpoint to OCP services)"},
+            {"name": "AWS Transit Gateway", "layer": "Network", "technology": "AWS Transit Gateway (OCP VPC attachment)"},
+            {"name": "AWS Direct Connect", "layer": "Network", "technology": "AWS Direct Connect (on-prem / OCP egress path)"},
+        ],
+        "azure_services": [
+            {"name": "Azure Private Endpoint", "layer": "Network", "technology": "Azure Private Endpoint (OCP → Azure PaaS)"},
+            {"name": "Azure ExpressRoute", "layer": "Network", "technology": "Azure ExpressRoute (OCP on-prem to Azure)"},
+        ],
+        "components": [
+            {"name": "OpenShift Cluster (OCP)", "layer": "Application", "technology": "Red Hat OpenShift Container Platform (on-premises)"},
+            {"name": "OpenShift Router / Ingress", "layer": "Network", "technology": "OpenShift HAProxy Route (north-south ingress)"},
+            {"name": "OpenShift Registry (Quay)", "layer": "Application", "technology": "Red Hat Quay — internal container image registry"},
+            {"name": "Tekton CI/CD Pipeline", "layer": "Application", "technology": "OpenShift Pipelines (Tekton)"},
+            {"name": "OpenShift PrivateLink Endpoint", "layer": "Network", "technology": "AWS PrivateLink endpoint (OCP → AWS)"},
+        ],
+        "connections": [
+            {"from": "OpenShift Cluster (OCP)", "to": "OpenShift PrivateLink Endpoint", "label": "private service call (no public internet)"},
+            {"from": "OpenShift PrivateLink Endpoint", "to": "AWS Transit Gateway", "label": "PrivateLink → TGW attachment"},
+            {"from": "OpenShift Cluster (OCP)", "to": "On-Premises Data Centre", "label": "internal LAN / SDN (same DC)"},
+            {"from": "OpenShift Cluster (OCP)", "to": "Azure Private Endpoint", "label": "ExpressRoute private peering"},
+            {"from": "Tekton CI/CD Pipeline", "to": "OpenShift Registry (Quay)", "label": "push/pull container images"},
+        ],
+        "data_flows": [
+            {"id": "DF-INF-07-01", "source": "OpenShift Cluster (OCP)", "destination": "AWS VPC (via PrivateLink)", "data": "Application API calls / data writes", "protocol": "HTTPS / gRPC — PrivateLink"},
+            {"id": "DF-INF-07-02", "source": "OpenShift Cluster (OCP)", "destination": "Azure PaaS (via Private Endpoint)", "data": "Application data / service calls", "protocol": "HTTPS — ExpressRoute private peering"},
+            {"id": "DF-INF-07-03", "source": "On-Premises DC", "destination": "OpenShift Cluster (OCP)", "data": "Internal service traffic", "protocol": "Internal LAN / SDN"},
+        ],
+        "context_entities": [
+            {
+                "name": "UKHSA OpenShift Cluster (On-Prem OCP)",
+                "type": "Internal System",
+                "interaction": (
+                    "On-premises OpenShift container platform — part of UKHSA internal zone. "
+                    "Connects to AWS via PrivateLink/TGW and Azure via ExpressRoute. "
+                    "External sources must NOT connect directly; route via approved ingress gateway."
+                ),
+                "direction": "Both",
+                "zone": "internal",
+            },
+        ],
+        "mandatory_controls": [
+            "OpenShift cluster must reside within UKHSA internal zone — no direct public internet exposure",
+            "All OCP → AWS traffic via AWS PrivateLink (no public endpoints)",
+            "All OCP → Azure traffic via ExpressRoute private peering (no public endpoints)",
+            "Container images sourced only from Quay internal registry (no public Docker Hub pulls in prod)",
+            "Tekton pipelines must pass SAST/DAST scans before promoting to production namespace",
+            "Network policies (Kubernetes NetworkPolicy) enforced for all namespaces — default-deny",
+            "OpenShift audit logs forwarded to Microsoft Sentinel (SIEM) via FluentD/Vector",
+            "IaC mandatory for all cluster configuration (Ansible / GitOps / ArgoCD) — ADR-009",
+            "External data sources drawn outside the UKHSA internal boundary with labelled connection type",
+        ],
+        # ── Internal environment topology context ──────────────────────────────
+        # Used by diagram generators to draw the correct zone boundaries.
+        "internal_environments": [
+            {
+                "name": "On-Premises DC",
+                "label": "UKHSA On-Premises\n(Porton / Colindale)",
+                "fill_color": "#f5f5f5",
+                "stroke_color": "#616161",
+                "icon": "onprem:datacenter",
+            },
+            {
+                "name": "OpenShift (OCP)",
+                "label": "UKHSA OpenShift\n(On-Prem OCP)",
+                "fill_color": "#fff0f0",
+                "stroke_color": "#CC0000",
+                "icon": "openshift:openshift",
+            },
+            {
+                "name": "AWS",
+                "label": "UKHSA AWS\n(HALO Landing Zone)",
+                "fill_color": "#fff8e1",
+                "stroke_color": "#FF9900",
+                "icon": "aws:general",
+            },
+            {
+                "name": "Azure",
+                "label": "UKHSA Azure\n(PHECloud Landing Zone)",
+                "fill_color": "#e8f4fd",
+                "stroke_color": "#0078D4",
+                "icon": "azure:entra_id",
+            },
+        ],
+        "cross_environment_connections": [
+            {"from": "On-Premises DC", "to": "AWS", "label": "Direct Connect\n(Virgin Media MPLS)", "protocol": "BGP / MPLS", "cost_driver": "DC port hours + data transfer"},
+            {"from": "On-Premises DC", "to": "Azure", "label": "ExpressRoute\n(dedicated circuit)", "protocol": "BGP / MPLS", "cost_driver": "ExpressRoute circuit fee + data transfer"},
+            {"from": "On-Premises DC", "to": "OpenShift (OCP)", "label": "Internal LAN / SDN", "protocol": "Internal (no cloud cost)", "cost_driver": "None (internal LAN)"},
+            {"from": "OpenShift (OCP)", "to": "AWS", "label": "PrivateLink\n(no public internet)", "protocol": "HTTPS / gRPC", "cost_driver": "PrivateLink endpoint hours + per-GB"},
+            {"from": "OpenShift (OCP)", "to": "Azure", "label": "ExpressRoute\nPrivate Peering", "protocol": "HTTPS", "cost_driver": "ExpressRoute circuit (shared with DC)"},
+            {"from": "AWS", "to": "Azure", "label": "Inter-cloud egress\n(highest cost risk)", "protocol": "HTTPS / direct peering", "cost_driver": "AWS egress ~£0.07–0.08/GB (highest cost)"},
+        ],
+    },
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────

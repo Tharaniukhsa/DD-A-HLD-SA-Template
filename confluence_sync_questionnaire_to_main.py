@@ -58,10 +58,28 @@ _INF_TSA_COSTS: dict[str, tuple[int, int, int, int, int, int]] = {
     "UKHSA-INF-04": (0,  0,  5,  0,  0,  10),  # DNS (Route53 / Resolver)
     "UKHSA-INF-05": (0,  0,  0,  5,  20, 30),  # Identity (IAM Identity Center / SSO)
     "UKHSA-INF-06": (0,  100,10, 15, 0,  0),   # Platform (EKS / ECS)
+    # UKHSA-INF-07: OpenShift + cross-environment connection costs
+    # Tuple order: (storage, compute, networking, monitoring, security, managed_services)
+    # Networking column covers all cross-environment link charges.
+    # On-Prem DC ↔ AWS:   Direct Connect port hours (~£140/mo 1Gbps) + data transfer (~£0.02/GB out)
+    # On-Prem DC ↔ Azure: ExpressRoute circuit fee (~£200/mo 1Gbps) + data transfer (~£0.02/GB out)
+    # On-Prem ↔ OCP:      Internal LAN — no cloud cost (£0)
+    # OCP ↔ AWS:          PrivateLink endpoint (~£7/mo per AZ) + per-GB (~£0.01/GB)
+    # OCP ↔ Azure:        Shared ExpressRoute private peering — no additional circuit fee
+    # AWS ↔ Azure:        Inter-cloud egress — highest risk (~£0.07–0.08/GB from AWS to Azure)
+    "UKHSA-INF-07": (0,  60, 195, 10, 15, 20),  # OpenShift (OCP) + cross-env connectivity
     "TSA-NET-01":   (0,  0,  30, 0,  0,  0),   # Network Segmentation
     "TSA-NET-02":   (0,  0,  20, 0,  0,  0),   # Network Isolation
     "TSA-IDN-01":   (0,  0,  0,  0,  20, 20),  # JIT / PIM Privileged Access
     "TSA-IDN-02":   (0,  0,  0,  0,  15, 10),  # Identity Lifecycle (JML)
+    # Cross-environment connection cost keys — used when a project explicitly
+    # selects a connectivity type rather than an infrastructure pattern.
+    "XENV-ONPREM-AWS":   (0, 0, 160, 5, 0, 0),  # Direct Connect port + data transfer
+    "XENV-ONPREM-AZURE": (0, 0, 220, 5, 0, 0),  # ExpressRoute circuit + data transfer
+    "XENV-ONPREM-OCP":   (0, 0,   0, 0, 0, 0),  # Internal LAN — £0 cloud cost
+    "XENV-OCP-AWS":      (0, 0,  20, 5, 5, 0),  # PrivateLink endpoint hours + per-GB
+    "XENV-OCP-AZURE":    (0, 0,   5, 5, 5, 0),  # Shared ExpressRoute — marginal cost
+    "XENV-AWS-AZURE":    (0, 0, 350, 5, 0, 0),  # Inter-cloud egress (highest cost risk)
 }
 
 # Cost area names — order matches tuple positions above

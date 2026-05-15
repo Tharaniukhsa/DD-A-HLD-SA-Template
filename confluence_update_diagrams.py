@@ -736,6 +736,81 @@ GAP_X, GAP_Y   = 40,  30
 LABEL_W        = 120
 X_START        = LABEL_W + GAP_X
 
+# ── UKHSA Environment Zone Definitions ────────────────────────────────────
+# All four internal environments share the "UKHSA Internal" boundary.
+# Anything not in this set is drawn in a separate "External" boundary box.
+
+INTERNAL_ENVIRONMENTS = {
+    "on-premises dc", "on-prem dc", "on-premises", "on-prem",
+    "porton", "colindale", "ukhsa dc",
+    "openshift", "openshift cluster", "ocp", "open shift",
+    "red hat openshift", "ukhsa openshift",
+    "aws", "amazon web services", "aws halo", "halo landing zone",
+    "ukhsa aws", "aws landing zone", "aws vpc", "aws account",
+    "azure", "microsoft azure", "phecloud", "ukhsa azure",
+    "azure landing zone", "azure subscription", "azure vnet",
+}
+
+# Zone boundary style tokens
+_INTERNAL_ZONE_STYLE = (
+    "swimlane;startSize=30;fillColor=#f0f7ff;strokeColor=#0050a0;"
+    "strokeWidth=3;dashed=0;fontSize=12;fontStyle=1;fontColor=#0050a0;"
+    "horizontalStack=0;resizable=1;horizontal=1;"
+)
+_EXTERNAL_ZONE_STYLE = (
+    "swimlane;startSize=30;fillColor=#fff8f0;strokeColor=#b45309;"
+    "strokeWidth=3;dashed=1;dashPattern=8 4;fontSize=12;fontStyle=1;fontColor=#b45309;"
+    "horizontalStack=0;resizable=1;horizontal=1;"
+)
+_ZONE_CONN_STYLE = (
+    "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;"
+    "strokeWidth=2;strokeColor=#b45309;dashed=1;dashPattern=6 3;"
+    "endArrow=block;endFill=1;fontSize=10;fontColor=#b45309;"
+    "labelBackgroundColor=#ffffff;"
+)
+
+
+def _classify_environment(name: str) -> str:
+    """Return 'internal' or 'external' for a given entity/component name."""
+    lc = name.strip().lower()
+    if any(env in lc for env in INTERNAL_ENVIRONMENTS):
+        return "internal"
+    # Explicit external markers
+    external_markers = [
+        "external", "third party", "third-party", "partner", "supplier",
+        "internet", "public", "nhs", "gp system", "gp connect",
+        "api source", "sftp source", "external source", "external api",
+        "external system", "external data", "external feed",
+    ]
+    if any(m in lc for m in external_markers):
+        return "external"
+    return "external"  # default-safe: unknown sources drawn as external
+
+
+def _add_zone_boundary(
+    root,  # XML root element
+    zone_id: str,
+    label: str,
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+    style: str,
+) -> str:
+    """Add a labelled zone boundary rectangle to the diagram. Returns cell id."""
+    cell = ET.SubElement(root, "mxCell",
+        id=zone_id,
+        value=label,
+        style=style,
+        parent="1",
+        vertex="1",
+    )
+    ET.SubElement(cell, "mxGeometry",
+        x=str(x), y=str(y), width=str(width), height=str(height),
+        **{"as": "geometry"})
+    return zone_id
+
+
 # ── AWS4 icon hints for HLD component cards ────────────────────────────────
 # Each entry: ( (keyword, ...), (icon_style, fill_color) )
 # icon_style is either:
@@ -2134,6 +2209,10 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
     """
     Generate a C4 System Context Diagram (Level 1).
     Shows the system boundary, external systems/users, and data flows.
+    Internal environments (On-Prem, OpenShift, AWS, Azure) are grouped inside
+    a "UKHSA Internal" zone boundary. External data sources appear in a
+    separate "External Sources" zone with labelled connection arrows showing
+    the protocol/connectivity type.
     Emphasizes on-prem to cloud data flow path via SFTP server bridge.
     """
     display_solution_name = (solution_name or "").strip()
@@ -2202,6 +2281,40 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
     )
     ET.SubElement(system_label, "mxGeometry", x="460", y="110", width="400", height="20", **{"as": "geometry"})
 
+    # ── UKHSA Internal / External zone boundaries ──────────────────────────
+    # Classify entities into internal vs external before positioning them.
+    internal_entities = [
+        e for e in entities
+        if _classify_environment(e.get("name", "")) == "internal"
+        or (e.get("zone") or "").lower() == "internal"
+    ]
+    external_entities = [
+        e for e in entities
+        if e not in internal_entities
+    ]
+
+    # Draw "UKHSA Internal" boundary on the left column (x=20)
+    if internal_entities:
+        _add_zone_boundary(
+            root,
+            zone_id="zone-internal",
+            label="UKHSA Internal\n(On-Prem DC  |  OpenShift  |  AWS  |  Azure)",
+            x=20, y=60,
+            width=280, height=max(140, len(internal_entities) * 115 + 60),
+            style=_INTERNAL_ZONE_STYLE,
+        )
+
+    # Draw "External Sources" boundary on the far-right column (x=1150)
+    if external_entities:
+        _add_zone_boundary(
+            root,
+            zone_id="zone-external",
+            label="External Sources",
+            x=1150, y=60,
+            width=260, height=max(140, len(external_entities) * 115 + 60),
+            style=_EXTERNAL_ZONE_STYLE,
+        )
+
     # Central system container
     center_id = "solution-core"
     center = ET.SubElement(
@@ -2217,17 +2330,38 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
 
     # Color mapping for entity types
     color_map = {
-        "user": "fillColor=#fff4e6;strokeColor=#ff7700;",
-        "system": "fillColor=#f0f0f0;strokeColor=#666666;",
+        "user":    "fillColor=#fff4e6;strokeColor=#ff7700;",
+        "system":  "fillColor=#f0f0f0;strokeColor=#666666;",
         "service": "fillColor=#e6f3ff;strokeColor=#0066cc;",
-        "": "fillColor=#f0f0f0;strokeColor=#666666;",
+        "":        "fillColor=#f0f0f0;strokeColor=#666666;",
     }
-    
+
+    # Internal-environment-specific colors for node styling
+    _internal_env_colors: dict[str, str] = {
+        "on-prem":    "fillColor=#f5f5f5;strokeColor=#616161;",
+        "on-premises":"fillColor=#f5f5f5;strokeColor=#616161;",
+        "openshift":  "fillColor=#fff0f0;strokeColor=#CC0000;",
+        "ocp":        "fillColor=#fff0f0;strokeColor=#CC0000;",
+        "aws":        "fillColor=#fff8e1;strokeColor=#FF9900;",
+        "amazon":     "fillColor=#fff8e1;strokeColor=#FF9900;",
+        "azure":      "fillColor=#e8f4fd;strokeColor=#0078D4;",
+        "microsoft":  "fillColor=#e8f4fd;strokeColor=#0078D4;",
+    }
+
+    def _env_color(name: str) -> str:
+        lc = name.lower()
+        for key, style in _internal_env_colors.items():
+            if key in lc:
+                return style
+        return "fillColor=#f0f0f0;strokeColor=#666666;"
+
     # Default color
     default_color = "fillColor=#f0f0f0;strokeColor=#666666;"
 
-    # Position entities evenly around the centre box.
-    # Split: "Out"/"Both" (producers/bidirectional) on the left, "In" (consumers) on the right.
+    # Position entities:
+    #   internal → left column (inside UKHSA Internal zone)
+    #   external → right column (inside External Sources zone)
+    #   producers/consumers that don't classify either way → spread left
     import math as _math
 
     producers = [e for e in entities if (e.get("direction") or "").lower() in ("out", "both", "")]
@@ -2237,7 +2371,7 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
     if not consumers and not producers:
         producers = entities
 
-    def _spread_y(count, y_start=100, gap=120):
+    def _spread_y(count, y_start=100, gap=115):
         if count == 0:
             return []
         total = (count - 1) * gap
@@ -2245,10 +2379,16 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
         return [top + i * gap for i in range(count)]
 
     positions = {}
-    for i, ent in enumerate(_spread_y(len(producers))):
-        positions[entities.index(producers[i])] = (80, ent)
-    for i, ent_y in enumerate(_spread_y(len(consumers))):
-        positions[entities.index(consumers[i])] = (1150, ent_y)
+    # Internal entities go in the left column (x≈50 — inside the zone box)
+    int_ys = _spread_y(len(internal_entities), y_start=100)
+    for idx, ent in enumerate(internal_entities):
+        orig_i = entities.index(ent)
+        positions[orig_i] = (50, int_ys[idx] if idx < len(int_ys) else 100 + idx * 115)
+    # External entities go in the right column
+    ext_ys = _spread_y(len(external_entities), y_start=100)
+    for idx, ent in enumerate(external_entities):
+        orig_i = entities.index(ent)
+        positions[orig_i] = (1165, ext_ys[idx] if idx < len(ext_ys) else 100 + idx * 115)
 
     entity_node_ids = {}
     flow_explanations = []
@@ -2258,10 +2398,15 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
         ent_name = (ent.get("name") or "").strip()
         ent_type = (ent.get("type") or "").lower()
         entity_node_ids[ent_name.lower()] = ent_id
-        
-        # Get color based on type
-        color = color_map.get(ent_type, default_color)
-        
+
+        # Determine zone for this entity and pick color accordingly
+        ent_zone = _classify_environment(ent_name)
+        if ent_zone == "internal":
+            color = _env_color(ent_name)
+        else:
+            # External: type-based color, falling back to default
+            color = color_map.get(ent_type, default_color)
+
         # Format entity label with type and direction
         direction = (ent.get("direction") or "").strip()
         if direction.lower() == "in":
@@ -2272,13 +2417,13 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
             direction_symbol = "↔"
         else:
             direction_symbol = ""
-        
+
         label = f"{ent['name']}"
         if ent_type:
             label += f"\n[{ent_type.capitalize()}]"
         if direction_symbol:
             label += f"\n{direction_symbol}"
-        
+
         x, y = positions.get(i, (200, 200 + i * 100))
         node = ET.SubElement(
             root,
@@ -2316,15 +2461,26 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
                 "from": ent_name or "External Entity",
                 "to": display_solution_name if direction.lower() != "in" else ent_name or "External Entity",
                 "label": interaction_text,
+                "zone": ent_zone,
             }
         )
+
+        # External sources use the dashed amber zone-crossing style; internal use solid black
+        if ent_zone == "external":
+            edge_style = _ZONE_CONN_STYLE
+        else:
+            edge_style = (
+                "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;"
+                "fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;"
+                "strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;"
+            )
 
         edge = ET.SubElement(
             root,
             "mxCell",
             id=f"ctx-edge-{i}",
             value=str(flow_num),
-            style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=16;fontStyle=1;fontColor=#111827;labelBackgroundColor=#ffffff;strokeWidth=2;strokeColor=#111827;startArrow=classic;endArrow=classic;",
+            style=edge_style,
             parent="1",
             source=source,
             target=target,
@@ -2347,6 +2503,7 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
                 "from": "On-Prem Business App",
                 "to": "On-Prem SFTP Server",
                 "label": "Daily SFTP export",
+                "zone": "internal",
             }
         )
         bridge_edge_1 = ET.SubElement(
@@ -2369,6 +2526,7 @@ def generate_context_view_drawio(solution_name: str, entities: list[dict]) -> st
                 "from": "On-Prem SFTP Server",
                 "to": display_solution_name,
                 "label": "SFTP relay to cloud endpoint",
+                "zone": "internal",
             }
         )
         bridge_edge_2 = ET.SubElement(
