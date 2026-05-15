@@ -454,8 +454,22 @@ _PATTERN_ID_RE = re.compile(r"\((?:Pattern\s+)?([A-Za-z0-9][A-Za-z0-9\-]+)\)", r
 _SELECTED_POSITIVE = re.compile(r"^(?:yes|\u2611|\u2713|\u2714|x|selected)", re.IGNORECASE)
 
 
-def _is_selected(cell_text: str) -> bool:
-    """Return True if the 'Selected?' cell has been positively filled by the user."""
+def _is_selected(cell_text: str, cell_tag=None) -> bool:
+    """Return True if the 'Selected?' cell has been positively filled by the user.
+
+    Handles both plain text values (legacy) and Confluence ac:task-list checkboxes.
+    A task-list checkbox is considered selected when its ac:task-status is 'complete'.
+    Pre-ticked mandatory rows (e.g. INF-01, INF-05) are always treated as selected.
+    """
+    # Confluence task-list: check for a ticked (complete) task in the cell HTML
+    if cell_tag is not None:
+        complete_tasks = cell_tag.find_all("ac:task-status", string=re.compile(r"complete", re.I))
+        if complete_tasks:
+            return True
+        # If task-list exists but all tasks are incomplete, not selected
+        if cell_tag.find("ac:task-list"):
+            return False
+
     t = cell_text.strip()
     # Unselected placeholder contains ☐ (U+2610 BALLOT BOX)
     if t.startswith("\u2610"):
@@ -483,8 +497,9 @@ def extract_selected_patterns(q_soup: BeautifulSoup) -> list[str]:
             if len(cells) < 3:
                 continue
             # 3rd column is the Selected? column
-            selected_text = cells[2].get_text(" ", strip=True)
-            if not _is_selected(selected_text):
+            selected_cell = cells[2]
+            selected_text = selected_cell.get_text(" ", strip=True)
+            if not _is_selected(selected_text, cell_tag=selected_cell):
                 continue
             # Extract pattern ID from 1st column parenthetical
             first_cell_text = cells[0].get_text(" ", strip=True)

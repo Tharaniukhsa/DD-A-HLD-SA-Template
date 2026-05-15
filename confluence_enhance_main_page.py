@@ -587,11 +587,11 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 <table>
   <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected?</th><th>Notes / Justification</th></tr></thead>
   <tbody>
-    <tr><td>UKHSA-INF-01</td><td>UKHSA Cloud Landing Zone</td><td>Y</td><td><strong>Mandatory</strong> — all cloud workloads must deploy into an approved UKHSA LZ (AWS or Azure)</td></tr>
+    <tr><td>UKHSA-INF-01</td><td>UKHSA Cloud Landing Zone</td><td><ac:task-list><ac:task><ac:task-status>complete</ac:task-status><ac:task-body>Yes (Mandatory)</ac:task-body></ac:task></ac:task-list></td><td><strong>Mandatory</strong> — all cloud workloads must deploy into an approved UKHSA LZ (AWS or Azure)</td></tr>
     <tr><td>UKHSA-INF-02</td><td>Hybrid Cloud Connectivity</td><td></td><td>Secure AWS Direct Connect / Azure ExpressRoute with IPsec VPN backup</td></tr>
     <tr><td>UKHSA-INF-03</td><td>Multi-Cloud Account Governance</td><td></td><td>AWS Organizations / Azure Management Groups with centralised policy enforcement</td></tr>
     <tr><td>UKHSA-INF-04</td><td>Split-Horizon DNS</td><td></td><td>Route 53 as strategic DNS resolver with conditional forwarding to on-prem</td></tr>
-    <tr><td>UKHSA-INF-05</td><td>Federated Identity (Entra ID Golden Source)</td><td>Y</td><td><strong>Mandatory</strong> — Microsoft Entra ID as single IdP federated to AWS, SaaS, and all workloads</td></tr>
+    <tr><td>UKHSA-INF-05</td><td>Federated Identity (Entra ID Golden Source)</td><td><ac:task-list><ac:task><ac:task-status>complete</ac:task-status><ac:task-body>Yes (Mandatory)</ac:task-body></ac:task></ac:task-list></td><td><strong>Mandatory</strong> — Microsoft Entra ID as single IdP federated to AWS, SaaS, and all workloads</td></tr>
     <tr><td>UKHSA-INF-06</td><td>Approved Platform Portfolio</td><td></td><td>Use UKHSA-approved platforms: EDAP (analytics), APIM (APIs), Sentinel (SIEM)</td></tr>
   </tbody>
 </table>
