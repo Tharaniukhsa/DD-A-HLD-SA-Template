@@ -343,25 +343,25 @@ QUESTIONNAIRE_HTML = """
     <tr>
       <td><strong>Direct API Ingestion</strong><br/>(Pattern 1A)</td>
       <td>Real-time feeds, transactional data, live APIs</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>API endpoint, authentication method, rate limits, SLA</em></td>
     </tr>
     <tr>
       <td><strong>Batch File Upload</strong><br/>(Pattern 1B)</td>
       <td>Large datasets, monthly reports, historical data</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>File format, frequency, source system, volume</em></td>
     </tr>
     <tr>
       <td><strong>Database Replication</strong><br/>(Pattern 1C)</td>
       <td>Real-time sync from legacy systems, operational stores</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>Source DB type, change capture method (CDC), latency requirement</em></td>
     </tr>
     <tr>
       <td><strong>Streaming Ingestion</strong><br/>(Pattern 1D)</td>
       <td>High-frequency data, sensors, continuous monitoring</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>Data format, throughput (events/sec), latency requirement</em></td>
     </tr>
   </tbody>
@@ -394,25 +394,25 @@ QUESTIONNAIRE_HTML = """
     <tr>
       <td><strong>Batch ETL</strong><br/>(Pattern 2A)</td>
       <td>Large volumes, complex transformations, daily/weekly schedules</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>Schedule (cron), transformation logic, SLA</em></td>
     </tr>
     <tr>
       <td><strong>Real-time Stream Processing</strong><br/>(Pattern 2B)</td>
       <td>Live analytics, anomaly detection, event-driven</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>Latency requirement (ms), throughput, alert triggers</em></td>
     </tr>
     <tr>
       <td><strong>Scheduled Spark/Dask Jobs</strong><br/>(Pattern 2C)</td>
       <td>Machine learning, statistical analysis, data science</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>Algorithm type, schedule, compute resources needed</em></td>
     </tr>
     <tr>
       <td><strong>Federated Query</strong><br/>(Pattern 2D)</td>
       <td>Multi-source analysis without data movement</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
       <td><em>Query sources, join complexity, performance SLA</em></td>
     </tr>
   </tbody>
@@ -446,31 +446,31 @@ QUESTIONNAIRE_HTML = """
       <td><strong>Transactional Database (OLTP)</strong><br/>(Pattern 3A)</td>
       <td>Real-time operational data, high concurrency, ACID transactions</td>
       <td>Aurora PostgreSQL (preferred) or RDS</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
     <tr>
       <td><strong>Data Warehouse (OLAP)</strong><br/>(Pattern 3B)</td>
       <td>Historical analysis, reporting, BI dashboards</td>
       <td>Redshift</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
     <tr>
       <td><strong>Data Lake</strong><br/>(Pattern 3C)</td>
       <td>Raw/semi-structured data, exploratory analytics, data science</td>
       <td>S3 (Bronze/Silver/Gold zones) + Glue Catalog</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
     <tr>
       <td><strong>Time-Series Database</strong><br/>(Pattern 3D)</td>
       <td>Metrics, sensor data, surveillance monitoring</td>
       <td>Amazon Timestream or DynamoDB with TTL</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
     <tr>
       <td><strong>Document Store</strong><br/>(Pattern 3E)</td>
       <td>JSON documents, event logs, unstructured nested data</td>
       <td>DynamoDB or DocumentDB</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
   </tbody>
 </table>
@@ -503,17 +503,17 @@ QUESTIONNAIRE_HTML = """
     <tr>
       <td><strong>Data Catalog</strong><br/>(Pattern 5A)</td>
       <td>Centralized metadata, discovery, lineage (AWS Glue Catalog + Lake Formation)</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
     <tr>
       <td><strong>Data Quality & Validation</strong><br/>(Pattern 5B)</td>
       <td>Quality rules, schema validation, anomaly detection (Glue DataBrew)</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
     <tr>
       <td><strong>Data Lineage & Audit Trail</strong><br/>(Pattern 5C)</td>
       <td>Track data provenance, transformations, access logs (Lake Formation + CloudTrail)</td>
-      <td>☐ Yes</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td>
     </tr>
   </tbody>
 </table>
@@ -554,8 +554,8 @@ QUESTIONNAIRE_HTML = """
 <table>
   <thead><tr><th>Field</th><th>Value / Answer</th></tr></thead>
   <tbody>
-    <tr><td><strong>Encryption at Rest</strong><br/><em>AWS KMS (customer-managed keys recommended)</em></td><td>☐ Yes</td></tr>
-    <tr><td><strong>Encryption in Transit</strong><br/><em>TLS 1.2+ required</em></td><td>☐ Yes</td></tr>
+    <tr><td><strong>Encryption at Rest</strong><br/><em>AWS KMS (customer-managed keys recommended)</em></td><td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td></tr>
+    <tr><td><strong>Encryption in Transit</strong><br/><em>TLS 1.2+ required</em></td><td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td></tr>
     <tr><td><strong>Key Rotation Policy</strong><br/><em>e.g., annual, every 90 days</em></td><td></td></tr>
   </tbody>
 </table>
@@ -565,9 +565,9 @@ QUESTIONNAIRE_HTML = """
 <table>
   <thead><tr><th>Field</th><th>Value / Answer</th></tr></thead>
   <tbody>
-    <tr><td><strong>Network Architecture</strong><br/><em>VPC with private subnets, VPC endpoints, no internet access</em></td><td>☐ Confirmed</td></tr>
-    <tr><td><strong>Data Processing Location</strong><br/><em>Private subnets only, no public IPs</em></td><td>☐ Confirmed</td></tr>
-    <tr><td><strong>Egress Control</strong><br/><em>VPC endpoints to AWS services, NAT for outbound</em></td><td>☐ Confirmed</td></tr>
+    <tr><td><strong>Network Architecture</strong><br/><em>VPC with private subnets, VPC endpoints, no internet access</em></td><td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Confirmed</ac:task-body></ac:task></ac:task-list></td></tr>
+    <tr><td><strong>Data Processing Location</strong><br/><em>Private subnets only, no public IPs</em></td><td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Confirmed</ac:task-body></ac:task></ac:task-list></td></tr>
+    <tr><td><strong>Egress Control</strong><br/><em>VPC endpoints to AWS services, NAT for outbound</em></td><td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Confirmed</ac:task-body></ac:task></ac:task-list></td></tr>
   </tbody>
 </table>
 
