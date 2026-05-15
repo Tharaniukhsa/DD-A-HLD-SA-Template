@@ -1517,6 +1517,892 @@ ALL_UKHSA_PATTERNS: list[dict] = INFRA_PATTERNS + DATA_PATTERNS + TSA_NET_PATTER
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# CONNECTIVITY OPTIONS REFERENCE
+# Source:  UKHSA Cloud Strategy & Approved Patterns v1.2 (§ Networking)
+#          AWS Networking documentation (Direct Connect, TGW, PrivateLink, VPN)
+#          Azure Networking documentation (ExpressRoute, Virtual WAN, Private Endpoint)
+#          NCSC Cloud Security Guidance — network architecture
+#          Equinix/Megaport inter-cloud fabric documentation
+#
+# This is the single reference used by diagram generators and the HLD template
+# to populate Section 9 "Connectivity & Integration Options" and the cost table.
+#
+# Structure per option:
+#   id              — unique key
+#   name            — display name
+#   category        — On-Prem→Cloud | Cloud-to-Cloud | Internal-Cloud | Internet-Facing | Zero-Trust
+#   applicable_from — list of source environment labels
+#   applicable_to   — list of destination environment labels
+#   description     — plain-English summary
+#   when_to_use     — bullet list of selection criteria
+#   when_not_to_use — list of anti-patterns
+#   best_practices  — mandatory/recommended controls
+#   aws_component   — AWS service name (if applicable)
+#   azure_component — Azure service name (if applicable)
+#   bandwidth       — typical throughput range
+#   latency         — expected latency characteristic
+#   redundancy      — HA/failover approach
+#   indicative_cost — rough monthly £ guidance (see _XENV costs for precise figures)
+#   ukhsa_status    — Approved | Conditional | Not-Approved
+#   diagram_style   — edge style token for diagram generator ("solid" | "dashed" | "dotted")
+#   diagram_color   — hex color for edge
+# ─────────────────────────────────────────────────────────────────────────────
+
+CONNECTIVITY_OPTIONS: list[dict] = [
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # CATEGORY 1 — On-Premises ↔ Cloud
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "id": "CONN-01",
+        "name": "AWS Direct Connect",
+        "category": "On-Prem→Cloud",
+        "applicable_from": ["On-Premises DC", "OpenShift (OCP)"],
+        "applicable_to": ["AWS"],
+        "description": (
+            "Dedicated private fibre circuit between UKHSA DC (Porton/Colindale) and "
+            "AWS eu-west-2. Traffic never traverses the public internet. "
+            "UKHSA uses Virgin Media MPLS to the Direct Connect location, then a "
+            "private VIF into AWS Transit Gateway."
+        ),
+        "when_to_use": [
+            "Production workloads requiring consistent bandwidth (>100 Mbps)",
+            "Sensitive/OFFICIAL-SENSITIVE data that must not cross public internet",
+            "High-volume data transfers (DB replication, EDAP ingestion at scale)",
+            "Low-latency requirements (<10 ms on-prem to AWS)",
+            "UKHSA primary connectivity — all new hybrid workloads",
+        ],
+        "when_not_to_use": [
+            "Dev/test environments where cost is a concern — use Site-to-Site VPN instead",
+            "Temporary connectivity needs (proof-of-concept) — VPN is faster to provision",
+            "Small data volumes (<10 GB/month) — cost-benefit does not justify circuit fee",
+        ],
+        "best_practices": [
+            "Terminate Direct Connect into AWS Transit Gateway (TGW) — single hub for all VPCs",
+            "Use private VIF (not public VIF) — keeps traffic off internet completely",
+            "Enable BGP authentication (MD5) on the virtual interface",
+            "Provision at least 2× connections to different DX locations for redundancy (ADR-010 HA)",
+            "Add Site-to-Site VPN as cold standby failover path (auto-failover via BGP)",
+            "VPC Flow Logs enabled on all attached VPCs",
+            "All data in transit encrypted at application layer (TLS 1.2+) even though circuit is private",
+            "Monitor with CloudWatch for DirectConnect connection state and BGP status alarms",
+        ],
+        "aws_component": "AWS Direct Connect + Transit Gateway",
+        "azure_component": "N/A",
+        "bandwidth": "1 Gbps / 10 Gbps dedicated (sub-1G via hosted connection)",
+        "latency": "<10 ms on-prem to AWS eu-west-2",
+        "redundancy": "Dual connections + Site-to-Site VPN warm standby",
+        "indicative_cost": "£140–£280/mo port fee + £0.02/GB data transfer out of AWS",
+        "ukhsa_status": "Approved — primary on-prem→AWS path",
+        "diagram_style": "solid",
+        "diagram_color": "#FF9900",
+    },
+
+    {
+        "id": "CONN-02",
+        "name": "AWS Site-to-Site VPN",
+        "category": "On-Prem→Cloud",
+        "applicable_from": ["On-Premises DC", "OpenShift (OCP)", "Remote Site"],
+        "applicable_to": ["AWS"],
+        "description": (
+            "IPsec VPN tunnels over the public internet between UKHSA on-premises "
+            "routers and AWS Virtual Private Gateway or Transit Gateway. "
+            "Each VPN connection provides two tunnels for redundancy. "
+            "Encrypted but subject to internet latency variability."
+        ),
+        "when_to_use": [
+            "Backup / failover path for AWS Direct Connect (cold standby)",
+            "Dev/test environments — quick, cheap connectivity",
+            "Remote sites or branch offices without Direct Connect",
+            "Emergency connectivity when primary circuit is down",
+            "Small-volume transfers (<10 GB/month) where Direct Connect cost is not justified",
+        ],
+        "when_not_to_use": [
+            "Primary production connectivity — use Direct Connect instead",
+            "High-throughput workloads (>500 Mbps) — VPN throughput is capped",
+            "Ultra-low-latency requirements — internet routing adds unpredictable latency",
+            "In isolation for OFFICIAL-SENSITIVE data without compensating controls",
+        ],
+        "best_practices": [
+            "Use IKEv2 (not IKEv1) for stronger security",
+            "Enable both tunnels and configure BGP for active/active redundancy",
+            "Use TGW attachment (not VGW) to allow routing to multiple VPCs",
+            "Set Dead Peer Detection (DPD) to clear tunnels rapidly on failure",
+            "Combine with Direct Connect: DX primary, VPN warm standby via BGP AS-PATH manipulation",
+            "Restrict Security Groups to only accept traffic from known on-prem IP ranges",
+            "Log tunnel state changes to CloudWatch and alert on tunnel down",
+            "Do NOT store VPN pre-shared keys in code — use Secrets Manager",
+        ],
+        "aws_component": "AWS Site-to-Site VPN + Transit Gateway",
+        "azure_component": "N/A (AWS-specific; see CONN-05 for Azure equivalent)",
+        "bandwidth": "Up to 1.25 Gbps per tunnel (2 tunnels per connection = 2.5 Gbps max)",
+        "latency": "15–50 ms typical (internet-dependent)",
+        "redundancy": "2 tunnels per connection; use as DX warm standby via BGP",
+        "indicative_cost": "£30–£50/mo per connection + £0.05/GB data transfer",
+        "ukhsa_status": "Approved — dev/test and DX failover only",
+        "diagram_style": "dashed",
+        "diagram_color": "#FF9900",
+    },
+
+    {
+        "id": "CONN-03",
+        "name": "Azure ExpressRoute",
+        "category": "On-Prem→Cloud",
+        "applicable_from": ["On-Premises DC", "OpenShift (OCP)"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "Dedicated private circuit from UKHSA DC to Microsoft Azure via a "
+            "connectivity provider (Equinix/Megaport). Traffic does not traverse "
+            "the public internet. Terminates into Azure Virtual WAN or ExpressRoute Gateway "
+            "and routes to Azure VNets."
+        ),
+        "when_to_use": [
+            "Production workloads on Azure requiring consistent bandwidth",
+            "Microsoft 365 / Entra ID integration at scale (reduces internet backhaul)",
+            "Sensitive data that must not cross public internet",
+            "High-volume data transfers to Azure (EDAP→Azure, Sentinel log ingestion)",
+            "UKHSA primary connectivity — all new hybrid on-prem→Azure paths",
+        ],
+        "when_not_to_use": [
+            "Dev/test — use Azure VPN Gateway instead",
+            "Low-volume or transient workloads",
+            "Azure services that don't support private peering (some SaaS)",
+        ],
+        "best_practices": [
+            "Use Private Peering (not Microsoft Peering) for private Azure PaaS access",
+            "Enable ExpressRoute Global Reach only if cross-site on-prem routing is needed",
+            "Terminate into Azure Virtual WAN hub for hub-and-spoke routing to all VNets",
+            "Deploy two circuits at different peering locations for 99.95% SLA",
+            "Add Azure VPN Gateway as warm standby (ExpressRoute + VPN coexistence)",
+            "Enable Route Filters to limit BGP prefixes advertised (prevent route leakage)",
+            "Configure BFD (Bidirectional Forwarding Detection) for fast failover (<1 s)",
+            "All on-prem to Azure traffic encrypted TLS 1.2+ regardless of private circuit",
+        ],
+        "aws_component": "N/A",
+        "azure_component": "Azure ExpressRoute + Azure Virtual WAN",
+        "bandwidth": "50 Mbps to 10 Gbps (bandwidth select at provisioning)",
+        "latency": "<10 ms on-prem to Azure UK South",
+        "redundancy": "Dual circuits at diverse peering locations + VPN warm standby",
+        "indicative_cost": "£200–£400/mo circuit fee + £0.02/GB egress from Azure",
+        "ukhsa_status": "Approved — primary on-prem→Azure path",
+        "diagram_style": "solid",
+        "diagram_color": "#0078D4",
+    },
+
+    {
+        "id": "CONN-04",
+        "name": "Azure VPN Gateway (Site-to-Site)",
+        "category": "On-Prem→Cloud",
+        "applicable_from": ["On-Premises DC", "OpenShift (OCP)", "Remote Site"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "IPsec/IKE VPN tunnels from on-premises devices to Azure VPN Gateway. "
+            "Traffic encrypted over the public internet. "
+            "Supports Active-Active gateway configuration for redundancy."
+        ),
+        "when_to_use": [
+            "Backup / failover for ExpressRoute (warm standby via BGP)",
+            "Dev/test connectivity to Azure — fast to provision, low cost",
+            "Remote sites without ExpressRoute circuit",
+            "Temporary or short-duration Azure access",
+        ],
+        "when_not_to_use": [
+            "Primary production path — use ExpressRoute instead",
+            "High-throughput (>1 Gbps) — VPN Gateway max throughput is limited",
+            "Latency-sensitive workloads",
+        ],
+        "best_practices": [
+            "Use VpnGw2 or higher SKU for production (supports BGP and higher throughput)",
+            "Enable Active-Active mode (two gateway instances, two tunnels per connection)",
+            "Use IKEv2 and AES-256/SHA-256 cipher policies — disable legacy weak ciphers",
+            "Use BGP over static routing for automatic failover",
+            "Pair with ExpressRoute: ER primary, VPN standby using route preference",
+            "Store pre-shared keys in Azure Key Vault — never hardcode",
+            "Enable diagnostic logs for VPN gateway and route all to Log Analytics",
+        ],
+        "aws_component": "N/A (Azure-specific; see CONN-02 for AWS equivalent)",
+        "azure_component": "Azure VPN Gateway (Site-to-Site) + Virtual Network Gateway",
+        "bandwidth": "Up to 10 Gbps (VpnGw5 SKU); 650 Mbps on VpnGw1",
+        "latency": "15–50 ms typical (internet-dependent)",
+        "redundancy": "Active-Active with BGP failover; combine with ExpressRoute",
+        "indicative_cost": "£160–£420/mo gateway SKU + £0.05/GB egress",
+        "ukhsa_status": "Approved — dev/test and ER failover only",
+        "diagram_style": "dashed",
+        "diagram_color": "#0078D4",
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # CATEGORY 2 — Cloud-to-Cloud (AWS ↔ Azure)
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "id": "CONN-05",
+        "name": "AWS ↔ Azure via Equinix/Megaport Fabric",
+        "category": "Cloud-to-Cloud",
+        "applicable_from": ["AWS"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "Dedicated inter-cloud private connection via a neutral co-location "
+            "exchange (Equinix or Megaport). AWS Direct Connect and Azure ExpressRoute "
+            "circuits both terminate at the exchange fabric, creating a private "
+            "AWS→Azure path without traversing the public internet. "
+            "UKHSA target state per UKHSA-INF-02 mandatory controls."
+        ),
+        "when_to_use": [
+            "Large-volume data movement between AWS (EDAP) and Azure (Sentinel, Synapse)",
+            "Latency-sensitive cross-cloud workloads (<10 ms requirement)",
+            "OFFICIAL-SENSITIVE data that must never cross public internet",
+            "Target state for all production AWS↔Azure connectivity",
+        ],
+        "when_not_to_use": [
+            "Dev/test — use internet-routed VPN or public endpoints instead",
+            "Small data volumes (<100 GB/month) — cost of fabric ports not justified",
+        ],
+        "best_practices": [
+            "Use redundant fabric connections (two cross-connects at same exchange)",
+            "Run BGP between AWS TGW and Azure VWAN hub via fabric",
+            "Separate routing domains: keep AWS and Azure VRFs/route tables isolated",
+            "Encrypt at application layer (TLS 1.2+) even on private fabric",
+            "Monitor with both AWS CloudWatch (DX metrics) and Azure Monitor (ER metrics)",
+            "Agree an egress cost allocation model — AWS charges ~£0.07/GB leaving AWS",
+        ],
+        "aws_component": "AWS Direct Connect → Equinix/Megaport fabric",
+        "azure_component": "Azure ExpressRoute → Equinix/Megaport fabric",
+        "bandwidth": "1–10 Gbps (matches lowest of DX/ER port sizes)",
+        "latency": "<5 ms AWS eu-west-2 ↔ Azure UK South (co-located exchange)",
+        "redundancy": "Dual cross-connects at exchange + cloud-side circuit redundancy",
+        "indicative_cost": "£300–£600/mo fabric port fee + AWS egress ~£0.07/GB",
+        "ukhsa_status": "Approved — target state for production AWS↔Azure (UKHSA-INF-02)",
+        "diagram_style": "solid",
+        "diagram_color": "#7B1FA2",
+    },
+
+    {
+        "id": "CONN-06",
+        "name": "AWS ↔ Azure via Internet (IPsec VPN)",
+        "category": "Cloud-to-Cloud",
+        "applicable_from": ["AWS"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "IPsec tunnels between AWS Virtual Private Gateway (or TGW) and "
+            "Azure VPN Gateway over the public internet. "
+            "Encrypted but subject to internet routing variability and egress costs. "
+            "Interim solution only — Equinix/Megaport fabric is the UKHSA target state."
+        ),
+        "when_to_use": [
+            "Dev/test cross-cloud connectivity",
+            "Interim solution before Equinix/Megaport fabric is provisioned",
+            "Low-volume (<50 GB/month) cross-cloud data transfers",
+            "Emergency connectivity when primary path is unavailable",
+        ],
+        "when_not_to_use": [
+            "Production workloads with OFFICIAL-SENSITIVE data",
+            "High-throughput or latency-sensitive paths",
+            "Permanent production connectivity — migrate to fabric as soon as feasible",
+        ],
+        "best_practices": [
+            "IKEv2 with AES-256-GCM and SHA-384 HMAC — disable legacy IKEv1 and weak ciphers",
+            "Apply TLS 1.2+ at application layer as second encryption layer",
+            "Restrict Security Group / NSG rules to specific peer IP ranges",
+            "Monitor both ends: AWS CloudWatch VPN tunnel state + Azure VPN Gateway diagnostics",
+            "Document as interim with target migration date to CONN-05 (fabric)",
+        ],
+        "aws_component": "AWS Virtual Private Gateway or TGW VPN attachment",
+        "azure_component": "Azure VPN Gateway",
+        "bandwidth": "Up to 1.25 Gbps per tunnel",
+        "latency": "20–60 ms (internet-dependent)",
+        "redundancy": "Two tunnels per connection; Active-Active on Azure side",
+        "indicative_cost": "£30–50/mo VPN gateway + AWS egress ~£0.07/GB + Azure egress ~£0.05/GB",
+        "ukhsa_status": "Conditional — dev/test and interim only; not for production OFFICIAL-SENSITIVE",
+        "diagram_style": "dashed",
+        "diagram_color": "#7B1FA2",
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # CATEGORY 3 — Internal Cloud Connectivity (within AWS / within Azure)
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "id": "CONN-07",
+        "name": "AWS Transit Gateway (Hub-and-Spoke)",
+        "category": "Internal-Cloud",
+        "applicable_from": ["AWS"],
+        "applicable_to": ["AWS"],
+        "description": (
+            "AWS Transit Gateway acts as a regional network hub connecting all UKHSA "
+            "VPCs, Direct Connect, Site-to-Site VPN, and SD-WAN attachments. "
+            "Replaces full-mesh VPC peering. All east-west traffic inspected by "
+            "AWS Network Firewall before routing."
+        ),
+        "when_to_use": [
+            "All multi-VPC AWS architectures at UKHSA (mandatory per UKHSA-INF-02)",
+            "Connecting on-prem (DX/VPN) to multiple VPCs via a single attachment",
+            "Centralised egress and east-west traffic inspection",
+            "Transitive routing between VPCs that cannot peer directly",
+        ],
+        "when_not_to_use": [
+            "Single-VPC workloads — VPC Peering or VPC Endpoints are simpler and cheaper",
+            "Cross-region routing without TGW peering — requires explicit TGW peering setup",
+        ],
+        "best_practices": [
+            "Segment TGW route tables by environment (prod, non-prod, shared-services)",
+            "Deploy AWS Network Firewall in a dedicated Inspection VPC attached to TGW",
+            "Use blackhole routes in TGW route tables to block unwanted VPC-to-VPC paths",
+            "Enable TGW flow logs → S3 / CloudWatch for traffic visibility",
+            "Use Resource Access Manager (RAM) for cross-account TGW sharing",
+            "Tag all TGW attachments with project, team, environment for cost allocation",
+        ],
+        "aws_component": "AWS Transit Gateway + AWS Network Firewall",
+        "azure_component": "N/A",
+        "bandwidth": "50 Gbps per TGW (burst), 10 Gbps per VPC attachment",
+        "latency": "<1 ms within region",
+        "redundancy": "Multi-AZ by default; TGW is a regional managed service",
+        "indicative_cost": "£30–80/mo (attachment hours + data processing @ £0.02/GB)",
+        "ukhsa_status": "Approved — mandatory for all multi-VPC AWS at UKHSA",
+        "diagram_style": "solid",
+        "diagram_color": "#FF9900",
+    },
+
+    {
+        "id": "CONN-08",
+        "name": "AWS VPC Peering",
+        "category": "Internal-Cloud",
+        "applicable_from": ["AWS"],
+        "applicable_to": ["AWS"],
+        "description": (
+            "Direct point-to-point encrypted connection between two VPCs. "
+            "Traffic stays within AWS backbone. No bandwidth limits, no gateway. "
+            "Does NOT support transitive routing — each pair needs its own peering connection."
+        ),
+        "when_to_use": [
+            "Simple two-VPC connectivity where TGW overhead is not justified",
+            "Dev/test inter-VPC access",
+            "Cross-account access to a shared service VPC (e.g., logging, DNS)",
+        ],
+        "when_not_to_use": [
+            "More than 3–4 VPCs — use TGW instead (VPC Peering creates N² connections)",
+            "Anywhere transitive routing is needed (A→B→C) — TGW required",
+            "Overlapping CIDR ranges between VPCs",
+        ],
+        "best_practices": [
+            "Ensure non-overlapping CIDR ranges before creating peering (cannot be changed)",
+            "Apply least-privilege Security Group rules to peering connections",
+            "Accept peering requests only from known, trusted account IDs",
+            "Prefer TGW for production multi-VPC architectures",
+        ],
+        "aws_component": "VPC Peering Connection",
+        "azure_component": "N/A (see CONN-10 for Azure equivalent)",
+        "bandwidth": "No explicit limit (limited by instance bandwidth)",
+        "latency": "<1 ms within region; <5 ms cross-region",
+        "redundancy": "AWS-managed, inherently redundant within region",
+        "indicative_cost": "£0.01/GB data transfer (same region) / £0.02/GB cross-region",
+        "ukhsa_status": "Approved — simple two-VPC or shared-service use cases",
+        "diagram_style": "solid",
+        "diagram_color": "#FF9900",
+    },
+
+    {
+        "id": "CONN-09",
+        "name": "AWS PrivateLink (VPC Endpoint Services)",
+        "category": "Internal-Cloud",
+        "applicable_from": ["AWS", "OpenShift (OCP)"],
+        "applicable_to": ["AWS"],
+        "description": (
+            "Expose a service (NLB-backed) as a private endpoint consumable by "
+            "other VPCs or on-premises without VPC peering or TGW. "
+            "Traffic stays on AWS backbone. Solves overlapping-CIDR and "
+            "transitive routing limitations of VPC Peering. "
+            "Also used by OpenShift clusters to call AWS services privately."
+        ),
+        "when_to_use": [
+            "Expose a shared microservice to multiple consumer VPCs without full peering",
+            "Connect OpenShift on-prem to AWS services without public internet",
+            "SaaS-style service sharing across AWS accounts/VPCs",
+            "Access AWS managed services (S3, SQS, KMS, etc.) from private subnets (Gateway/Interface endpoints)",
+        ],
+        "when_not_to_use": [
+            "Full network access between VPCs — use TGW or VPC Peering instead",
+            "UDP-based services — PrivateLink only supports TCP",
+            "Where bidirectional initiation is needed (PrivateLink is one-directional consumer→service)",
+        ],
+        "best_practices": [
+            "Use Interface Endpoints (PrivateLink) for all AWS service API calls from private subnets",
+            "Use Gateway Endpoints for S3 and DynamoDB (free, preferred over interface endpoints)",
+            "Enable Private DNS for VPC Interface Endpoints so service hostnames resolve privately",
+            "Restrict endpoint policies to specific IAM principals and actions (least privilege)",
+            "Enable VPC Endpoint connection acceptance — require explicit approval for consumer VPCs",
+        ],
+        "aws_component": "AWS PrivateLink (Interface VPC Endpoints / Endpoint Services)",
+        "azure_component": "N/A (see CONN-11 for Azure equivalent)",
+        "bandwidth": "10 Gbps per endpoint (burst to 40 Gbps)",
+        "latency": "<1 ms within region",
+        "redundancy": "Multi-AZ endpoint across all AZs",
+        "indicative_cost": "£6–£10/mo per endpoint + £0.01/GB data processed",
+        "ukhsa_status": "Approved — mandatory for all AWS PaaS access from private subnets",
+        "diagram_style": "solid",
+        "diagram_color": "#FF9900",
+    },
+
+    {
+        "id": "CONN-10",
+        "name": "Azure VNet Peering",
+        "category": "Internal-Cloud",
+        "applicable_from": ["Azure"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "Direct encrypted connectivity between two Azure VNets using Azure backbone. "
+            "Supports same-region and cross-region (Global VNet Peering). "
+            "Does NOT support transitive routing — use Azure Virtual WAN for hub-and-spoke."
+        ),
+        "when_to_use": [
+            "Simple two-VNet connectivity",
+            "Cross-account (cross-subscription) VNet access to shared services",
+            "Dev/test inter-VNet access",
+        ],
+        "when_not_to_use": [
+            "More than 3–4 VNets — use Azure Virtual WAN instead",
+            "Transitive routing required (A→B→C)",
+            "Overlapping address spaces",
+        ],
+        "best_practices": [
+            "Set 'Allow forwarded traffic' only if explicitly required",
+            "Disable 'Allow gateway transit' unless specifically using hub-spoke model",
+            "Apply NSG rules to subnets to restrict lateral movement over peering",
+            "Prefer Virtual WAN for production multi-VNet UKHSA architectures",
+        ],
+        "aws_component": "N/A (see CONN-08 for AWS equivalent)",
+        "azure_component": "Azure VNet Peering",
+        "bandwidth": "Limited by VM NIC bandwidth (not the peering itself)",
+        "latency": "<2 ms same region; varies for global peering",
+        "redundancy": "Azure-managed, inherently redundant",
+        "indicative_cost": "£0.01–0.02/GB inbound + outbound (same region); higher cross-region",
+        "ukhsa_status": "Approved — simple two-VNet or shared-service use cases",
+        "diagram_style": "solid",
+        "diagram_color": "#0078D4",
+    },
+
+    {
+        "id": "CONN-11",
+        "name": "Azure Private Endpoint",
+        "category": "Internal-Cloud",
+        "applicable_from": ["Azure", "On-Premises DC", "OpenShift (OCP)"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "Private IP address inside a VNet connected to an Azure PaaS service "
+            "(Storage, SQL, Key Vault, Service Bus, etc.). "
+            "Traffic never leaves Azure backbone. Disables public endpoint on the service. "
+            "Used by OpenShift to access Azure PaaS privately via ExpressRoute."
+        ),
+        "when_to_use": [
+            "All production Azure PaaS services (Storage, SQL, Key Vault, Service Bus) — mandatory",
+            "On-prem or OCP access to Azure PaaS over ExpressRoute without public internet",
+            "Any service handling OFFICIAL-SENSITIVE or above data",
+        ],
+        "when_not_to_use": [
+            "Dev/test with public endpoints only — but still preferred even in dev",
+            "Services that do not support Private Endpoints (check Azure docs)",
+        ],
+        "best_practices": [
+            "Disable public network access on the PaaS service immediately after Private Endpoint creation",
+            "Use Private DNS Zones (privatelink.*.core.windows.net etc.) for correct name resolution",
+            "Deploy Private DNS Zones centrally in hub VNet and link to spoke VNets",
+            "Apply NSG to the subnet containing the Private Endpoint (NSG support is now GA)",
+            "On-prem DNS: configure conditional forwarders to Azure DNS Private Resolver",
+        ],
+        "aws_component": "N/A (see CONN-09 for AWS equivalent)",
+        "azure_component": "Azure Private Endpoint + Private DNS Zone",
+        "bandwidth": "Limited by service and VM bandwidth",
+        "latency": "<1 ms within region",
+        "redundancy": "Azure zone-redundant (for ZR PaaS services)",
+        "indicative_cost": "£6–£8/mo per endpoint + £0.01/GB data processed",
+        "ukhsa_status": "Approved — mandatory for all Azure PaaS in production",
+        "diagram_style": "solid",
+        "diagram_color": "#0078D4",
+    },
+
+    {
+        "id": "CONN-12",
+        "name": "Azure Virtual WAN (Hub-and-Spoke)",
+        "category": "Internal-Cloud",
+        "applicable_from": ["Azure"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "Microsoft-managed network hub connecting all UKHSA Azure VNets, "
+            "ExpressRoute circuits, and VPN connections. "
+            "Equivalent to AWS Transit Gateway. Provides centralised routing, "
+            "Azure Firewall integration, and automated spoke VNet connections."
+        ),
+        "when_to_use": [
+            "All multi-VNet Azure architectures at UKHSA (mandatory for new deployments)",
+            "Centralised firewall inspection for east-west and north-south Azure traffic",
+            "Connecting on-prem (ExpressRoute/VPN) to multiple Azure VNets",
+        ],
+        "when_not_to_use": [
+            "Single-VNet deployments — direct peering is simpler",
+            "Azure Virtual WAN Standard tier required for Azure Firewall — check budget",
+        ],
+        "best_practices": [
+            "Deploy Secured Virtual Hub (Virtual WAN + Azure Firewall) for production",
+            "Use routing intent to force all internet-bound and private traffic through Azure Firewall",
+            "Separate Virtual WAN hubs per region — do not extend a single hub globally",
+            "Use Azure Monitor + NSG flow logs for traffic visibility",
+            "Apply RBAC to prevent spoke VNets from modifying hub routing",
+        ],
+        "aws_component": "N/A (see CONN-07 for AWS equivalent)",
+        "azure_component": "Azure Virtual WAN (Standard) + Azure Firewall",
+        "bandwidth": "20 Gbps per hub (aggregate)",
+        "latency": "<1 ms within region",
+        "redundancy": "Zone-redundant managed service",
+        "indicative_cost": "£200–£400/mo hub fee + £0.02/GB data processed",
+        "ukhsa_status": "Approved — mandatory for multi-VNet Azure at UKHSA",
+        "diagram_style": "solid",
+        "diagram_color": "#0078D4",
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # CATEGORY 4 — Internet-Facing Connectivity
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "id": "CONN-13",
+        "name": "AWS Internet Gateway + WAF + CloudFront",
+        "category": "Internet-Facing",
+        "applicable_from": ["Internet / External Users"],
+        "applicable_to": ["AWS"],
+        "description": (
+            "Standard AWS internet ingress pattern: Internet Gateway for VPC internet routing, "
+            "CloudFront CDN for edge caching and DDoS mitigation, "
+            "AWS WAF for L7 inspection and bot protection, "
+            "Application Load Balancer in public subnet terminating TLS."
+        ),
+        "when_to_use": [
+            "Public-facing APIs or web applications hosted on AWS",
+            "External data collection endpoints (e.g., survey forms, public health portals)",
+            "Any workload receiving traffic from the internet",
+        ],
+        "when_not_to_use": [
+            "Internal-only workloads — use PrivateLink / Direct Connect only",
+            "OFFICIAL-SENSITIVE data APIs should use private connectivity not public internet",
+        ],
+        "best_practices": [
+            "WAF is MANDATORY for all public-facing endpoints (SEC-APS-03)",
+            "Use CloudFront with AWS Shield Standard (free) for DDoS mitigation",
+            "Enable AWS Shield Advanced for critical public services",
+            "ALB access logs and WAF logs to S3 + CloudWatch",
+            "HTTPS only — redirect HTTP 301 to HTTPS; use ACM for TLS certificates",
+            "Set Content-Security-Policy, HSTS, X-Frame-Options headers",
+            "Restrict Security Group on ALB to 0.0.0.0/0:443 only (no port 80 pass-through)",
+            "Use Cognito or API Gateway authoriser for authenticated public APIs",
+        ],
+        "aws_component": "Internet Gateway + CloudFront + WAF + ALB + ACM",
+        "azure_component": "N/A",
+        "bandwidth": "No explicit limit (CloudFront scales automatically)",
+        "latency": "Depends on CloudFront PoP proximity to user",
+        "redundancy": "CloudFront global edge network; Multi-AZ ALB",
+        "indicative_cost": "£20–100/mo depending on request volume and WAF rule sets",
+        "ukhsa_status": "Approved — mandatory WAF for all public endpoints",
+        "diagram_style": "dotted",
+        "diagram_color": "#DD344C",
+    },
+
+    {
+        "id": "CONN-14",
+        "name": "Azure Front Door + Azure WAF",
+        "category": "Internet-Facing",
+        "applicable_from": ["Internet / External Users"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "Azure global load balancer providing CDN, SSL offload, WAF, and "
+            "health-based routing for internet-facing Azure workloads. "
+            "Azure WAF (OWASP Core Rule Set) provides L7 protection."
+        ),
+        "when_to_use": [
+            "Public-facing Azure App Service, AKS, or API Management workloads",
+            "Multi-region Azure deployments needing global traffic routing",
+            "APIs published via Azure APIM with external consumers",
+        ],
+        "when_not_to_use": [
+            "Internal-only Azure workloads — use Private Endpoints instead",
+        ],
+        "best_practices": [
+            "Azure WAF OWASP 3.2 ruleset mandatory for all production endpoints",
+            "Enable Azure DDoS Network Protection on public VNets",
+            "HTTPS only with TLS 1.2 minimum policy",
+            "Lock App Service / AKS ingress to accept traffic only from Front Door IPs",
+            "Diagnostic logs to Log Analytics (linked to Microsoft Sentinel)",
+        ],
+        "aws_component": "N/A (see CONN-13 for AWS equivalent)",
+        "azure_component": "Azure Front Door (Standard/Premium) + Azure WAF Policy",
+        "bandwidth": "Scales globally with Azure edge PoPs",
+        "latency": "Depends on Front Door PoP proximity",
+        "redundancy": "Global anycast — inherently multi-region",
+        "indicative_cost": "£50–200/mo depending on origin routing rules and WAF policies",
+        "ukhsa_status": "Approved — mandatory WAF for all public Azure endpoints",
+        "diagram_style": "dotted",
+        "diagram_color": "#0078D4",
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # CATEGORY 5 — Zero Trust / SASE
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "id": "CONN-15",
+        "name": "zScaler Private Access (ZPA) — Zero Trust App Access",
+        "category": "Zero-Trust",
+        "applicable_from": ["End User Devices", "Remote Workers"],
+        "applicable_to": ["AWS", "Azure", "On-Premises DC", "OpenShift (OCP)"],
+        "description": (
+            "zScaler ZPA replaces traditional VPN for end-user access to private applications. "
+            "Users connect to an application proxy via the ZTE cloud; no network-level access granted. "
+            "Identity verified via Microsoft Entra ID before any application session. "
+            "UKHSA target state per ADR-010 Zero Trust Network Architecture."
+        ),
+        "when_to_use": [
+            "All end-user remote access to private cloud or on-prem applications (replaces VPN)",
+            "Third-party / partner access to internal systems without network-level exposure",
+            "Developer access to cloud management planes",
+            "Any access pattern where least-privilege per-application access is needed",
+        ],
+        "when_not_to_use": [
+            "Machine-to-machine (M2M) or service-account connectivity — use PrivateLink or DX instead",
+            "High-bandwidth bulk data transfer (ZPA is optimised for interactive/API sessions)",
+        ],
+        "best_practices": [
+            "Integrate ZPA with Microsoft Entra ID (Conditional Access) — block access without MFA",
+            "Use App Connectors deployed in private subnets (no inbound firewall rules needed)",
+            "Segment applications into ZPA Segment Groups — staff see only their authorised apps",
+            "Enable Continuous Trust Assessment — terminate session if device posture degrades",
+            "Log all ZPA sessions to Microsoft Sentinel (SIEM) via ZPA Log Streaming",
+            "Remove Site-to-Site VPN once ZPA covers all user-facing applications",
+        ],
+        "aws_component": "ZPA App Connector on EC2 in private subnet",
+        "azure_component": "ZPA App Connector on Azure VM in private subnet",
+        "bandwidth": "Suitable for interactive sessions; not bulk transfer",
+        "latency": "5–20 ms overhead vs direct (identity verification at ZTE PoP)",
+        "redundancy": "Multiple ZTE PoPs; deploy App Connectors in multiple AZs",
+        "indicative_cost": "Licensing per user (contact zScaler) — no per-GB data cost",
+        "ukhsa_status": "Approved — target state for all end-user access (ADR-010)",
+        "diagram_style": "dashed",
+        "diagram_color": "#1565C0",
+    },
+
+    {
+        "id": "CONN-16",
+        "name": "zScaler Internet Access (ZIA) — Secure Internet Egress",
+        "category": "Zero-Trust",
+        "applicable_from": ["End User Devices", "Cloud Workloads (outbound)"],
+        "applicable_to": ["Internet"],
+        "description": (
+            "All outbound internet traffic from UKHSA devices and workloads "
+            "routed through zScaler ZIA for SSL inspection, URL filtering, "
+            "DLP scanning, and threat protection. "
+            "Removes requirement for on-premises internet backhaul proxy. "
+            "UKHSA target state for internet egress."
+        ),
+        "when_to_use": [
+            "All UKHSA end-user devices requiring internet access",
+            "Cloud workload outbound internet traffic where content inspection is needed",
+            "Replacing on-premises web proxy (Bluecoat/Squid) for cloud-first egress",
+        ],
+        "when_not_to_use": [
+            "Machine-to-machine API calls to known trusted endpoints — use Security Groups/NSG allowlists",
+        ],
+        "best_practices": [
+            "Enable SSL inspection for all categories (except banking/medical exclusions per policy)",
+            "Configure Cloud Firewall policies to block unknown/uncategorised destinations",
+            "Route cloud workload egress via ZIA using PAC file or GRE/IPsec tunnel to ZTE",
+            "Log all ZIA events to Microsoft Sentinel",
+            "Disable direct on-prem internet backhaul once ZIA deployed (remove hairpin)",
+        ],
+        "aws_component": "ZIA via GRE tunnel from AWS NAT Gateway / TGW",
+        "azure_component": "ZIA via GRE tunnel from Azure VWAN or NVA",
+        "bandwidth": "Scales with ZTE PoP capacity",
+        "latency": "2–10 ms at nearest ZTE PoP",
+        "redundancy": "ZScaler global PoP network (99.999% SLA)",
+        "indicative_cost": "Licensing per user — no per-GB cost",
+        "ukhsa_status": "Approved — target state for secure internet egress",
+        "diagram_style": "dotted",
+        "diagram_color": "#1565C0",
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # CATEGORY 6 — OpenShift ↔ Cloud (internal cross-environment)
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "id": "CONN-17",
+        "name": "OpenShift → AWS via AWS PrivateLink",
+        "category": "On-Prem→Cloud",
+        "applicable_from": ["OpenShift (OCP)"],
+        "applicable_to": ["AWS"],
+        "description": (
+            "OpenShift pods call AWS services (S3, SQS, RDS, Lambda) via AWS PrivateLink "
+            "Interface Endpoints. Traffic flows over the existing Direct Connect circuit "
+            "from on-prem DC to AWS, then via private VIF to TGW, to the endpoint. "
+            "No public internet traversal."
+        ),
+        "when_to_use": [
+            "OCP workloads writing data to EDAP (S3 staging buckets)",
+            "OCP services calling AWS Lambda / SQS for event-driven integration",
+            "OCP databases connecting to RDS/Aurora read replicas in AWS",
+        ],
+        "when_not_to_use": [
+            "High-bandwidth bulk transfer (>500 Mbps) — Direct Connect bandwidth is shared with DC",
+        ],
+        "best_practices": [
+            "Use IAM Roles for Service Accounts (IRSA) or external-secrets-operator with AWS Secrets Manager",
+            "Kubernetes NetworkPolicy: deny all by default, allow only specific pods to call AWS endpoints",
+            "Do not store AWS credentials in OCP secrets — use workload identity / IRSA",
+            "mTLS between OCP and AWS API endpoints where supported",
+        ],
+        "aws_component": "AWS PrivateLink Interface Endpoints + Direct Connect (shared)",
+        "azure_component": "N/A",
+        "bandwidth": "Shared with Direct Connect circuit capacity",
+        "latency": "<10 ms OCP pod to AWS endpoint (same DC–cloud latency as DX)",
+        "redundancy": "Relies on Direct Connect redundancy (dual DX circuits)",
+        "indicative_cost": "£6–10/mo per interface endpoint + DX data transfer",
+        "ukhsa_status": "Approved",
+        "diagram_style": "solid",
+        "diagram_color": "#CC0000",
+    },
+
+    {
+        "id": "CONN-18",
+        "name": "OpenShift → Azure via ExpressRoute Private Peering",
+        "category": "On-Prem→Cloud",
+        "applicable_from": ["OpenShift (OCP)"],
+        "applicable_to": ["Azure"],
+        "description": (
+            "OCP pods access Azure PaaS (Key Vault, Storage, Service Bus) via "
+            "Azure Private Endpoints reachable over the ExpressRoute private peering "
+            "from the on-premises DC. No public internet traversal."
+        ),
+        "when_to_use": [
+            "OCP services consuming Azure Key Vault secrets or certificates",
+            "OCP writing to Azure Blob Storage or Azure Service Bus",
+            "OCP authentication via Microsoft Entra ID workload identity (OIDC)",
+        ],
+        "when_not_to_use": [
+            "Workloads that can run natively on Azure AKS — avoid OCP→Azure latency",
+        ],
+        "best_practices": [
+            "Use Microsoft Entra Workload Identity for OCP pods (OIDC federation) — no client secrets",
+            "Azure Private DNS Resolver configured with on-prem DNS forwarder for privatelink zones",
+            "Kubernetes NetworkPolicy restricts Azure endpoint access to authorised namespaces only",
+        ],
+        "aws_component": "N/A",
+        "azure_component": "Azure Private Endpoint + ExpressRoute Private Peering",
+        "bandwidth": "Shared with ExpressRoute circuit capacity",
+        "latency": "<10 ms OCP to Azure endpoint",
+        "redundancy": "Dual ExpressRoute circuits",
+        "indicative_cost": "Marginal (shared ER circuit) + £6–8/mo per Private Endpoint",
+        "ukhsa_status": "Approved",
+        "diagram_style": "solid",
+        "diagram_color": "#CC0000",
+    },
+]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONNECTIVITY SELECTION GUIDE
+# Quick-pick matrix: source environment × destination environment → recommended option(s)
+# ─────────────────────────────────────────────────────────────────────────────
+
+CONNECTIVITY_SELECTION_GUIDE: dict[tuple[str, str], dict] = {
+    ("On-Premises DC", "AWS"): {
+        "primary":   "CONN-01",  # Direct Connect
+        "secondary": "CONN-02",  # Site-to-Site VPN (failover)
+        "note": "DX primary — VPN as BGP warm standby failover",
+    },
+    ("On-Premises DC", "Azure"): {
+        "primary":   "CONN-03",  # ExpressRoute
+        "secondary": "CONN-04",  # Azure VPN Gateway (failover)
+        "note": "ER primary — Azure VPN Gateway warm standby",
+    },
+    ("On-Premises DC", "OpenShift (OCP)"): {
+        "primary":   None,       # Internal LAN
+        "secondary": None,
+        "note": "Internal LAN / SDN — no cloud cost",
+    },
+    ("OpenShift (OCP)", "AWS"): {
+        "primary":   "CONN-17",  # PrivateLink over DX
+        "secondary": "CONN-02",  # VPN fallback
+        "note": "PrivateLink over shared Direct Connect circuit",
+    },
+    ("OpenShift (OCP)", "Azure"): {
+        "primary":   "CONN-18",  # ExpressRoute private peering
+        "secondary": "CONN-04",  # Azure VPN
+        "note": "Shared ExpressRoute private peering",
+    },
+    ("AWS", "Azure"): {
+        "primary":   "CONN-05",  # Equinix/Megaport fabric (target state)
+        "secondary": "CONN-06",  # Internet VPN (interim)
+        "note": "Fabric is UKHSA target state — VPN is interim only",
+    },
+    ("AWS", "AWS"): {
+        "primary":   "CONN-07",  # Transit Gateway
+        "secondary": "CONN-09",  # PrivateLink for service access
+        "note": "TGW for VPC routing; PrivateLink for service endpoints",
+    },
+    ("Azure", "Azure"): {
+        "primary":   "CONN-12",  # Virtual WAN
+        "secondary": "CONN-11",  # Private Endpoint for PaaS
+        "note": "Virtual WAN for VNet routing; Private Endpoint for PaaS",
+    },
+    ("End User", "AWS"): {
+        "primary":   "CONN-15",  # ZPA
+        "secondary": "CONN-13",  # Internet + WAF (for public APIs)
+        "note": "ZPA for private access; Internet+WAF for public APIs only",
+    },
+    ("End User", "Azure"): {
+        "primary":   "CONN-15",  # ZPA
+        "secondary": "CONN-14",  # Azure Front Door + WAF (public APIs)
+        "note": "ZPA for private access; Front Door+WAF for public APIs",
+    },
+    ("Internet / External", "AWS"): {
+        "primary":   "CONN-13",  # Internet Gateway + WAF + CloudFront
+        "secondary": None,
+        "note": "WAF mandatory — no public access without WAF",
+    },
+    ("Internet / External", "Azure"): {
+        "primary":   "CONN-14",  # Azure Front Door + WAF
+        "secondary": None,
+        "note": "WAF mandatory — no public access without WAF",
+    },
+}
+
+
+def get_connectivity_options_for(
+    source_env: str,
+    dest_env: str,
+) -> list[dict]:
+    """
+    Return CONNECTIVITY_OPTIONS entries applicable for a given source→destination pair.
+    Performs case-insensitive partial-match lookup.
+    """
+    src_lc = source_env.lower()
+    dst_lc = dest_env.lower()
+    results = []
+    for opt in CONNECTIVITY_OPTIONS:
+        src_match = any(src_lc in s.lower() or s.lower() in src_lc for s in opt["applicable_from"])
+        dst_match = any(dst_lc in s.lower() or s.lower() in dst_lc for s in opt["applicable_to"])
+        if src_match and dst_match:
+            results.append(opt)
+    return results
+
+
+def get_connectivity_selection(source_env: str, dest_env: str) -> dict | None:
+    """Return the selection guide entry (primary/secondary/note) for a source→dest pair."""
+    for (src, dst), guide in CONNECTIVITY_SELECTION_GUIDE.items():
+        if source_env.lower() in src.lower() or src.lower() in source_env.lower():
+            if dest_env.lower() in dst.lower() or dst.lower() in dest_env.lower():
+                return guide
+    return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # DETECTION ENGINE
 # ─────────────────────────────────────────────────────────────────────────────
 
