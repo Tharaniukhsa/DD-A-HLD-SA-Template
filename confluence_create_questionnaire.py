@@ -763,7 +763,145 @@ QUESTIONNAIRE_HTML = """
 
 <hr />
 
-<h2>12. Auto-Generated Diagrams (Placeholder)</h2>
+<h2>12. Connectivity Options</h2>
+
+<p><em>Select the UKHSA-approved network connectivity option(s) required for this workload. These must also be documented in Section 11 (Architecture Connections) and Section 13b (Network Segmentation) of the main HLD page. Source: UKHSA Cloud Strategy &amp; Approved Patterns v1.2 / UKHSA-INF-02 / ADR-010.</em></p>
+
+<h3>12.1 On-Premises ↔ Cloud</h3>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>From → To</th><th>When to Use</th><th>Selected?</th><th>Notes (circuit ID, bandwidth, DR pair)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>CONN-01</strong></td><td>AWS Direct Connect</td><td>On-Prem DC / OCP → AWS</td>
+      <td>Primary production path; consistent bandwidth; OFFICIAL-SENSITIVE data</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-02</strong></td><td>AWS Site-to-Site VPN</td><td>On-Prem DC / OCP → AWS</td>
+      <td>Dev/test or Direct Connect warm-standby failover only</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-03</strong></td><td>Azure ExpressRoute</td><td>On-Prem DC / OCP → Azure</td>
+      <td>Primary production path to Azure; high-volume; OFFICIAL-SENSITIVE data</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-04</strong></td><td>Azure VPN Gateway (S2S)</td><td>On-Prem DC / OCP → Azure</td>
+      <td>Dev/test or ExpressRoute warm-standby failover only</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-17</strong></td><td>OpenShift → AWS via PrivateLink</td><td>OpenShift (OCP) → AWS</td>
+      <td>OCP workloads consuming AWS services without traversing the internet</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-18</strong></td><td>OpenShift → Azure via ExpressRoute</td><td>OpenShift (OCP) → Azure</td>
+      <td>OCP workloads consuming Azure services; uses shared ExpressRoute circuit</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>12.2 Cloud ↔ Cloud (AWS ↔ Azure)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>From → To</th><th>When to Use</th><th>Selected?</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>CONN-05</strong></td><td>Equinix / Megaport Fabric</td><td>AWS → Azure</td>
+      <td>Production multi-cloud; private backbone; avoid internet cross-cloud traffic</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-06</strong></td><td>AWS ↔ Azure Internet VPN (Interim)</td><td>AWS ↔ Azure</td>
+      <td>Dev/test or interim only — must declare migration date to CONN-05</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>12.3 Within AWS (Intra-Cloud Routing)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>When to Use</th><th>Selected?</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>CONN-07</strong></td><td>AWS Transit Gateway</td>
+      <td>Multi-VPC / multi-account centralised routing</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-08</strong></td><td>AWS VPC Peering</td>
+      <td>Low-traffic, same-region VPC-to-VPC (prefer Transit Gateway for scale)</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-09</strong></td><td>AWS PrivateLink (VPC Endpoints)</td>
+      <td>Private access to AWS services or partner services without NAT/IGW</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>12.4 Within Azure (Intra-Cloud Routing)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>When to Use</th><th>Selected?</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>CONN-10</strong></td><td>Azure VNet Peering</td>
+      <td>Low-latency VNet-to-VNet within same region or cross-region</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-11</strong></td><td>Azure Private Endpoint</td>
+      <td>Private access to PaaS services (Storage, SQL, Key Vault) without public IP</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-12</strong></td><td>Azure Virtual WAN</td>
+      <td>Hub-and-spoke at scale; replaces multiple VNet peerings across regions</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>12.5 Public-Facing / External Ingress</h3>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>When to Use</th><th>Selected?</th><th>Notes (public hostname, TPS estimate)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>CONN-13</strong></td><td>Internet Gateway + WAF + CloudFront</td>
+      <td>Public-facing AWS workloads; CDN + edge WAF required</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-14</strong></td><td>Azure Front Door + WAF</td>
+      <td>Public-facing Azure workloads; global load balancing + WAF</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>12.6 Zero-Trust End-User Access</h3>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>When to Use</th><th>Selected?</th><th>Notes (ZPA app segment or ZIA policy)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>CONN-15</strong></td><td>zScaler ZPA (Zero Trust App Access)</td>
+      <td>End-user access to internal cloud apps without VPN; replaces split-tunnel</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+    <tr>
+      <td><strong>CONN-16</strong></td><td>zScaler ZIA (Secure Internet Egress)</td>
+      <td>Controlled internet egress from cloud workloads; DLP + threat inspection</td>
+      <td><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Yes</ac:task-body></ac:task></ac:task-list></td><td></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>13. Auto-Generated Diagrams (Placeholder)</h2>
 
 <p><em>After filling in the questionnaire above, run:</em></p>
 
@@ -804,7 +942,7 @@ QUESTIONNAIRE_HTML = """
 
 <hr />
 
-<h2>13. Related Documents</h2>
+<h2>14. Related Documents</h2>
 
 <ul>
   <li><a href="#">High-level Design (HLD) Solution Architecture Template</a> (main page)</li>

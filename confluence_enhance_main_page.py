@@ -523,7 +523,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 
   <h3 id="section8a" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8a. Data Ingestion Patterns</h3>
 <table>
-  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected?</th><th>Notes / Justification</th></tr></thead>
   <tbody>
     <tr><td>1A</td><td>API / Web Service Pull</td><td></td><td>Pull from REST / GraphQL / SOAP APIs on schedule or event</td></tr>
     <tr><td>1B</td><td>Batch File Upload</td><td></td><td>Bulk scheduled file transfers via SFTP / S3 upload</td></tr>
@@ -534,7 +534,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 
   <h3 id="section8b" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8b. Data Processing Patterns</h3>
 <table>
-  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected?</th><th>Notes / Justification</th></tr></thead>
   <tbody>
     <tr><td>2A</td><td>Batch ETL</td><td></td><td>Nightly / scheduled large-volume data transformation</td></tr>
     <tr><td>2B</td><td>Real-time Stream Processing</td><td></td><td>Continuous event processing with sub-second latency</td></tr>
@@ -545,7 +545,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 
   <h3 id="section8c" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8c. Data Storage Patterns</h3>
 <table>
-  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected?</th><th>Notes / Justification</th></tr></thead>
   <tbody>
     <tr><td>3A</td><td>Transactional Database (OLTP)</td><td></td><td>ACID transactions for operational systems (RDS / Aurora / Azure SQL)</td></tr>
     <tr><td>3B</td><td>Data Warehouse (OLAP)</td><td></td><td>Historical reporting and complex analytical queries (Redshift / Synapse)</td></tr>
@@ -557,7 +557,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
 
   <h3 id="section8d" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8d. Governance, Security &amp; Operational Patterns</h3>
 <table>
-  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Layer</th><th>Selected? (Y/N)</th><th>Notes</th></tr></thead>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Layer</th><th>Selected?</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td>4A</td><td>Event-Driven Pipelines</td><td>Integration</td><td></td><td>Loosely-coupled services reacting to data changes or domain events</td></tr>
     <tr><td>4B</td><td>ETL Orchestration</td><td>Integration</td><td></td><td>Multi-step workflows with dependencies, retries, and branching</td></tr>
@@ -585,7 +585,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
   <h3 id="section8e" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8e. Infrastructure &amp; Platform Patterns</h3>
   <p><em>UKHSA-approved infrastructure patterns. INF-01 (Landing Zone) and INF-05 (Federated Identity) are mandatory for all cloud workloads.</em></p>
 <table>
-  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected?</th><th>Notes / Justification</th></tr></thead>
   <tbody>
     <tr><td>UKHSA-INF-01</td><td>UKHSA Cloud Landing Zone</td><td>Y</td><td><strong>Mandatory</strong> — all cloud workloads must deploy into an approved UKHSA LZ (AWS or Azure)</td></tr>
     <tr><td>UKHSA-INF-02</td><td>Hybrid Cloud Connectivity</td><td></td><td>Secure AWS Direct Connect / Azure ExpressRoute with IPsec VPN backup</td></tr>
@@ -599,7 +599,7 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
   <h3 id="section8f" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8f. Target State Architecture – Networking &amp; Identity</h3>
   <p><em>UKHSA TSA patterns define the strategic target networking and identity architecture all new solutions should align to.</em></p>
 <table>
-  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected? (Y/N)</th><th>Notes / Justification</th></tr></thead>
+  <thead><tr><th>Pattern ID</th><th>Pattern Name</th><th>Selected?</th><th>Notes / Justification</th></tr></thead>
   <tbody>
     <tr><td>TSA-NET-01</td><td>Zero-Trust Network Access (ZTNA)</td><td></td><td>Replace implicit trust with identity-verified, device-checked, context-aware access</td></tr>
     <tr><td>TSA-NET-02</td><td>Centralised Ingress (ALB + WAF)</td><td></td><td>Single WAF-protected ingress point for all public-facing workloads</td></tr>
