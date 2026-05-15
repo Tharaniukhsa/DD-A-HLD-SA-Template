@@ -901,48 +901,7 @@ QUESTIONNAIRE_HTML = """
 
 <hr />
 
-<h2>13. Auto-Generated Diagrams (Placeholder)</h2>
-
-<p><em>After filling in the questionnaire above, run:</em></p>
-
-<pre>confluence_sync_questionnaire_to_main.py</pre>
-
-<p><em>This will copy relevant questionnaire content into the main Solution Architecture page and then regenerate diagrams automatically.</em></p>
-
-<p><em>The following diagrams will automatically appear here:</em></p>
-
-<h3>Solution Architecture Diagram</h3>
-<p><strong>[[DIAGRAM:solution-architecture]]</strong></p>
-
-<h3>Data Flow Diagram</h3>
-<p><strong>[[DIAGRAM:data-flow]]</strong></p>
-
-<h3>Approved Patterns Used</h3>
-<p><em>Auto-generated summary of which patterns were selected for this solution.</em></p>
-<table>
-  <thead><tr><th>Layer</th><th>Pattern(s) Selected</th><th>AWS / Azure Service(s)</th></tr></thead>
-  <tbody>
-    <tr><td>Infrastructure — Landing Zone</td><td>UKHSA-INF-01</td><td></td></tr>
-    <tr><td>Infrastructure — Connectivity</td><td></td><td></td></tr>
-    <tr><td>Infrastructure — Zero Trust Access</td><td></td><td></td></tr>
-    <tr><td>Infrastructure — DNS</td><td></td><td></td></tr>
-    <tr><td>Infrastructure — Identity</td><td>UKHSA-INF-05</td><td></td></tr>
-    <tr><td>Infrastructure — Platform</td><td></td><td></td></tr>
-    <tr><td>Networking (TSA)</td><td></td><td></td></tr>
-    <tr><td>Identity (TSA)</td><td></td><td></td></tr>
-    <tr><td>Ingestion</td><td></td><td></td></tr>
-    <tr><td>Processing</td><td></td><td></td></tr>
-    <tr><td>Storage</td><td></td><td></td></tr>
-    <tr><td>Governance</td><td></td><td></td></tr>
-    <tr><td>Security (mandatory)</td><td>6A, 6B, 6C</td><td>IAM, KMS, VPC, WAF</td></tr>
-    <tr><td>Monitoring</td><td></td><td></td></tr>
-    <tr><td>Resilience</td><td></td><td></td></tr>
-  </tbody>
-</table>
-
-<hr />
-
-<h2>14. Related Documents</h2>
+<h2>13. Related Documents</h2>
 
 <ul>
   <li><a href="#">High-level Design (HLD) Solution Architecture Template</a> (main page)</li>
