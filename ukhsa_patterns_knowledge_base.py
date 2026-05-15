@@ -1595,6 +1595,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Dual connections + Site-to-Site VPN warm standby",
         "indicative_cost": "£140–£280/mo port fee + £0.02/GB data transfer out of AWS",
         "ukhsa_status": "Approved — primary on-prem→AWS path",
+        "availability": "available",   # Live in production — Virgin Media MPLS → DX → AWS TGW
         "diagram_style": "solid",
         "diagram_color": "#FF9900",
     },
@@ -1641,6 +1642,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "2 tunnels per connection; use as DX warm standby via BGP",
         "indicative_cost": "£30–£50/mo per connection + £0.05/GB data transfer",
         "ukhsa_status": "Approved — dev/test and DX failover only",
+        "availability": "available",   # Available — used as DX warm standby and in dev/test accounts
         "diagram_style": "dashed",
         "diagram_color": "#FF9900",
     },
@@ -1686,6 +1688,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Dual circuits at diverse peering locations + VPN warm standby",
         "indicative_cost": "£200–£400/mo circuit fee + £0.02/GB egress from Azure",
         "ukhsa_status": "Approved — primary on-prem→Azure path",
+        "availability": "available",   # Live in production — UKHSA DC → ExpressRoute → Azure VWAN
         "diagram_style": "solid",
         "diagram_color": "#0078D4",
     },
@@ -1728,6 +1731,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Active-Active with BGP failover; combine with ExpressRoute",
         "indicative_cost": "£160–£420/mo gateway SKU + £0.05/GB egress",
         "ukhsa_status": "Approved — dev/test and ER failover only",
+        "availability": "available",   # Available — Azure VPN Gateway can be provisioned on demand
         "diagram_style": "dashed",
         "diagram_color": "#0078D4",
     },
@@ -1774,6 +1778,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Dual cross-connects at exchange + cloud-side circuit redundancy",
         "indicative_cost": "£300–£600/mo fabric port fee + AWS egress ~£0.07/GB",
         "ukhsa_status": "Approved — target state for production AWS↔Azure (UKHSA-INF-02)",
+        "availability": "in-progress",  # Target state — not yet provisioned; planned via Equinix/Megaport (UKHSA-INF-02)
         "diagram_style": "solid",
         "diagram_color": "#7B1FA2",
     },
@@ -1815,6 +1820,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Two tunnels per connection; Active-Active on Azure side",
         "indicative_cost": "£30–50/mo VPN gateway + AWS egress ~£0.07/GB + Azure egress ~£0.05/GB",
         "ukhsa_status": "Conditional — dev/test and interim only; not for production OFFICIAL-SENSITIVE",
+        "availability": "available",   # Available now as interim; must migrate to CONN-05 (fabric) for production
         "diagram_style": "dashed",
         "diagram_color": "#7B1FA2",
     },
@@ -1860,6 +1866,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Multi-AZ by default; TGW is a regional managed service",
         "indicative_cost": "£30–80/mo (attachment hours + data processing @ £0.02/GB)",
         "ukhsa_status": "Approved — mandatory for all multi-VPC AWS at UKHSA",
+        "availability": "available",   # Live — AWS Transit Gateway deployed in all UKHSA HALO accounts
         "diagram_style": "solid",
         "diagram_color": "#FF9900",
     },
@@ -1898,6 +1905,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "AWS-managed, inherently redundant within region",
         "indicative_cost": "£0.01/GB data transfer (same region) / £0.02/GB cross-region",
         "ukhsa_status": "Approved — simple two-VPC or shared-service use cases",
+        "availability": "available",   # Available — standard AWS capability in all HALO accounts
         "diagram_style": "solid",
         "diagram_color": "#FF9900",
     },
@@ -1940,6 +1948,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Multi-AZ endpoint across all AZs",
         "indicative_cost": "£6–£10/mo per endpoint + £0.01/GB data processed",
         "ukhsa_status": "Approved — mandatory for all AWS PaaS access from private subnets",
+        "availability": "available",   # Live — VPC Interface Endpoints in use across EDAP and HALO workloads
         "diagram_style": "solid",
         "diagram_color": "#FF9900",
     },
@@ -1978,6 +1987,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Azure-managed, inherently redundant",
         "indicative_cost": "£0.01–0.02/GB inbound + outbound (same region); higher cross-region",
         "ukhsa_status": "Approved — simple two-VNet or shared-service use cases",
+        "availability": "available",   # Available — standard Azure capability in all PHECloud subscriptions
         "diagram_style": "solid",
         "diagram_color": "#0078D4",
     },
@@ -2017,6 +2027,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Azure zone-redundant (for ZR PaaS services)",
         "indicative_cost": "£6–£8/mo per endpoint + £0.01/GB data processed",
         "ukhsa_status": "Approved — mandatory for all Azure PaaS in production",
+        "availability": "available",   # Live — Azure Private Endpoints deployed across PHECloud PaaS services
         "diagram_style": "solid",
         "diagram_color": "#0078D4",
     },
@@ -2056,6 +2067,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Zone-redundant managed service",
         "indicative_cost": "£200–£400/mo hub fee + £0.02/GB data processed",
         "ukhsa_status": "Approved — mandatory for multi-VNet Azure at UKHSA",
+        "availability": "available",   # Live — Azure Virtual WAN deployed in PHECloud hub
         "diagram_style": "solid",
         "diagram_color": "#0078D4",
     },
@@ -2102,6 +2114,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "CloudFront global edge network; Multi-AZ ALB",
         "indicative_cost": "£20–100/mo depending on request volume and WAF rule sets",
         "ukhsa_status": "Approved — mandatory WAF for all public endpoints",
+        "availability": "available",   # Live — Internet Gateway + CloudFront + WAF in use on HALO public workloads
         "diagram_style": "dotted",
         "diagram_color": "#DD344C",
     },
@@ -2139,6 +2152,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Global anycast — inherently multi-region",
         "indicative_cost": "£50–200/mo depending on origin routing rules and WAF policies",
         "ukhsa_status": "Approved — mandatory WAF for all public Azure endpoints",
+        "availability": "available",   # Live — Azure Front Door + WAF in use for APIM and Azure App Service workloads
         "diagram_style": "dotted",
         "diagram_color": "#0078D4",
     },
@@ -2184,6 +2198,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Multiple ZTE PoPs; deploy App Connectors in multiple AZs",
         "indicative_cost": "Licensing per user (contact zScaler) — no per-GB data cost",
         "ukhsa_status": "Approved — target state for all end-user access (ADR-010)",
+        "availability": "in-progress",  # Deployment in progress — replacing legacy VPN for end-user access (ADR-010 target)
         "diagram_style": "dashed",
         "diagram_color": "#1565C0",
     },
@@ -2223,6 +2238,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "ZScaler global PoP network (99.999% SLA)",
         "indicative_cost": "Licensing per user — no per-GB cost",
         "ukhsa_status": "Approved — target state for secure internet egress",
+        "availability": "in-progress",  # Deployment in progress — replacing on-prem internet backhaul hairpin
         "diagram_style": "dotted",
         "diagram_color": "#1565C0",
     },
@@ -2264,6 +2280,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Relies on Direct Connect redundancy (dual DX circuits)",
         "indicative_cost": "£6–10/mo per interface endpoint + DX data transfer",
         "ukhsa_status": "Approved",
+        "availability": "in-progress",  # Dependent on OCP cluster connectivity being established — available once OCP provisioned
         "diagram_style": "solid",
         "diagram_color": "#CC0000",
     },
@@ -2299,6 +2316,7 @@ CONNECTIVITY_OPTIONS: list[dict] = [
         "redundancy": "Dual ExpressRoute circuits",
         "indicative_cost": "Marginal (shared ER circuit) + £6–8/mo per Private Endpoint",
         "ukhsa_status": "Approved",
+        "availability": "in-progress",  # Dependent on OCP cluster connectivity being established — available once OCP provisioned
         "diagram_style": "solid",
         "diagram_color": "#CC0000",
     },

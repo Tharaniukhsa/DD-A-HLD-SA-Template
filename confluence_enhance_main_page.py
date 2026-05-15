@@ -608,6 +608,192 @@ def build_main_html(plan_link: str) -> str:  # noqa: C901
   </tbody>
 </table>
 
+  <h3 id="section8g" style="color: #059669; margin-top: 20px; border-top: 2px solid #059669; padding-top: 10px;">8g. Connectivity Options Reference</h3>
+  <p><em>
+    All UKHSA-approved network connectivity options for the four internal environments (On-Premises DC, OpenShift, AWS, Azure)
+    and external-facing ingress. Select the option(s) applicable to this project and document the connection type in
+    Section 11 (Architecture Connections) and Section 13b (Network Segmentation Inputs).
+    Source: <strong>UKHSA Cloud Strategy &amp; Approved Patterns v1.2</strong> + UKHSA-INF-02 / ADR-010.
+  </em></p>
+
+  <p><strong>Availability key:</strong>
+    <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro>
+    &nbsp;Live in production at UKHSA &nbsp;|&nbsp;
+    <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">In Progress</ac:parameter></ac:structured-macro>
+    &nbsp;Target state — approved but not yet fully deployed &nbsp;|&nbsp;
+    <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">Not Available</ac:parameter></ac:structured-macro>
+    &nbsp;Not approved for UKHSA use
+  </p>
+
+  <h4 style="color:#374151; margin-top:16px;">Category 1 — On-Premises ↔ Cloud</h4>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>From</th><th>To</th><th>Use When</th><th>Bandwidth</th><th>Indicative Cost (£/mo)</th><th>Availability</th><th>Selected?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>CONN-01</strong></td><td>AWS Direct Connect</td><td>On-Prem DC / OCP</td><td>AWS</td>
+        <td>Primary production path; consistent bandwidth; OFFICIAL-SENSITIVE data</td>
+        <td>1–10 Gbps dedicated</td><td>£140–280 port + £0.02/GB out</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-02</strong></td><td>AWS Site-to-Site VPN</td><td>On-Prem DC / OCP / Remote Site</td><td>AWS</td>
+        <td>Dev/test or DX warm-standby failover only — not for production primary</td>
+        <td>Up to 2.5 Gbps (2 tunnels)</td><td>£30–50 + £0.05/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-03</strong></td><td>Azure ExpressRoute</td><td>On-Prem DC / OCP</td><td>Azure</td>
+        <td>Primary production path to Azure; high-volume; OFFICIAL-SENSITIVE data</td>
+        <td>50 Mbps–10 Gbps</td><td>£200–400 circuit + £0.02/GB out</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-04</strong></td><td>Azure VPN Gateway (S2S)</td><td>On-Prem DC / OCP / Remote Site</td><td>Azure</td>
+        <td>Dev/test or ExpressRoute warm-standby failover only</td>
+        <td>Up to 10 Gbps (VpnGw5)</td><td>£160–420 gateway + £0.05/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-17</strong></td><td>OpenShift → AWS via PrivateLink</td><td>OpenShift (OCP)</td><td>AWS</td>
+        <td>OCP pods calling AWS services (S3, SQS, RDS) without public internet</td>
+        <td>Shared with DX circuit</td><td>£6–10/endpoint + DX transfer</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">In Progress</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-18</strong></td><td>OpenShift → Azure via ExpressRoute</td><td>OpenShift (OCP)</td><td>Azure</td>
+        <td>OCP pods accessing Azure Key Vault, Storage, Service Bus over ER private peering</td>
+        <td>Shared with ER circuit</td><td>Marginal + £6–8/endpoint</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">In Progress</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 style="color:#374151; margin-top:16px;">Category 2 — Cloud-to-Cloud (AWS ↔ Azure)</h4>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>From</th><th>To</th><th>Use When</th><th>Bandwidth</th><th>Indicative Cost (£/mo)</th><th>Availability</th><th>Selected?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>CONN-05</strong></td><td>Equinix / Megaport Fabric</td><td>AWS</td><td>Azure</td>
+        <td>⭐ <strong>Target state</strong> — large-volume, low-latency, OFFICIAL-SENSITIVE cross-cloud</td>
+        <td>1–10 Gbps private fabric</td><td>£300–600 fabric port + £0.07/GB AWS egress</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">In Progress</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-06</strong></td><td>AWS ↔ Azure Internet VPN (Interim)</td><td>AWS</td><td>Azure</td>
+        <td>Dev/test or interim only — must declare migration date to CONN-05</td>
+        <td>Up to 1.25 Gbps/tunnel</td><td>£30–50 VPN + £0.07/GB AWS + £0.05/GB Azure egress</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 style="color:#374151; margin-top:16px;">Category 3 — Internal Cloud (within AWS / within Azure)</h4>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Platform</th><th>Use When</th><th>Indicative Cost (£/mo)</th><th>Availability</th><th>Selected?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>CONN-07</strong></td><td>AWS Transit Gateway</td><td>AWS</td>
+        <td>Multi-VPC routing hub — <strong>mandatory</strong> for all multi-VPC UKHSA AWS deployments</td>
+        <td>£30–80 attachments + £0.02/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-08</strong></td><td>AWS VPC Peering</td><td>AWS</td>
+        <td>Simple two-VPC only; use TGW for 3+ VPCs</td>
+        <td>£0.01–0.02/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-09</strong></td><td>AWS PrivateLink (VPC Endpoints)</td><td>AWS</td>
+        <td><strong>Mandatory</strong> for all AWS PaaS API calls from private subnets</td>
+        <td>£6–10/endpoint + £0.01/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-10</strong></td><td>Azure VNet Peering</td><td>Azure</td>
+        <td>Simple two-VNet only; use Virtual WAN for 3+ VNets</td>
+        <td>£0.01–0.02/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-11</strong></td><td>Azure Private Endpoint</td><td>Azure</td>
+        <td><strong>Mandatory</strong> for all Azure PaaS in production; disable public endpoint</td>
+        <td>£6–8/endpoint + £0.01/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-12</strong></td><td>Azure Virtual WAN</td><td>Azure</td>
+        <td>Multi-VNet routing hub — <strong>mandatory</strong> for all multi-VNet UKHSA Azure deployments</td>
+        <td>£200–400 hub + £0.02/GB</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 style="color:#374151; margin-top:16px;">Category 4 — Internet-Facing Ingress</h4>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Platform</th><th>Use When</th><th>Indicative Cost (£/mo)</th><th>Availability</th><th>Selected?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>CONN-13</strong></td><td>Internet Gateway + WAF + CloudFront</td><td>AWS</td>
+        <td>Any public-facing AWS workload — WAF is <strong>mandatory</strong> (SEC-APS-03)</td>
+        <td>£20–100 (WAF rules + CloudFront)</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-14</strong></td><td>Azure Front Door + WAF</td><td>Azure</td>
+        <td>Any public-facing Azure workload — WAF is <strong>mandatory</strong></td>
+        <td>£50–200</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Available</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 style="color:#374151; margin-top:16px;">Category 5 — Zero Trust / SASE (End-User Access)</h4>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Use When</th><th>Indicative Cost</th><th>Availability</th><th>Selected?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>CONN-15</strong></td><td>zScaler ZPA (Zero Trust App Access)</td>
+        <td>All remote/end-user access to private applications — <strong>replaces VPN</strong> (ADR-010 target state)</td>
+        <td>Per-user licence (contact CCoE)</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">In Progress</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>CONN-16</strong></td><td>zScaler ZIA (Secure Internet Egress)</td>
+        <td>All outbound internet from UKHSA devices and cloud workloads — replaces on-prem proxy</td>
+        <td>Per-user licence (contact CCoE)</td>
+        <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">In Progress</ac:parameter></ac:structured-macro></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ac:structured-macro ac:name="info">
+    <ac:parameter ac:name="title">Where to find full details</ac:parameter>
+    <ac:rich-text-body>
+      <p>Full technical details for each option (best practices, when not to use, redundancy approach) are stored in <strong>ukhsa_patterns_knowledge_base.py → CONNECTIVITY_OPTIONS</strong> in the architecture automation repository.
+      See the <strong>CONNECTIVITY_SELECTION_GUIDE</strong> dict for the recommended primary/secondary option per environment pair.</p>
+    </ac:rich-text-body>
+  </ac:structured-macro>
+
 </div>
 <!-- SECTION 9: CONTEXT ENTITIES -->
 <div style="background-color: #f0e8f8; border-left: 5px solid #7C3AED; padding: 15px; margin: 20px 0; border-radius: 4px;">
